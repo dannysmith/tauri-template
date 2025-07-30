@@ -18,30 +18,30 @@ describe('UIStore', () => {
 
   it('toggles sidebar visibility', () => {
     const { toggleSidebar } = useUIStore.getState()
-    
+
     toggleSidebar()
     expect(useUIStore.getState().sidebarVisible).toBe(false)
-    
+
     toggleSidebar()
     expect(useUIStore.getState().sidebarVisible).toBe(true)
   })
 
   it('sets sidebar visibility directly', () => {
     const { setSidebarVisible } = useUIStore.getState()
-    
+
     setSidebarVisible(false)
     expect(useUIStore.getState().sidebarVisible).toBe(false)
-    
+
     setSidebarVisible(true)
     expect(useUIStore.getState().sidebarVisible).toBe(true)
   })
 
   it('toggles command palette', () => {
     const { toggleCommandPalette } = useUIStore.getState()
-    
+
     toggleCommandPalette()
     expect(useUIStore.getState().commandPaletteOpen).toBe(true)
-    
+
     toggleCommandPalette()
     expect(useUIStore.getState().commandPaletteOpen).toBe(false)
   })

@@ -127,10 +127,10 @@ interface UIState {
 
 export const useUIStore = create<UIState>()(
   devtools(
-    (set) => ({
+    set => ({
       sidebarVisible: true,
       toggleSidebar: () =>
-        set((state) => ({ sidebarVisible: !state.sidebarVisible })),
+        set(state => ({ sidebarVisible: !state.sidebarVisible })),
     }),
     { name: 'ui-store' }
   )

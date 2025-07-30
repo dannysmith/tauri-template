@@ -1,19 +1,20 @@
-import { invoke } from '@tauri-apps/api/core'
+// Command system exports
+export * from './registry'
+export * from '../../hooks/use-command-context'
+import { navigationCommands } from './navigation-commands'
+import { registerCommands } from './registry'
 
-// Type-safe wrapper for Tauri commands
-export async function invokeCommand<T = any>(
-  command: string,
-  args?: Record<string, any>
-): Promise<T> {
-  try {
-    return await invoke(command, args)
-  } catch (error) {
-    console.error(`Failed to invoke command: ${command}`, error)
-    throw error
+/**
+ * Initialize the command system by registering all commands.
+ * This should be called once during app initialization.
+ */
+export function initializeCommandSystem(): void {
+  registerCommands(navigationCommands)
+  // Future command groups will be registered here
+
+  if (import.meta.env.DEV) {
+    console.log('Command system initialized')
   }
 }
 
-// Example command functions
-export async function greetUser(name: string): Promise<string> {
-  return invokeCommand<string>('greet', { name })
-}
+export { navigationCommands }
