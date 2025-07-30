@@ -5,13 +5,21 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
+    "core:window:allow-minimize",
+    "core:window:allow-maximize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-close",
+    "core:window:allow-set-fullscreen",
+    "core:window:allow-is-maximized",
+    "core:window:allow-is-fullscreen",
+    "core:window:default",
+    "core:window:allow-start-dragging",
     "opener:default",
     "clipboard-manager:default",
     "dialog:default",
     "fs:default",
     "log:default",
     "notification:default",
-    "opener:default",
     "process:default"
   ]
 }

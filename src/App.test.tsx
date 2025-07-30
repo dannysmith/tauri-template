@@ -3,23 +3,17 @@ import { describe, it, expect } from 'vitest'
 import App from './App'
 
 describe('App', () => {
-  it('renders command system demo', () => {
+  it('renders main window layout', () => {
     render(<App />)
     expect(
-      screen.getByRole('heading', { name: /command system demo/i })
+      screen.getByRole('heading', { name: /hello world/i })
     ).toBeInTheDocument()
   })
 
-  it('renders command buttons', () => {
+  it('renders title bar with traffic light buttons', () => {
     render(<App />)
-    expect(
-      screen.getByRole('button', { name: /toggle sidebar/i })
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: /toggle command palette/i })
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: /open preferences/i })
-    ).toBeInTheDocument()
+    const buttons = screen.getAllByRole('button')
+    // Should have 3 traffic light buttons (close, minimize, maximize)
+    expect(buttons).toHaveLength(3)
   })
 })

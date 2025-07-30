@@ -2,6 +2,7 @@
 export * from './registry'
 export * from '../../hooks/use-command-context'
 import { navigationCommands } from './navigation-commands'
+import { windowCommands } from './window-commands'
 import { registerCommands } from './registry'
 
 /**
@@ -10,6 +11,7 @@ import { registerCommands } from './registry'
  */
 export function initializeCommandSystem(): void {
   registerCommands(navigationCommands)
+  registerCommands(windowCommands)
   // Future command groups will be registered here
 
   if (import.meta.env.DEV) {
@@ -17,4 +19,4 @@ export function initializeCommandSystem(): void {
   }
 }
 
-export { navigationCommands }
+export { navigationCommands, windowCommands }

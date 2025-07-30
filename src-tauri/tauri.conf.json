@@ -14,12 +14,29 @@
       {
         "title": "tauri-app",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "minWidth": 1000,
+        "minHeight": 700,
+        "resizable": true,
+        "fullscreen": false,
+        "maximized": false,
+        "center": true,
+        "decorations": false,
+        "alwaysOnTop": false,
+        "transparent": true,
+        "shadow": true,
+        "dragDropEnabled": true,
+        "windowEffects": {
+          "effects": ["hudWindow"],
+          "radius": 12.0,
+          "state": "active"
+        }
       }
     ],
     "security": {
       "csp": null
-    }
+    },
+    "macOSPrivateApi": true
   },
   "bundle": {
     "active": true,
