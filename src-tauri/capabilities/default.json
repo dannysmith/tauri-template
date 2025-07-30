@@ -8,6 +8,12 @@
   "permissions": [
     "core:default",
     "opener:default",
-    "clipboard-manager:default"
+    "clipboard-manager:default",
+    "dialog:default",
+    "fs:default",
+    "log:default",
+    "notification:default",
+    "opener:default",
+    "process:default"
   ]
 }
