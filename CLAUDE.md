@@ -32,6 +32,8 @@ This repository is a template with sensible defaults for building Tauri React ap
 10. **Documentation**: Update `docs/developer/architecture-guide.md` for new patterns
 11. **Removing files**: Always use `rm -f`
 
+**CRITICAL:** Use Tauri v2 docs only. Always use modern Rust formatting: `format!("{variable}")`
+
 ### Documentation & Versions
 
 - **Context7 First**: Always use Context7 for framework docs before WebSearch

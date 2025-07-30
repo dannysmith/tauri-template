@@ -59,6 +59,12 @@ export default tseslint.config(
   },
   prettierConfig,
   {
+    files: ['src/components/ui/**/*.{ts,tsx}', 'src/test/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
     ignores: [
       'dist/**',
       'node_modules/**',

@@ -17,10 +17,10 @@ export function ThemeProvider({
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
   )
-  
+
   // Load theme from persistent preferences
   const { data: preferences } = usePreferences()
-  
+
   // Sync theme with preferences when they load
   useEffect(() => {
     if (preferences?.theme && preferences.theme !== theme) {

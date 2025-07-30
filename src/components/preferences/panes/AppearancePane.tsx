@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useTheme } from '@/hooks/use-theme'
-import { usePreferencesManager } from '@/services/preferences'
+import { useSavePreferences } from '@/services/preferences'
 
 const SettingsField: React.FC<{
   label: string
@@ -40,17 +40,17 @@ const SettingsSection: React.FC<{
 
 export const AppearancePane: React.FC = () => {
   const { theme, setTheme } = useTheme()
-  const { preferences, updatePreferences, isSaving } = usePreferencesManager()
+  const savePreferences = useSavePreferences()
 
   const handleThemeChange = useCallback(
     async (value: 'light' | 'dark' | 'system') => {
       // Update the theme provider immediately for instant UI feedback
       setTheme(value)
-      
+
       // Persist the theme preference to disk
-      await updatePreferences({ theme: value })
+      savePreferences.mutate({ theme: value })
     },
-    [setTheme, updatePreferences]
+    [setTheme, savePreferences]
   )
 
   return (
@@ -60,10 +60,10 @@ export const AppearancePane: React.FC = () => {
           label="Color Theme"
           description="Choose your preferred color theme"
         >
-          <Select 
-            value={preferences?.theme || theme} 
+          <Select
+            value={theme}
             onValueChange={handleThemeChange}
-            disabled={isSaving}
+            disabled={savePreferences.isPending}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select theme" />

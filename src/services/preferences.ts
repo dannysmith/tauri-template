@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { safeInvoke } from '@/lib/safe-invoke'
+import { invoke } from '@tauri-apps/api/core'
+import { toast } from 'sonner'
+import { logger } from '@/lib/logger'
 import type { AppPreferences } from '@/types/preferences'
 
 // Query keys for preferences
@@ -8,28 +10,21 @@ export const preferencesQueryKeys = {
   preferences: () => [...preferencesQueryKeys.all] as const,
 }
 
-// Tauri command wrappers using safeInvoke for consistent error handling
-export const preferencesService = {
-  load: async (): Promise<AppPreferences | null> => {
-    return await safeInvoke<AppPreferences>('load_preferences')
-  },
-
-  save: async (preferences: AppPreferences): Promise<void | null> => {
-    return await safeInvoke<void>('save_preferences', { preferences })
-  },
-}
-
 // TanStack Query hooks following the architectural patterns
 export function usePreferences() {
   return useQuery({
     queryKey: preferencesQueryKeys.preferences(),
-    queryFn: async () => {
-      const result = await preferencesService.load()
-      // If safeInvoke returned null due to error, return default preferences
-      if (result === null) {
-        return { theme: 'system' } as AppPreferences
+    queryFn: async (): Promise<AppPreferences> => {
+      try {
+        logger.debug('Loading preferences from backend')
+        const preferences = await invoke<AppPreferences>('load_preferences')
+        logger.info('Preferences loaded successfully', { preferences })
+        return preferences
+      } catch (error) {
+        // Return defaults if preferences file doesn't exist yet
+        logger.warn('Failed to load preferences, using defaults', { error })
+        return { theme: 'system' }
       }
-      return result
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 10, // 10 minutes
@@ -41,47 +36,23 @@ export function useSavePreferences() {
 
   return useMutation({
     mutationFn: async (preferences: AppPreferences) => {
-      const result = await preferencesService.save(preferences)
-      // If safeInvoke returned null, the error was already handled
-      if (result === null) {
-        throw new Error('Failed to save preferences')
+      try {
+        logger.debug('Saving preferences to backend', { preferences })
+        await invoke('save_preferences', { preferences })
+        logger.info('Preferences saved successfully')
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'Unknown error occurred'
+        logger.error('Failed to save preferences', { error, preferences })
+        toast.error('Failed to save preferences', { description: message })
+        throw error
       }
-      return result
     },
     onSuccess: (_, preferences) => {
       // Update the cache with the new preferences
       queryClient.setQueryData(preferencesQueryKeys.preferences(), preferences)
+      logger.info('Preferences cache updated')
+      toast.success('Preferences saved')
     },
-    // Error handling is now done by safeInvoke, so we don't need onError
   })
-}
-
-// Convenience hook that combines both load and save
-// Use this in preference panes when you need to persist settings to disk
-export function usePreferencesManager() {
-  const { data: preferences, isLoading, error } = usePreferences()
-  const savePreferencesMutation = useSavePreferences()
-
-  // Update function for persistent preferences
-  // Only call this for settings that should be saved to disk
-  const updatePreferences = async (updates: Partial<AppPreferences>) => {
-    if (!preferences) return
-
-    const updatedPreferences = { ...preferences, ...updates }
-    try {
-      await savePreferencesMutation.mutateAsync(updatedPreferences)
-    } catch (error) {
-      // Error already handled by safeInvoke, but we can optionally handle it here too
-      console.error('Failed to update preferences:', error)
-    }
-  }
-
-  return {
-    preferences,
-    isLoading,
-    error,
-    updatePreferences,
-    isSaving: savePreferencesMutation.isPending,
-    saveError: savePreferencesMutation.error,
-  }
 }

@@ -3,9 +3,9 @@ import type { CommandContext, AppCommand } from '@/types/commands'
 
 const mockUIStore = {
   getState: vi.fn(() => ({
-    sidebarVisible: true,
+    leftSidebarVisible: true,
     commandPaletteOpen: false,
-    setSidebarVisible: vi.fn(),
+    setLeftSidebarVisible: vi.fn(),
   })),
 }
 
@@ -45,9 +45,9 @@ describe('Simplified Command System', () => {
 
     it('filters commands by availability', () => {
       mockUIStore.getState.mockReturnValue({
-        sidebarVisible: false,
+        leftSidebarVisible: false,
         commandPaletteOpen: false,
-        setSidebarVisible: vi.fn(),
+        setLeftSidebarVisible: vi.fn(),
       })
 
       const availableCommands = getAllCommands(mockContext)
@@ -90,9 +90,9 @@ describe('Simplified Command System', () => {
 
     it('executes show-sidebar command when available', async () => {
       mockUIStore.getState.mockReturnValue({
-        sidebarVisible: false,
+        leftSidebarVisible: false,
         commandPaletteOpen: false,
-        setSidebarVisible: vi.fn(),
+        setLeftSidebarVisible: vi.fn(),
       })
 
       const result = await executeCommand('show-sidebar', mockContext)
@@ -106,9 +106,9 @@ describe('Simplified Command System', () => {
 
     it('fails to execute unavailable command', async () => {
       mockUIStore.getState.mockReturnValue({
-        sidebarVisible: true,
+        leftSidebarVisible: true,
         commandPaletteOpen: false,
-        setSidebarVisible: vi.fn(),
+        setLeftSidebarVisible: vi.fn(),
       })
 
       const result = await executeCommand('show-sidebar', mockContext)
