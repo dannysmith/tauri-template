@@ -5,35 +5,49 @@ describe('UIStore', () => {
   beforeEach(() => {
     // Reset store state before each test
     useUIStore.setState({
-      sidebarVisible: true,
+      leftSidebarVisible: true,
+      rightSidebarVisible: true,
       commandPaletteOpen: false,
+      preferencesOpen: false,
     })
   })
 
   it('has correct initial state', () => {
     const state = useUIStore.getState()
-    expect(state.sidebarVisible).toBe(true)
+    expect(state.leftSidebarVisible).toBe(true)
+    expect(state.rightSidebarVisible).toBe(true)
     expect(state.commandPaletteOpen).toBe(false)
+    expect(state.preferencesOpen).toBe(false)
   })
 
-  it('toggles sidebar visibility', () => {
-    const { toggleSidebar } = useUIStore.getState()
+  it('toggles left sidebar visibility', () => {
+    const { toggleLeftSidebar } = useUIStore.getState()
 
-    toggleSidebar()
-    expect(useUIStore.getState().sidebarVisible).toBe(false)
+    toggleLeftSidebar()
+    expect(useUIStore.getState().leftSidebarVisible).toBe(false)
 
-    toggleSidebar()
-    expect(useUIStore.getState().sidebarVisible).toBe(true)
+    toggleLeftSidebar()
+    expect(useUIStore.getState().leftSidebarVisible).toBe(true)
   })
 
-  it('sets sidebar visibility directly', () => {
-    const { setSidebarVisible } = useUIStore.getState()
+  it('sets left sidebar visibility directly', () => {
+    const { setLeftSidebarVisible } = useUIStore.getState()
 
-    setSidebarVisible(false)
-    expect(useUIStore.getState().sidebarVisible).toBe(false)
+    setLeftSidebarVisible(false)
+    expect(useUIStore.getState().leftSidebarVisible).toBe(false)
 
-    setSidebarVisible(true)
-    expect(useUIStore.getState().sidebarVisible).toBe(true)
+    setLeftSidebarVisible(true)
+    expect(useUIStore.getState().leftSidebarVisible).toBe(true)
+  })
+
+  it('toggles preferences dialog', () => {
+    const { togglePreferences } = useUIStore.getState()
+
+    togglePreferences()
+    expect(useUIStore.getState().preferencesOpen).toBe(true)
+
+    togglePreferences()
+    expect(useUIStore.getState().preferencesOpen).toBe(false)
   })
 
   it('toggles command palette', () => {

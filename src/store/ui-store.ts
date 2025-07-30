@@ -5,6 +5,7 @@ interface UIState {
   leftSidebarVisible: boolean
   rightSidebarVisible: boolean
   commandPaletteOpen: boolean
+  preferencesOpen: boolean
 
   toggleLeftSidebar: () => void
   setLeftSidebarVisible: (visible: boolean) => void
@@ -12,6 +13,8 @@ interface UIState {
   setRightSidebarVisible: (visible: boolean) => void
   toggleCommandPalette: () => void
   setCommandPaletteOpen: (open: boolean) => void
+  togglePreferences: () => void
+  setPreferencesOpen: (open: boolean) => void
 }
 
 export const useUIStore = create<UIState>()(
@@ -20,6 +23,7 @@ export const useUIStore = create<UIState>()(
       leftSidebarVisible: true,
       rightSidebarVisible: true,
       commandPaletteOpen: false,
+      preferencesOpen: false,
 
       toggleLeftSidebar: () =>
         set(
@@ -50,6 +54,16 @@ export const useUIStore = create<UIState>()(
 
       setCommandPaletteOpen: open =>
         set({ commandPaletteOpen: open }, undefined, 'setCommandPaletteOpen'),
+
+      togglePreferences: () =>
+        set(
+          state => ({ preferencesOpen: !state.preferencesOpen }),
+          undefined,
+          'togglePreferences'
+        ),
+
+      setPreferencesOpen: open =>
+        set({ preferencesOpen: open }, undefined, 'setPreferencesOpen'),
     }),
     {
       name: 'ui-store',

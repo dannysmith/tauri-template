@@ -10,7 +10,7 @@ export const navigationCommands: AppCommand[] = [
 
     execute: context => {
       context.toggleSidebar()
-      const isVisible = useUIStore.getState().sidebarVisible
+      const isVisible = useUIStore.getState().leftSidebarVisible
       context.showToast(`Sidebar ${isVisible ? 'shown' : 'hidden'}`, 'success')
     },
   },
@@ -21,11 +21,11 @@ export const navigationCommands: AppCommand[] = [
     description: 'Show the sidebar',
 
     execute: context => {
-      useUIStore.getState().setSidebarVisible(true)
+      useUIStore.getState().setLeftSidebarVisible(true)
       context.showToast('Sidebar shown', 'success')
     },
 
-    isAvailable: () => !useUIStore.getState().sidebarVisible,
+    isAvailable: () => !useUIStore.getState().leftSidebarVisible,
   },
 
   {
@@ -34,11 +34,11 @@ export const navigationCommands: AppCommand[] = [
     description: 'Hide the sidebar',
 
     execute: context => {
-      useUIStore.getState().setSidebarVisible(false)
+      useUIStore.getState().setLeftSidebarVisible(false)
       context.showToast('Sidebar hidden', 'success')
     },
 
-    isAvailable: () => useUIStore.getState().sidebarVisible,
+    isAvailable: () => useUIStore.getState().leftSidebarVisible,
   },
 
   {

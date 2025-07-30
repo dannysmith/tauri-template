@@ -6,12 +6,12 @@ import type { CommandContext } from '@/types/commands'
  */
 export function useCommandContext(): CommandContext {
   // Get actions from store using performance-optimized approach
-  const { toggleSidebar, toggleCommandPalette } = useUIStore()
+  const { toggleLeftSidebar, toggleCommandPalette, togglePreferences } = useUIStore()
 
   // Bridge patterns for future features
   const openPreferences = useCallback(() => {
-    window.dispatchEvent(new CustomEvent('open-preferences'))
-  }, [])
+    togglePreferences()
+  }, [togglePreferences])
 
   const showToast = useCallback(
     (message: string, type: 'success' | 'error' | 'info' = 'info') => {
@@ -22,7 +22,7 @@ export function useCommandContext(): CommandContext {
   )
 
   return {
-    toggleSidebar,
+    toggleSidebar: toggleLeftSidebar,
     toggleCommandPalette,
     openPreferences,
     showToast,
