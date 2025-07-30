@@ -36,13 +36,13 @@ Example:
 ```typescript
 // Query for server data
 const {
-  data: somedata,
+  data: userData,
   isLoading,
   error,
 } = useQuery({
-  queryKey: ['project', projectPath, 'domedata'],
-  queryFn: () => invoke('scan_project', { projectPath }),
-  enabled: !!projectPath,
+  queryKey: ['user', userId, 'profile'],
+  queryFn: () => invokeCommand('get_user_profile', { userId }),
+  enabled: !!userId,
 })
 ```
 
@@ -51,17 +51,20 @@ const {
 Break Zustand into focused, domain-specific stores. Examples:
 
 ```typescript
-// SomeProjectStore - Project-level identifiers
-interface SomeProjectState {
-  SomeprojectData: string | null
-  // Actions for project operations
+// AppStore - Application-level state
+interface AppState {
+  currentUser: User | null
+  theme: 'light' | 'dark'
+  setCurrentUser: (user: User | null) => void
+  toggleTheme: () => void
 }
 
 // UIStore - UI layout state
 interface UIState {
   sidebarVisible: boolean
-  frontmatterPanelVisible: boolean
-  // Actions for UI operations
+  commandPaletteOpen: boolean
+  toggleSidebar: () => void
+  setCommandPaletteOpen: (open: boolean) => void
 }
 ```
 
@@ -89,21 +92,75 @@ const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
 ### Store Boundary Guidelines
 
-**EditorStore** - Use for:
+**AppStore** - Use for:
 
-- Current file being edited
-- Editor content and frontmatter
-- Dirty/save state
-- Auto-save functionality
-
-**ProjectStore** - Use for:
-
-- Project path and identifiers
-- Selected collection
-- User settings and preferences
+- Application-wide settings
+- Current user information
+- Theme and preferences
+- Global application state
 
 **UIStore** - Use for:
 
 - Panel visibility
 - Layout state
-- UI modes (focus mode, etc.)
+- UI modes and navigation
+- Command palette state
+
+**Feature-specific stores** - Use for:
+
+- Domain-specific state (e.g., `useDocumentStore`, `useNotificationStore`)
+- Feature flags and configuration
+- Temporary workflow state
+
+## Implementation Examples
+
+### Basic Zustand Store
+
+```typescript
+import { create } from 'zustand'
+import { devtools } from 'zustand/middleware'
+
+interface UIState {
+  sidebarVisible: boolean
+  toggleSidebar: () => void
+}
+
+export const useUIStore = create<UIState>()(
+  devtools(
+    (set) => ({
+      sidebarVisible: true,
+      toggleSidebar: () =>
+        set((state) => ({ sidebarVisible: !state.sidebarVisible })),
+    }),
+    { name: 'ui-store' }
+  )
+)
+```
+
+### TanStack Query with Tauri Commands
+
+```typescript
+import { useQuery, useMutation } from '@tanstack/react-query'
+import { invokeCommand } from '@/lib/commands'
+
+// Query hook
+export function useUserProfile(userId: string) {
+  return useQuery({
+    queryKey: ['user', userId],
+    queryFn: () => invokeCommand<User>('get_user', { userId }),
+    enabled: !!userId,
+  })
+}
+
+// Mutation hook
+export function useUpdateUserProfile() {
+  return useMutation({
+    mutationFn: (userData: Partial<User>) =>
+      invokeCommand('update_user', userData),
+    onSuccess: () => {
+      // Invalidate and refetch user queries
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+    },
+  })
+}
+```
