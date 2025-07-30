@@ -32,15 +32,19 @@ const SettingsSection: React.FC<{
 )
 
 export const GeneralPane: React.FC = () => {
-  const [exampleToggle, setExampleToggle] = useState(true)
+  // Example local state - these are NOT persisted to disk
+  // To add persistent preferences:
+  // 1. Add the field to AppPreferences in both Rust and TypeScript
+  // 2. Use usePreferencesManager() and updatePreferences()
   const [exampleText, setExampleText] = useState('Example value')
+  const [exampleToggle, setExampleToggle] = useState(true)
 
   return (
     <div className="space-y-6">
       <SettingsSection title="Example Settings">
         <SettingsField
           label="Example Text Setting"
-          description="This is an example text input setting"
+          description="This is an example text input setting (not persisted)"
         >
           <Input
             value={exampleText}
@@ -51,7 +55,7 @@ export const GeneralPane: React.FC = () => {
 
         <SettingsField
           label="Example Toggle Setting"
-          description="This is an example switch/toggle setting"
+          description="This is an example switch/toggle setting (not persisted)"
         >
           <div className="flex items-center space-x-2">
             <Switch

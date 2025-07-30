@@ -38,6 +38,10 @@ const SettingsSection: React.FC<{
 )
 
 export const AdvancedPane: React.FC = () => {
+  // Example local state - these are NOT persisted to disk
+  // To add persistent preferences:
+  // 1. Add the field to AppPreferences in both Rust and TypeScript
+  // 2. Use usePreferencesManager() and updatePreferences()
   const [exampleAdvancedToggle, setExampleAdvancedToggle] = useState(false)
   const [exampleDropdown, setExampleDropdown] = useState('option1')
 
@@ -46,7 +50,7 @@ export const AdvancedPane: React.FC = () => {
       <SettingsSection title="Example Advanced Settings">
         <SettingsField
           label="Example Advanced Toggle"
-          description="This is an example advanced toggle setting"
+          description="This is an example advanced toggle setting (not persisted)"
         >
           <div className="flex items-center space-x-2">
             <Switch
@@ -62,7 +66,7 @@ export const AdvancedPane: React.FC = () => {
 
         <SettingsField
           label="Example Dropdown Setting"
-          description="This is an example dropdown/select setting"
+          description="This is an example dropdown/select setting (not persisted)"
         >
           <Select value={exampleDropdown} onValueChange={setExampleDropdown}>
             <SelectTrigger>

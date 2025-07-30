@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ThemeProviderContext, type Theme } from '@/lib/theme-context'
+import { usePreferences } from '@/services/preferences'
 
 interface ThemeProviderProps {
   children: React.ReactNode
@@ -16,6 +17,16 @@ export function ThemeProvider({
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
   )
+  
+  // Load theme from persistent preferences
+  const { data: preferences } = usePreferences()
+  
+  // Sync theme with preferences when they load
+  useEffect(() => {
+    if (preferences?.theme && preferences.theme !== theme) {
+      setTheme(preferences.theme as Theme)
+    }
+  }, [preferences?.theme, theme])
 
   useEffect(() => {
     const root = window.document.documentElement
