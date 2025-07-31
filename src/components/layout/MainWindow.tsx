@@ -12,11 +12,15 @@ import { PreferencesDialog } from '@/components/preferences/PreferencesDialog'
 import { Toaster } from 'sonner'
 import { useTheme } from '@/hooks/use-theme'
 import { useUIStore } from '@/store/ui-store'
+import { useMainWindowEventListeners } from '@/hooks/useMainWindowEventListeners'
 import { cn } from '@/lib/utils'
 
 export function MainWindow() {
   const { theme } = useTheme()
   const { leftSidebarVisible, rightSidebarVisible } = useUIStore()
+
+  // Set up global event listeners (keyboard shortcuts, etc.)
+  useMainWindowEventListeners()
 
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden rounded-xl bg-background">

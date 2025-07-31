@@ -6,13 +6,10 @@ import type { CommandContext } from '@/lib/commands/types'
  * Command context hook - provides essential actions for commands
  */
 export function useCommandContext(): CommandContext {
-  // Get actions from store using performance-optimized approach
-  const { togglePreferences } = useUIStore()
-
-  // Bridge patterns for future features
+  // Use getState() pattern to avoid render cascades
   const openPreferences = useCallback(() => {
-    togglePreferences()
-  }, [togglePreferences])
+    useUIStore.getState().togglePreferences()
+  }, [])
 
   const showToast = useCallback(
     (message: string, type: 'success' | 'error' | 'info' = 'info') => {
