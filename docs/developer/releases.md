@@ -56,10 +56,12 @@ Add these secrets to your GitHub repository (Settings → Secrets and variables 
 ```
 
 **Update GitHub workflow in `.github/workflows/release.yml`:**
+
 - Change `Tauri Template App` to your app name
 - Update release body text
 
 **Update bundle info in `tauri.conf.json`:**
+
 - Change `publisher`, `shortDescription`, `longDescription`
 - Update `productName` and `identifier`
 
@@ -68,6 +70,7 @@ Add these secrets to your GitHub repository (Settings → Secrets and variables 
 ### Simple Method
 
 1. **Prepare release:**
+
    ```bash
    npm run release:prepare v1.0.0
    ```
@@ -93,7 +96,7 @@ If you prefer more control:
 ```bash
 # 1. Update versions manually in:
 #    - package.json
-#    - src-tauri/Cargo.toml  
+#    - src-tauri/Cargo.toml
 #    - src-tauri/tauri.conf.json
 
 # 2. Run checks
@@ -106,30 +109,60 @@ git tag v1.0.0
 git push origin main --tags
 ```
 
-## Auto-Updater (Coming Soon)
+## Auto-Updater
 
-The auto-updater will provide:
+The auto-updater provides:
 
 - **Automatic update checks** 5 seconds after app launch
 - **User-friendly dialogs** for update notifications
 - **Background downloads** with progress tracking
 - **Seamless installation** with restart prompts
+- **Silent error handling** for network issues
 
 ### How It Works
 
-1. App checks for updates on startup
-2. If update available, shows confirmation dialog
-3. Downloads and installs in background
-4. Prompts user to restart when ready
+1. App waits 5 seconds after launch
+2. Silently checks for updates using `@tauri-apps/plugin-updater`
+3. If update available, shows browser `confirm()` dialog
+4. Downloads and installs in background with progress logging
+5. Shows completion dialog with restart option
+6. Uses `@tauri-apps/plugin-process` to restart if user agrees
+
+### Implementation
+
+The auto-updater is implemented in `src/App.tsx`:
+
+```typescript
+import { check } from '@tauri-apps/plugin-updater'
+import { relaunch } from '@tauri-apps/plugin-process'
+
+// Inside useEffect:
+const checkForUpdates = async () => {
+  try {
+    const update = await check()
+    if (update) {
+      const shouldUpdate = confirm(`Update available: ${update.version}...`)
+      if (shouldUpdate) {
+        await update.downloadAndInstall(/* progress callback */)
+        const shouldRestart = confirm('Update completed successfully!...')
+        if (shouldRestart) await relaunch()
+      }
+    }
+  } catch (error) {
+    // Silent fail - don't bother user with network issues
+    logger.error('Update check failed:', error)
+  }
+}
+```
 
 ### Configuration
 
-The updater is already configured in `tauri.conf.json` but currently inactive. When implemented, it will:
+The updater is configured in `tauri.conf.json`:
 
-- Check the GitHub releases endpoint for `latest.json`
-- Verify downloads using the public key
-- Handle network errors gracefully
-- Provide clear user feedback
+- **Active**: `true` to enable update checks
+- **Dialog**: `true` to show built-in dialogs (we use custom confirm dialogs)
+- **Endpoints**: GitHub releases URL with template placeholder
+- **Public Key**: Template placeholder for signing verification
 
 ## File Structure
 
@@ -142,7 +175,7 @@ scripts/
 
 src-tauri/
   tauri.conf.json         # Bundle and updater configuration
-  
+
 package.json              # Release scripts
 ```
 
@@ -158,14 +191,17 @@ Each release creates:
 ## Troubleshooting
 
 **Release workflow doesn't trigger:**
-- Ensure tag starts with `v` (e.g., `v1.0.0`)  
+
+- Ensure tag starts with `v` (e.g., `v1.0.0`)
 - Check that tag was pushed: `git push origin --tags`
 
 **Build fails:**
+
 - Verify GitHub secrets are set correctly
 - Ensure all tests pass locally: `npm run check:all`
 
 **Auto-updater issues:**
+
 - Check that public key matches the private key used for signing
 - Verify endpoint URL matches your GitHub repository
 - Check console logs in the app for error details
@@ -173,11 +209,13 @@ Each release creates:
 ## Version Strategy
 
 We use semantic versioning (`v1.0.0`):
+
 - **Major** (1.x.x): Breaking changes
-- **Minor** (x.1.x): New features, backwards compatible  
+- **Minor** (x.1.x): New features, backwards compatible
 - **Patch** (x.x.1): Bug fixes, backwards compatible
 
 All three files must have matching versions:
+
 - `package.json` → `"version": "1.0.0"`
 - `src-tauri/Cargo.toml` → `version = "1.0.0"`
 - `src-tauri/tauri.conf.json` → `"version": "1.0.0"`
