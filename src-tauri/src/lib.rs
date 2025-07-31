@@ -398,7 +398,7 @@ pub fn run() {
                         // Emit event to React for handling
                         match app.emit("menu-about", ()) {
                             Ok(_) => log::debug!("Successfully emitted menu-about event"),
-                            Err(e) => log::error!("Failed to emit menu-about event: {}", e),
+                            Err(e) => log::error!("Failed to emit menu-about event: {e}"),
                         }
                     }
                     "check-updates" => {
@@ -406,7 +406,7 @@ pub fn run() {
                         // Emit event to React for handling
                         match app.emit("menu-check-updates", ()) {
                             Ok(_) => log::debug!("Successfully emitted menu-check-updates event"),
-                            Err(e) => log::error!("Failed to emit menu-check-updates event: {}", e),
+                            Err(e) => log::error!("Failed to emit menu-check-updates event: {e}"),
                         }
                     }
                     "preferences" => {
@@ -414,7 +414,7 @@ pub fn run() {
                         // Emit event to React for handling
                         match app.emit("menu-preferences", ()) {
                             Ok(_) => log::debug!("Successfully emitted menu-preferences event"),
-                            Err(e) => log::error!("Failed to emit menu-preferences event: {}", e),
+                            Err(e) => log::error!("Failed to emit menu-preferences event: {e}"),
                         }
                     }
                     "toggle-left-sidebar" => {
@@ -425,7 +425,7 @@ pub fn run() {
                                 log::debug!("Successfully emitted menu-toggle-left-sidebar event")
                             }
                             Err(e) => {
-                                log::error!("Failed to emit menu-toggle-left-sidebar event: {}", e)
+                                log::error!("Failed to emit menu-toggle-left-sidebar event: {e}")
                             }
                         }
                     }
@@ -437,7 +437,7 @@ pub fn run() {
                                 log::debug!("Successfully emitted menu-toggle-right-sidebar event")
                             }
                             Err(e) => {
-                                log::error!("Failed to emit menu-toggle-right-sidebar event: {}", e)
+                                log::error!("Failed to emit menu-toggle-right-sidebar event: {e}")
                             }
                         }
                     }
