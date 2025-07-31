@@ -36,3 +36,11 @@ regex = "1.11.1"
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2"
 
+# Optimize for smaller binary size in release builds
+[profile.release]
+codegen-units = 1        # Better LLVM optimization (slower build, smaller binary)
+lto = true               # Link-time optimizations
+opt-level = "s"          # Optimize for size over speed
+panic = "abort"          # Don't include panic unwinding code
+strip = true             # Remove debug symbols
+
