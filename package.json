@@ -30,7 +30,8 @@
     "tauri:check": "npm run typecheck && npm run tauri build --check",
     "test:all": "npm run test:run && npm run rust:test",
     "check:all": "npm run typecheck && npm run lint && npm run format:check && npm run rust:fmt:check && npm run rust:clippy && npm run test:run && npm run rust:test",
-    "fix:all": "npm run lint:fix && npm run format && npm run rust:fmt && npm run rust:clippy:fix"
+    "fix:all": "npm run lint:fix && npm run format && npm run rust:fmt && npm run rust:clippy:fix",
+    "release:prepare": "node scripts/prepare-release.js"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.14",

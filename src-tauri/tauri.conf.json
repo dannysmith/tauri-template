@@ -39,6 +39,7 @@
     "macOSPrivateApi": true
   },
   "bundle": {
+    "createUpdaterArtifacts": true,
     "active": true,
     "targets": "all",
     "icon": [
@@ -47,14 +48,29 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "publisher": "Your Name",
+    "category": "DeveloperTool",
+    "shortDescription": "A Tauri React template application",
+    "longDescription": "A modern Tauri React template with comprehensive boilerplate code, TypeScript, Tailwind CSS, and shadcn/ui components.",
+    "copyright": "Copyright © 2025 Your Name. All rights reserved.",
+    "macOS": {
+      "frameworks": [],
+      "minimumSystemVersion": "10.15",
+      "signingIdentity": "-",
+      "providerShortName": null,
+      "entitlements": null,
+      "exceptionDomain": ""
+    }
   },
   "plugins": {
     "updater": {
-      "active": false,
-      "endpoints": [],
+      "active": true,
+      "endpoints": [
+        "https://github.com/YOUR_USERNAME/YOUR_REPO/releases/latest/download/latest.json"
+      ],
       "dialog": true,
-      "pubkey": ""
+      "pubkey": "YOUR_UPDATER_PUBLIC_KEY_HERE"
     }
   }
 }
