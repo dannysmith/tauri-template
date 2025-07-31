@@ -15,3 +15,12 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: vi.fn(),
   })),
 })
+
+// Mock Tauri APIs for tests
+vi.mock('@tauri-apps/api/event', () => ({
+  listen: vi.fn().mockResolvedValue(() => {}),
+}))
+
+vi.mock('@tauri-apps/plugin-updater', () => ({
+  check: vi.fn().mockResolvedValue(null),
+}))
