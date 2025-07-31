@@ -82,10 +82,6 @@ describe('Simplified Command System', () => {
 
       expect(result.success).toBe(true)
       expect(mockContext.toggleSidebar).toHaveBeenCalled()
-      expect(mockContext.showToast).toHaveBeenCalledWith(
-        expect.stringContaining('Sidebar'),
-        'success'
-      )
     })
 
     it('executes show-sidebar command when available', async () => {
@@ -98,10 +94,6 @@ describe('Simplified Command System', () => {
       const result = await executeCommand('show-sidebar', mockContext)
 
       expect(result.success).toBe(true)
-      expect(mockContext.showToast).toHaveBeenCalledWith(
-        'Sidebar shown',
-        'success'
-      )
     })
 
     it('fails to execute unavailable command', async () => {

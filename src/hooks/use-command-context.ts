@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useUIStore } from '@/store/ui-store'
+import { notify } from '@/lib/notifications'
 import type { CommandContext } from '@/types/commands'
 /**
  * Command context hook - provides essential actions for commands
@@ -16,12 +17,7 @@ export function useCommandContext(): CommandContext {
 
   const showToast = useCallback(
     (message: string, type: 'success' | 'error' | 'info' = 'info') => {
-      // Dynamic import to avoid importing toast in test environment
-      if (typeof window !== 'undefined') {
-        import('sonner').then(({ toast }) => {
-          toast[type](message)
-        })
-      }
+      notify(message, undefined, { type })
     },
     []
   )

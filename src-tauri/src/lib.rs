@@ -92,11 +92,49 @@ async fn save_preferences(app: AppHandle, preferences: AppPreferences) -> Result
     Ok(())
 }
 
+#[tauri::command]
+async fn send_native_notification(
+    app: AppHandle,
+    title: String,
+    body: Option<String>,
+) -> Result<(), String> {
+    log::info!("Sending native notification: {title}");
+
+    #[cfg(not(mobile))]
+    {
+        use tauri_plugin_notification::NotificationExt;
+
+        let mut notification = app.notification().builder().title(title);
+
+        if let Some(body_text) = body {
+            notification = notification.body(body_text);
+        }
+
+        match notification.show() {
+            Ok(_) => {
+                log::info!("Native notification sent successfully");
+                Ok(())
+            }
+            Err(e) => {
+                log::error!("Failed to send native notification: {e}");
+                Err(format!("Failed to send notification: {e}"))
+            }
+        }
+    }
+
+    #[cfg(mobile)]
+    {
+        log::warn!("Native notifications not supported on mobile");
+        Err("Native notifications not supported on mobile".to_string())
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_notification::init())
         .plugin(
             tauri_plugin_log::Builder::new()
                 // Use Debug level in development, Info in production
@@ -143,7 +181,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet,
             load_preferences,
-            save_preferences
+            save_preferences,
+            send_native_notification
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

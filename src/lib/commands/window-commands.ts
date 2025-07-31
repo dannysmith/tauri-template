@@ -12,7 +12,6 @@ export const windowCommands: AppCommand[] = [
       try {
         const appWindow = getCurrentWindow()
         await appWindow.minimize()
-        context.showToast('Window minimized', 'success')
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error'
         context.showToast(`Failed to minimize window: ${message}`, 'error')
@@ -29,7 +28,6 @@ export const windowCommands: AppCommand[] = [
       try {
         const appWindow = getCurrentWindow()
         await appWindow.maximize()
-        context.showToast('Window maximized', 'success')
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error'
         context.showToast(`Failed to maximize window: ${message}`, 'error')
@@ -47,11 +45,6 @@ export const windowCommands: AppCommand[] = [
       try {
         const appWindow = getCurrentWindow()
         await appWindow.toggleMaximize()
-        const isMaximized = await appWindow.isMaximized()
-        context.showToast(
-          `Window ${isMaximized ? 'maximized' : 'restored'}`,
-          'success'
-        )
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error'
         context.showToast(
@@ -72,7 +65,6 @@ export const windowCommands: AppCommand[] = [
       try {
         const appWindow = getCurrentWindow()
         await appWindow.setFullscreen(true)
-        context.showToast('Entered fullscreen', 'success')
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error'
         context.showToast(`Failed to enter fullscreen: ${message}`, 'error')
@@ -93,7 +85,6 @@ export const windowCommands: AppCommand[] = [
       try {
         const appWindow = getCurrentWindow()
         await appWindow.setFullscreen(false)
-        context.showToast('Exited fullscreen', 'success')
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error'
         context.showToast(`Failed to exit fullscreen: ${message}`, 'error')
@@ -114,8 +105,6 @@ export const windowCommands: AppCommand[] = [
       try {
         const appWindow = getCurrentWindow()
         await appWindow.close()
-        // Note: This message might not show since the window is closing
-        context.showToast('Window closed', 'success')
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error'
         context.showToast(`Failed to close window: ${message}`, 'error')
