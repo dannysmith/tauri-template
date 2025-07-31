@@ -1,22 +1,16 @@
+import { Sidebar, PanelRight, Settings } from 'lucide-react'
 import { useUIStore } from '@/store/ui-store'
-import type { AppCommand } from '@/types/commands'
+import type { AppCommand } from './types'
 
 export const navigationCommands: AppCommand[] = [
   {
-    id: 'toggle-sidebar',
-    label: 'Toggle Sidebar',
-    description: 'Show or hide the sidebar',
-    shortcut: 'mod+1',
-
-    execute: context => {
-      context.toggleSidebar()
-    },
-  },
-
-  {
-    id: 'show-sidebar',
-    label: 'Show Sidebar',
-    description: 'Show the sidebar',
+    id: 'show-left-sidebar',
+    label: 'Show Left Sidebar',
+    description: 'Show the left sidebar',
+    icon: Sidebar,
+    group: 'navigation',
+    shortcut: '⌘+1',
+    keywords: ['sidebar', 'left', 'panel', 'show'],
 
     execute: () => {
       useUIStore.getState().setLeftSidebarVisible(true)
@@ -26,9 +20,13 @@ export const navigationCommands: AppCommand[] = [
   },
 
   {
-    id: 'hide-sidebar',
-    label: 'Hide Sidebar',
-    description: 'Hide the sidebar',
+    id: 'hide-left-sidebar',
+    label: 'Hide Left Sidebar',
+    description: 'Hide the left sidebar',
+    icon: Sidebar,
+    group: 'navigation',
+    shortcut: '⌘+1',
+    keywords: ['sidebar', 'left', 'panel', 'hide'],
 
     execute: () => {
       useUIStore.getState().setLeftSidebarVisible(false)
@@ -38,21 +36,45 @@ export const navigationCommands: AppCommand[] = [
   },
 
   {
-    id: 'toggle-command-palette',
-    label: 'Toggle Command Palette',
-    description: 'Show or hide the command palette',
-    shortcut: 'mod+k',
+    id: 'show-right-sidebar',
+    label: 'Show Right Sidebar',
+    description: 'Show the right sidebar',
+    icon: PanelRight,
+    group: 'navigation',
+    shortcut: '⌘+2',
+    keywords: ['sidebar', 'right', 'panel', 'show'],
 
-    execute: context => {
-      context.toggleCommandPalette()
+    execute: () => {
+      useUIStore.getState().setRightSidebarVisible(true)
     },
+
+    isAvailable: () => !useUIStore.getState().rightSidebarVisible,
+  },
+
+  {
+    id: 'hide-right-sidebar',
+    label: 'Hide Right Sidebar',
+    description: 'Hide the right sidebar',
+    icon: PanelRight,
+    group: 'navigation',
+    shortcut: '⌘+2',
+    keywords: ['sidebar', 'right', 'panel', 'hide'],
+
+    execute: () => {
+      useUIStore.getState().setRightSidebarVisible(false)
+    },
+
+    isAvailable: () => useUIStore.getState().rightSidebarVisible,
   },
 
   {
     id: 'open-preferences',
     label: 'Open Preferences',
     description: 'Open the application preferences',
-    shortcut: 'mod+comma',
+    icon: Settings,
+    group: 'settings',
+    shortcut: '⌘+,',
+    keywords: ['preferences', 'settings', 'config', 'options'],
 
     execute: context => {
       context.openPreferences()

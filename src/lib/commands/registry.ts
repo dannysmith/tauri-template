@@ -1,4 +1,4 @@
-import type { AppCommand, CommandContext } from '@/types/commands'
+import type { AppCommand, CommandContext } from './types'
 
 const commandRegistry = new Map<string, AppCommand>()
 
