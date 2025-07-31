@@ -33,7 +33,7 @@ const handleAction = useCallback(() => {
   setData(data.modified)
 }, [])
 
-// ❌ Bad: Subscription causes cascades  
+// ❌ Bad: Subscription causes cascades
 const { data, setData } = useStore()
 const handleAction = useCallback(() => {
   setData(data.modified)
@@ -52,15 +52,16 @@ export const myCommands: AppCommand[] = [
   {
     id: 'my-action',
     label: 'My Action',
-    execute: (context) => {
+    execute: context => {
       context.performAction()
     },
-    isAvailable: (context) => context.canPerformAction,
-  }
+    isAvailable: context => context.canPerformAction,
+  },
 ]
 ```
 
 **Integration Points:**
+
 - Command Palette (Cmd+K)
 - Keyboard Shortcuts
 - Native Menus
@@ -73,6 +74,7 @@ export const myCommands: AppCommand[] = [
 Loose coupling between Rust and React through events:
 
 ### Rust → React
+
 ```rust
 // Menu click emits event
 app.on_menu_event(|app, event| {
@@ -81,6 +83,7 @@ app.on_menu_event(|app, event| {
 ```
 
 ### React → Rust
+
 ```typescript
 // Command invocation with error handling
 const result = await invoke<Result>('my_command', { args })
@@ -91,6 +94,7 @@ const result = await invoke<Result>('my_command', { args })
 ## Security Patterns
 
 ### Path Validation
+
 ```rust
 fn is_blocked_directory(path: &Path) -> bool {
     let blocked = ["/System/", "/usr/", "/etc/", "/.ssh/"];
@@ -99,6 +103,7 @@ fn is_blocked_directory(path: &Path) -> bool {
 ```
 
 ### Input Sanitization
+
 ```rust
 pub fn sanitize_filename(filename: &str) -> String {
     filename.chars()
@@ -108,6 +113,7 @@ pub fn sanitize_filename(filename: &str) -> String {
 ```
 
 ### Atomic File Operations
+
 ```rust
 // Write to temp file, then rename (atomic)
 std::fs::write(&temp_path, content)?;
@@ -119,23 +125,25 @@ std::fs::rename(&temp_path, &final_path)?;
 ## Component Architecture Pattern
 
 ### Hierarchical Responsibility
+
 ```
 MainWindow (Orchestration)
 ├── Layout Components (Structure)
-├── Content Components (Data + Presentation)  
+├── Content Components (Data + Presentation)
 └── UI Components (Pure Presentation)
 ```
 
 ### Hook Extraction Pattern
+
 ```typescript
 // Extract complex logic into focused hooks
 export function useFeatureLogic() {
   const [state, setState] = useState()
-  
+
   useEffect(() => {
     // Complex side effects
   }, [])
-  
+
   return { state, actions }
 }
 ```
@@ -150,7 +158,7 @@ Same action, multiple triggers:
 // Keyboard shortcut
 case ',': commandContext.openPreferences()
 
-// Menu event  
+// Menu event
 listen('menu-preferences', () => commandContext.openPreferences())
 
 // Command palette
@@ -168,6 +176,7 @@ window.addEventListener('action-completed', handleAction)
 ## Testing Patterns
 
 ### Component Testing
+
 ```typescript
 function TestWrapper({ children }: { children: ReactNode }) {
   return (
@@ -179,9 +188,10 @@ function TestWrapper({ children }: { children: ReactNode }) {
 ```
 
 ### Hook Testing
+
 ```typescript
 const { result } = renderHook(() => useMyHook(), {
-  wrapper: TestWrapper
+  wrapper: TestWrapper,
 })
 ```
 
@@ -190,13 +200,15 @@ const { result } = renderHook(() => useMyHook(), {
 ## Development Patterns
 
 ### Quality Gates
+
 ```bash
 npm run check:all  # All checks must pass
 ```
 
 ### Documentation-Driven Development
+
 1. Read relevant docs first
-2. Follow established patterns  
+2. Follow established patterns
 3. Update docs for new patterns
 4. Test comprehensively
 
@@ -210,7 +222,7 @@ Command System
 ├── Integrates with: Keyboard Shortcuts, Menus
 └── Enables: Consistent behavior across UI
 
-State Management  
+State Management
 ├── Enables: Performance (getState pattern)
 ├── Supports: Data Persistence, UI State
 └── Foundation for: All other systems
@@ -226,7 +238,7 @@ Event-Driven Bridge
 When you discover a new pattern:
 
 1. **Document it** - Add to appropriate focused doc file
-2. **Reference it here** - Add summary and cross-reference  
+2. **Reference it here** - Add summary and cross-reference
 3. **Test it** - Ensure it works with existing patterns
 4. **Teach it** - Make it discoverable for AI agents and developers
 

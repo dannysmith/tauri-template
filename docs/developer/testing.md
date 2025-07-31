@@ -34,6 +34,7 @@ test('renders button with text', () => {
 ### Test Framework: Vitest + Testing Library
 
 **Setup:**
+
 - **Vitest**: Fast test runner with Jest-compatible API
 - **@testing-library/react**: React component testing utilities
 - **@testing-library/jest-dom**: Additional matchers
@@ -212,7 +213,7 @@ mod tests {
         // This is a simplified example
         let filename = "test-data".to_string();
         let data = serde_json::json!({"test": "value"});
-        
+
         // Test the function logic
         assert!(filename.len() > 0);
         assert!(!filename.contains(".."));
@@ -230,7 +231,7 @@ use tauri::test::{mock_app, mock_context};
 async fn test_app_commands() {
     let app = mock_app();
     let context = mock_context();
-    
+
     // Test Tauri commands in isolation
     // This requires more setup depending on your commands
 }
@@ -250,7 +251,7 @@ mod file_tests {
         // Test valid filenames
         assert!(is_valid_filename("test-file"));
         assert!(is_valid_filename("data123"));
-        
+
         // Test invalid filenames
         assert!(!is_valid_filename("../etc/passwd"));
         assert!(!is_valid_filename("test/file"));
@@ -261,17 +262,17 @@ mod file_tests {
     async fn test_file_operations() {
         let temp_dir = TempDir::new().unwrap();
         let file_path = temp_dir.path().join("test.json");
-        
+
         let test_data = serde_json::json!({"key": "value"});
-        
+
         // Test write operation
         let content = serde_json::to_string_pretty(&test_data).unwrap();
         fs::write(&file_path, content).unwrap();
-        
+
         // Test read operation
         let read_content = fs::read_to_string(&file_path).unwrap();
         let parsed_data: serde_json::Value = serde_json::from_str(&read_content).unwrap();
-        
+
         assert_eq!(parsed_data, test_data);
     }
 }
@@ -319,7 +320,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      
+
       - run: npm ci
       - run: npm run check:all
 ```
@@ -379,7 +380,7 @@ export function createTestQueryClient() {
 
 export function TestProviders({ children }: { children: ReactNode }) {
   const queryClient = createTestQueryClient()
-  
+
   return (
     <QueryClientProvider client={queryClient}>
       {children}
@@ -410,11 +411,11 @@ export const mockPreferencesDefault = {
 // Test Zustand store
 test('store state updates correctly', () => {
   const { result } = renderHook(() => useUIStore())
-  
+
   act(() => {
     result.current.setLeftSidebarVisible(false)
   })
-  
+
   expect(result.current.leftSidebarVisible).toBe(false)
 })
 ```
@@ -428,10 +429,10 @@ test('command executes correctly', () => {
     showToast: vi.fn(),
     openPreferences: vi.fn(),
   }
-  
+
   const command = navigationCommands.find(cmd => cmd.id === 'toggle-sidebar')
   command?.execute(mockContext)
-  
+
   // Assert expected behavior
 })
 ```
@@ -441,15 +442,15 @@ test('command executes correctly', () => {
 ```typescript
 test('handles API errors gracefully', async () => {
   mockInvoke.mockRejectedValue(new Error('Network error'))
-  
+
   const { result } = renderHook(() => usePreferences(), {
     wrapper: TestProviders,
   })
-  
+
   await waitFor(() => {
     expect(result.current.isError).toBe(true)
   })
-  
+
   expect(result.current.error).toBeInstanceOf(Error)
 })
 ```

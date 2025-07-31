@@ -15,6 +15,7 @@ Automatic update checking and installation system using Tauri's updater plugin, 
 ### Manual Update Check
 
 Users can manually check for updates via:
+
 - **Menu**: App → Check for Updates
 - **Command Palette**: Cmd+K → "Check for Updates"
 
@@ -60,19 +61,19 @@ export function App() {
       try {
         logger.info('Checking for updates...')
         const update = await check()
-        
+
         if (update) {
           logger.info(`Update available: ${update.version}`)
-          
+
           const shouldUpdate = confirm(
             `Update available: ${update.version}\n\n` +
             `Current version: ${update.currentVersion}\n` +
             `Would you like to download and install this update?`
           )
-          
+
           if (shouldUpdate) {
             logger.info('User accepted update, starting download...')
-            
+
             await update.downloadAndInstall((event) => {
               switch (event.event) {
                 case 'Started':
@@ -88,13 +89,13 @@ export function App() {
             })
 
             logger.info('Update installed successfully')
-            
+
             const shouldRestart = confirm(
               'Update completed successfully!\n\n' +
               'The application needs to restart to apply the update.\n' +
               'Would you like to restart now?'
             )
-            
+
             if (shouldRestart) {
               logger.info('Restarting application...')
               await relaunch()
@@ -127,16 +128,10 @@ listen('menu-check-updates', async () => {
   try {
     const update = await check()
     if (update) {
-      commandContext.showToast(
-        `Update available: ${update.version}`,
-        'info'
-      )
+      commandContext.showToast(`Update available: ${update.version}`, 'info')
       // Could trigger the same update flow as auto-check
     } else {
-      commandContext.showToast(
-        'You are running the latest version',
-        'success'
-      )
+      commandContext.showToast('You are running the latest version', 'success')
     }
   } catch (error) {
     logger.error('Update check failed:', { error: String(error) })
@@ -191,6 +186,7 @@ listen('menu-check-updates', async () => {
 ```
 
 **Key Settings:**
+
 - `active: true`: Enables the updater system
 - `endpoints`: GitHub releases URL (template format)
 - `dialog: false`: We use custom confirm dialogs instead of Tauri's built-in dialogs
@@ -205,6 +201,7 @@ The updater checks GitHub releases for:
 3. **Signature files**: `.sig` files for verification
 
 Example `latest.json`:
+
 ```json
 {
   "version": "1.0.1",
@@ -216,7 +213,7 @@ Example `latest.json`:
       "url": "https://github.com/user/repo/releases/download/v1.0.1/app-x86_64.app.tar.gz"
     },
     "darwin-aarch64": {
-      "signature": "signature_string", 
+      "signature": "signature_string",
       "url": "https://github.com/user/repo/releases/download/v1.0.1/app-aarch64.app.tar.gz"
     }
   }
@@ -259,6 +256,7 @@ The GitHub Actions workflow automatically:
 ### Dialog Messages
 
 **Update Available:**
+
 ```
 Update available: 1.0.1
 
@@ -267,6 +265,7 @@ Would you like to download and install this update?
 ```
 
 **Update Complete:**
+
 ```
 Update completed successfully!
 
@@ -275,6 +274,7 @@ Would you like to restart now?
 ```
 
 **No Updates (Manual Check):**
+
 ```
 You are running the latest version
 ```

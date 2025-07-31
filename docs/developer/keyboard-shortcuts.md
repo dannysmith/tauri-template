@@ -82,11 +82,14 @@ const handleKeyDown = (e: KeyboardEvent) => {
 
 // ❌ Bad: Store subscription causes re-renders
 const { leftSidebarVisible, setLeftSidebarVisible } = useUIStore()
-const handleKeyDown = useCallback((e: KeyboardEvent) => {
-  if (e.key === '1') {
-    setLeftSidebarVisible(!leftSidebarVisible)
-  }
-}, [leftSidebarVisible, setLeftSidebarVisible]) // Re-creates on every change!
+const handleKeyDown = useCallback(
+  (e: KeyboardEvent) => {
+    if (e.key === '1') {
+      setLeftSidebarVisible(!leftSidebarVisible)
+    }
+  },
+  [leftSidebarVisible, setLeftSidebarVisible]
+) // Re-creates on every change!
 ```
 
 ## Integration with Native Menus

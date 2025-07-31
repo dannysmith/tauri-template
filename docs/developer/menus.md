@@ -74,7 +74,7 @@ Menu clicks emit events to React:
 // src-tauri/src/lib.rs - in setup()
 app.on_menu_event(move |app, event| {
     log::debug!("Menu event received: {:?}", event.id());
-    
+
     match event.id().as_ref() {
         "about" => {
             let _ = app.emit("menu-about", ());
@@ -101,7 +101,9 @@ const setupMenuListeners = async () => {
     listen('menu-about', () => {
       // Show simple about dialog
       const appVersion = '0.1.0'
-      alert(`Tauri Template App\n\nVersion: ${appVersion}\n\nBuilt with Tauri v2 + React + TypeScript`)
+      alert(
+        `Tauri Template App\n\nVersion: ${appVersion}\n\nBuilt with Tauri v2 + React + TypeScript`
+      )
     }),
 
     listen('menu-preferences', () => {
@@ -109,7 +111,8 @@ const setupMenuListeners = async () => {
     }),
 
     listen('menu-toggle-left-sidebar', () => {
-      const { leftSidebarVisible, setLeftSidebarVisible } = useUIStore.getState()
+      const { leftSidebarVisible, setLeftSidebarVisible } =
+        useUIStore.getState()
       setLeftSidebarVisible(!leftSidebarVisible)
     }),
   ])
@@ -233,7 +236,7 @@ match event.id().as_ref() {
 const setupMenuListeners = async () => {
   const unlisteners = await Promise.all([
     // ... existing listeners
-    
+
     listen('menu-new-file', () => {
       commandContext.createNewFile()
     }),
@@ -242,7 +245,7 @@ const setupMenuListeners = async () => {
       commandContext.openFileDialog()
     }),
   ])
-  
+
   return unlisteners
 }
 ```

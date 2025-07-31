@@ -15,7 +15,8 @@ const { data: preferences, isLoading } = useQuery({
 
 // Saving preferences
 const updatePreferences = useMutation({
-  mutationFn: (prefs: AppPreferences) => invoke('save_preferences', { preferences: prefs }),
+  mutationFn: (prefs: AppPreferences) =>
+    invoke('save_preferences', { preferences: prefs }),
   onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: ['preferences'] })
   },
@@ -28,12 +29,12 @@ const updatePreferences = useMutation({
 // Save emergency data
 await invoke('save_emergency_data', {
   filename: 'unsaved-work',
-  data: { content: 'user data', timestamp: Date.now() }
+  data: { content: 'user data', timestamp: Date.now() },
 })
 
 // Load emergency data
 const recoveryData = await invoke('load_emergency_data', {
-  filename: 'unsaved-work'
+  filename: 'unsaved-work',
 })
 ```
 
@@ -106,16 +107,16 @@ All file writes use atomic operations to prevent corruption:
 #[tauri::command]
 async fn save_preferences(app: AppHandle, preferences: AppPreferences) -> Result<(), String> {
     let prefs_path = get_preferences_path(&app)?;
-    
+
     let json_content = serde_json::to_string_pretty(&preferences)
         .map_err(|e| format!("Failed to serialize preferences: {e}"))?;
 
     // Write to temporary file first, then rename (atomic operation)
     let temp_path = prefs_path.with_extension("tmp");
-    
+
     std::fs::write(&temp_path, json_content)
         .map_err(|e| format!("Failed to write preferences file: {e}"))?;
-    
+
     std::fs::rename(&temp_path, &prefs_path)
         .map_err(|e| format!("Failed to finalize preferences file: {e}"))?;
 
@@ -168,7 +169,7 @@ export function usePreferences() {
 
 export function useUpdatePreferences() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: (preferences: AppPreferences) =>
       invoke('save_preferences', { preferences }),
@@ -210,10 +211,10 @@ async fn save_emergency_data(
 
     // Atomic write pattern
     let temp_path = file_path.with_extension("tmp");
-    
+
     std::fs::write(&temp_path, json_content)
         .map_err(|e| format!("Failed to write emergency data file: {e}"))?;
-    
+
     std::fs::rename(&temp_path, &file_path)
         .map_err(|e| format!("Failed to finalize emergency data file: {e}"))?;
 
@@ -229,7 +230,7 @@ const saveEmergencyData = async (data: any) => {
   try {
     await invoke('save_emergency_data', {
       filename: `backup-${Date.now()}`,
-      data
+      data,
     })
   } catch (error) {
     console.error('Failed to save emergency data:', error)
@@ -240,7 +241,7 @@ const saveEmergencyData = async (data: any) => {
 const checkForRecoveryData = async () => {
   try {
     const recoveryData = await invoke('load_emergency_data', {
-      filename: 'unsaved-work'
+      filename: 'unsaved-work',
     })
     if (recoveryData) {
       // Show recovery dialog to user
@@ -286,7 +287,7 @@ async fn cleanup_old_recovery_files(app: AppHandle) -> Result<u32, String> {
 
         let metadata = std::fs::metadata(&path)
             .map_err(|e| format!("Failed to get file metadata: {e}"))?;
-        
+
         let modified = metadata.modified()
             .map_err(|e| format!("Failed to get file modification time: {e}"))?;
 
@@ -418,7 +419,7 @@ export function useMyData() {
 
 export function useUpdateMyData() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: (data: MyDataType) => invoke('save_my_data', { data }),
     onSuccess: () => {

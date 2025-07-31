@@ -16,7 +16,8 @@ export const navigationCommands: AppCommand[] = [
     icon: Sidebar,
     group: 'navigation',
     execute: (context: CommandContext) => {
-      const { leftSidebarVisible, setLeftSidebarVisible } = useUIStore.getState()
+      const { leftSidebarVisible, setLeftSidebarVisible } =
+        useUIStore.getState()
       setLeftSidebarVisible(!leftSidebarVisible)
     },
     isAvailable: () => true,
@@ -35,10 +36,9 @@ export function getAllCommands(
   context: CommandContext,
   searchValue = ''
 ): AppCommand[] {
-  const allCommands = [
-    ...navigationCommands,
-    ...settingsCommands,
-  ].filter(command => command.isAvailable(context))
+  const allCommands = [...navigationCommands, ...settingsCommands].filter(
+    command => command.isAvailable(context)
+  )
 
   // Filter by search
   if (searchValue) {
@@ -62,11 +62,11 @@ Each command follows this interface:
 
 ```typescript
 interface AppCommand {
-  id: string                    // Unique identifier
-  label: string                 // Display name
-  description?: string          // Help text for command palette
-  icon?: React.ComponentType    // Icon for UI
-  group: string                 // Grouping for organization
+  id: string // Unique identifier
+  label: string // Display name
+  description?: string // Help text for command palette
+  icon?: React.ComponentType // Icon for UI
+  group: string // Grouping for organization
   execute: (context: CommandContext) => void | Promise<void>
   isAvailable: (context: CommandContext) => boolean
 }
@@ -78,18 +78,21 @@ The context provides all state and actions commands need:
 
 ```typescript
 export function useCommandContext(): CommandContext {
-  const commandContext = useMemo(() => ({
-    // Direct access to actions (stable references)
-    openPreferences: () => {
-      window.dispatchEvent(new CustomEvent('open-preferences'))
-    },
-    
-    showToast: (message: string, type: NotificationType = 'info') => {
-      notifications[type]('Command Executed', message)
-    },
-    
-    // Any other app-wide actions commands might need
-  }), [])
+  const commandContext = useMemo(
+    () => ({
+      // Direct access to actions (stable references)
+      openPreferences: () => {
+        window.dispatchEvent(new CustomEvent('open-preferences'))
+      },
+
+      showToast: (message: string, type: NotificationType = 'info') => {
+        notifications[type]('Command Executed', message)
+      },
+
+      // Any other app-wide actions commands might need
+    }),
+    []
+  )
 
   return commandContext
 }
@@ -198,7 +201,7 @@ export const myFeatureCommands: AppCommand[] = [
     label: 'My Action',
     description: 'Does something useful',
     group: 'my-feature',
-    execute: (context) => {
+    execute: context => {
       // Your logic here
       context.showToast('Action executed!')
     },

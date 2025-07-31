@@ -22,7 +22,7 @@ State management follows a clear three-layer hierarchy:
 ┌─────────────────────────────────────┐
 │           useState                  │  ← Component UI State
 │  ┌─────────────────────────────────┐│
-│  │          Zustand                ││  ← Global UI State  
+│  │          Zustand                ││  ← Global UI State
 │  │  ┌─────────────────────────────┐││
 │  │  │      TanStack Query         │││  ← Persistent Data
 │  │  └─────────────────────────────┘││
@@ -31,11 +31,12 @@ State management follows a clear three-layer hierarchy:
 ```
 
 **Decision Tree:**
+
 ```
 Is this data needed across multiple components?
 ├─ No → useState
 └─ Yes → Does this data persist between app sessions?
-    ├─ No → Zustand  
+    ├─ No → Zustand
     └─ Yes → TanStack Query
 ```
 
@@ -47,7 +48,7 @@ Rust and React communicate through events for loose coupling:
 
 ```
 Rust Menu Click → Event Emission → React Listener → Command Execution → State Update
-Keyboard Shortcut → Event Handler → Command Execution → State Update  
+Keyboard Shortcut → Event Handler → Command Execution → State Update
 Command Palette → Command Selection → Command Execution → State Update
 ```
 
@@ -71,7 +72,7 @@ Each major system has focused documentation:
 
 - **[Command System](./command-system.md)** - Unified action dispatch
 - **[Keyboard Shortcuts](./keyboard-shortcuts.md)** - Native event handling
-- **[Native Menus](./menus.md)** - Cross-platform menu integration  
+- **[Native Menus](./menus.md)** - Cross-platform menu integration
 - **[Data Persistence](./data-persistence.md)** - Disk storage patterns
 - **[Notifications](./notifications.md)** - Toast and native notifications
 - **[Logging](./logging.md)** - Rust and TypeScript logging
@@ -128,7 +129,7 @@ const handleAction = useCallback(() => {
 // ❌ Bad: Re-creates on every state change
 const { currentData, updateData } = useStore()
 const handleAction = useCallback(() => {
-  updateData(currentData.modified)  
+  updateData(currentData.modified)
 }, [currentData, updateData]) // Cascades on every change
 ```
 
@@ -168,7 +169,7 @@ The same action can be triggered from multiple sources:
 ```typescript
 // All trigger the same command
 handleKeyboard('cmd+comma') → commandContext.openPreferences()
-handleMenu('menu-preferences') → commandContext.openPreferences()  
+handleMenu('menu-preferences') → commandContext.openPreferences()
 handleCommand('open-preferences') → commandContext.openPreferences()
 ```
 
@@ -193,8 +194,9 @@ npm run check:all  # Runs all checks
 ```
 
 This includes:
+
 - TypeScript type checking
-- ESLint linting  
+- ESLint linting
 - Prettier formatting
 - Vitest tests
 - Rust formatting (cargo fmt)
