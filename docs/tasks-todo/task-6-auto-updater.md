@@ -1,44 +1,52 @@
 # Task 6: Copy Working Auto-Updater
 
 ## Overview
+
 Copy the proven auto-updater code from the other app and adapt it for this template.
 
 **KEEP IT SIMPLE** - Copy the working App.tsx code with minimal changes.
 
 ## What We Need
+
 1. Copy the updater logic from other app's App.tsx
-2. Configure tauri.conf.json with updater settings (already provided)  
+2. Configure tauri.conf.json with updater settings (already provided)
 3. Add updater plugin to dependencies
 4. Basic error handling and user feedback
 
 ## Implementation Plan
 
 ### 1. Copy App.tsx Auto-Update Logic
+
 - Copy the `useEffect` with `checkForUpdates` from other app
 - Uses `@tauri-apps/plugin-updater` and `@tauri-apps/plugin-process`
 - 5-second delay after app launch
 - Simple confirm() dialogs for user interaction
 
 ### 2. Configure Tauri
+
 - Updater plugin already configured in the provided tauri.conf.json
 - Just need to update URLs to template placeholders
 - Generate signing keys for template
 
 ### 3. Add Dependencies
+
 - Ensure updater and process plugins are in dependencies
 - Already installed: `@tauri-apps/plugin-updater`, `@tauri-apps/plugin-process`
 
 ### 4. Simple User Experience
+
 - Uses browser confirm() for now (simple and works)
 - Console logging for progress tracking
 - Future: can be enhanced with proper UI components
 
 ## Files to Create/Modify
+
 - `src/App.tsx` (add auto-update logic from other app)
 - `src-tauri/tauri.conf.json` (update URLs to template placeholders)
 - Maybe: generate new signing keys for template
 
 ## Simple Update Flow
+
 1. App starts, waits 5 seconds
 2. Checks for updates silently
 3. If update available, shows confirm dialog
@@ -46,6 +54,7 @@ Copy the proven auto-updater code from the other app and adapt it for this templ
 5. Asks user if they want to restart now
 
 ## Acceptance Criteria
+
 - [ ] Auto-update logic copied from working app
 - [ ] 5-second delay check on app launch works
 - [ ] Update available dialog appears correctly

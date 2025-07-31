@@ -1,13 +1,15 @@
 # Task 5: Copy Working Deployment System
 
 ## Overview
+
 Copy the proven deployment system from the other app (GitHub Actions + prepare-release.js script) and adapt it for this template.
 
 **KEEP IT SIMPLE** - Copy the working system with minimal changes.
 
 ## What We Need
-1. Copy GitHub Actions workflow from other app  
-2. Copy prepare-release.js script 
+
+1. Copy GitHub Actions workflow from other app
+2. Copy prepare-release.js script
 3. Update tauri.conf.json for releases
 4. Add release scripts to package.json
 5. Basic documentation
@@ -15,40 +17,47 @@ Copy the proven deployment system from the other app (GitHub Actions + prepare-r
 ## Implementation Plan
 
 ### 1. Copy GitHub Actions Workflow
+
 - Copy `.github/workflows/release.yml` from other app
 - Update app name references to be template-friendly
 - Keep the exact same workflow structure (it works!)
 
-### 2. Copy Release Script  
+### 2. Copy Release Script
+
 - Copy `scripts/prepare-release.js` from other app
 - Update GitHub URLs to be template placeholders
 - Keep all the version management logic
 
 ### 3. Configure Tauri for Releases
+
 - Add `"createUpdaterArtifacts": true` to tauri.conf.json
 - Set up bundle configuration for releases
 - Configure updater endpoints (template placeholders)
 
 ### 4. Add Package Scripts
+
 - Add release scripts to package.json
 - Simple commands to run the release process
 
 ## Files to Create/Modify
-- `.github/workflows/release.yml` (copy from other app)  
+
+- `.github/workflows/release.yml` (copy from other app)
 - `scripts/prepare-release.js` (copy from other app)
 - `src-tauri/tauri.conf.json` (add release settings)
 - `package.json` (add release scripts)
 
 ## Simple Process
+
 1. Run `npm run release:prepare v1.0.0`
 2. Script updates versions and creates git tag
 3. Push tag triggers GitHub Actions
 4. Automated build creates release with update JSON
 
 ## Acceptance Criteria
+
 - [ ] GitHub Actions workflow copied and working
 - [ ] prepare-release.js script copied and adapted
-- [ ] tauri.conf.json configured for releases  
+- [ ] tauri.conf.json configured for releases
 - [ ] Release process works end-to-end
 - [ ] Update JSON generated correctly for auto-updater
 - [ ] Template placeholders for app-specific details

@@ -1,6 +1,7 @@
 # Task 9: Documentation Framework
 
 ## Overview
+
 Create both user-facing and developer documentation that establishes clear patterns and makes it easy to maintain documentation as the template grows.
 
 ## Subtask 1: Bare-Bones User Guide
@@ -8,12 +9,14 @@ Create both user-facing and developer documentation that establishes clear patte
 Create a minimal user guide in `docs/userguide/` that serves as a starting point and reminder to update documentation.
 
 ### What We Need
+
 - `docs/userguide/userguide.md` with basic structure
 - List of current keyboard shortcuts
 - Empty sections for future features (marked as "Coming Soon")
 - How to use command palette and preferences
 
 ### Structure
+
 ```
 # App User Guide
 
@@ -22,7 +25,7 @@ Create a minimal user guide in `docs/userguide/` that serves as a starting point
 
 ## Keyboard Shortcuts
 - Cmd+K: Open Command Palette
-- Cmd+,: Open Preferences  
+- Cmd+,: Open Preferences
 - Cmd+1: Toggle Left Sidebar
 - Cmd+2: Toggle Right Sidebar
 
@@ -43,6 +46,7 @@ How to customize app settings
 Create comprehensive developer docs in `docs/developer/` documenting all patterns and architecture decisions.
 
 ### Files to Create
+
 Break documentation into focused, specific files that match what we're actually building:
 
 1. **`architecture-guide.md`** - High-level overview and mental models
@@ -96,12 +100,14 @@ Break documentation into focused, specific files that match what we're actually 
     - GitHub releases integration
 
 ### Documentation Principles
+
 - **AI-friendly** - Clear patterns for AI agents to follow
 - **Example-driven** - Show code examples, not just descriptions
 - **Maintainable** - Easy to update as patterns evolve
 - **Complete** - Document all the systems we've built
 
 ### Documentation Principles
+
 - **Small and focused** - Each file covers one specific system
 - **Pattern-based** - Document actual patterns we've implemented
 - **AI-friendly** - Clear examples and step-by-step instructions
@@ -111,9 +117,11 @@ Break documentation into focused, specific files that match what we're actually 
 ## Files to Create
 
 ### User Guide
+
 - `docs/userguide/userguide.md` (basic user guide)
 
 ### Developer Docs (`docs/developer/`)
+
 - `architecture-guide.md` (high-level overview)
 - `command-system.md` (command patterns)
 - `keyboard-shortcuts.md` (shortcut patterns)
@@ -126,6 +134,7 @@ Break documentation into focused, specific files that match what we're actually 
 - `auto-updates.md` (update system)
 
 ## Acceptance Criteria
+
 - [ ] User guide covers current keyboard shortcuts and features
 - [ ] User guide has "Coming Soon" placeholders for future features
 - [ ] Each developer doc file is focused on one specific system

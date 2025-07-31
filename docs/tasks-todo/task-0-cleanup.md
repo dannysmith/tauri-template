@@ -25,6 +25,7 @@ Before we implement the remaining features of this template, I want to make sure
 ## Cleanup Checklist
 
 ### 1. Code Review by System
+
 - [ ] **Tauri Setup & Plugins** - Check all plugins are necessary and properly configured
 - [ ] **State Management** - Review Zustand stores for over-engineering
 - [ ] **TanStack Query** - Ensure proper usage patterns, no unnecessary complexity
@@ -35,6 +36,7 @@ Before we implement the remaining features of this template, I want to make sure
 - [ ] **Styling & Theming** - Check CSS/Tailwind for overcomplicated patterns
 
 ### 2. Performance & Best Practices
+
 - [ ] **Bundle Size** - Check for unnecessary dependencies
 - [ ] **Re-renders** - Look for performance issues in React components
 - [ ] **Memory Leaks** - Check event listeners, subscriptions, cleanup
@@ -42,6 +44,7 @@ Before we implement the remaining features of this template, I want to make sure
 - [ ] **Type Safety** - Verify TypeScript usage is helpful, not excessive
 
 ### 3. Template Appropriateness
+
 - [ ] **Remove Dead Code** - Delete unused components, utilities, types (but keep Shadcn components and likely-to-be-used Tauri plugins)
 - [ ] **Simplify Over-Engineering** - Look for patterns that are too complex for a template
 - [ ] **Check Dependencies** - Remove any packages that aren't essential (keep common Shadcn components and useful Tauri plugins even if unused)
@@ -50,13 +53,15 @@ Before we implement the remaining features of this template, I want to make sure
 
 **Note:** Keep all Shadcn UI components and pre-installed Tauri plugins even if not currently used - these are extremely likely to be needed in real applications.
 
-### 4. Quality Gates  
+### 4. Quality Gates
+
 - [ ] **Run `npm run check:all`** - Ensure all quality checks pass
 - [ ] **Test Coverage** - Verify existing tests are meaningful
 - [ ] **ESLint/Prettier** - Check for any configuration issues
 - [ ] **Build Process** - Ensure development and production builds work correctly
 
 ## Success Criteria
+
 - Codebase feels clean and well-organized
 - No unnecessary complexity for a template
 - All existing functionality works as expected
