@@ -20,7 +20,7 @@ Set up AI development tooling to work well with the architecture and documentati
   - Update with the command system, shortcuts, menu patterns
   - Ensure it works well with the architecture guide
 
-- [ ] **Create Claude Code Agents** (using the prompts below)
+- [x] **Create Claude Code Agents** (using the prompts below)
   - UI Designer agent
   - Tauri Genius agent
   - React Genius agent
