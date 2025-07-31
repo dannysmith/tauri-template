@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::path::PathBuf;
+use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::{AppHandle, Manager};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -129,6 +131,166 @@ async fn send_native_notification(
     }
 }
 
+// Recovery functions - simple pattern for saving JSON data to disk
+fn get_recovery_dir(app: &AppHandle) -> Result<PathBuf, String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data directory: {e}"))?;
+
+    let recovery_dir = app_data_dir.join("recovery");
+
+    // Ensure the recovery directory exists
+    std::fs::create_dir_all(&recovery_dir)
+        .map_err(|e| format!("Failed to create recovery directory: {e}"))?;
+
+    Ok(recovery_dir)
+}
+
+#[tauri::command]
+async fn save_emergency_data(app: AppHandle, filename: String, data: Value) -> Result<(), String> {
+    log::info!("Saving emergency data to file: {filename}");
+
+    // Validate filename (basic safety check)
+    if filename.contains("..") || filename.contains("/") || filename.contains("\\") {
+        return Err("Invalid filename".to_string());
+    }
+
+    let recovery_dir = get_recovery_dir(&app)?;
+    let file_path = recovery_dir.join(format!("{filename}.json"));
+
+    let json_content = serde_json::to_string_pretty(&data).map_err(|e| {
+        log::error!("Failed to serialize emergency data: {e}");
+        format!("Failed to serialize data: {e}")
+    })?;
+
+    // Write to a temporary file first, then rename (atomic operation)
+    let temp_path = file_path.with_extension("tmp");
+
+    std::fs::write(&temp_path, json_content).map_err(|e| {
+        log::error!("Failed to write emergency data file: {e}");
+        format!("Failed to write data file: {e}")
+    })?;
+
+    std::fs::rename(&temp_path, &file_path).map_err(|e| {
+        log::error!("Failed to finalize emergency data file: {e}");
+        format!("Failed to finalize data file: {e}")
+    })?;
+
+    log::info!("Successfully saved emergency data to {file_path:?}");
+    Ok(())
+}
+
+#[tauri::command]
+async fn load_emergency_data(app: AppHandle, filename: String) -> Result<Value, String> {
+    log::info!("Loading emergency data from file: {filename}");
+
+    // Validate filename (basic safety check)
+    if filename.contains("..") || filename.contains("/") || filename.contains("\\") {
+        return Err("Invalid filename".to_string());
+    }
+
+    let recovery_dir = get_recovery_dir(&app)?;
+    let file_path = recovery_dir.join(format!("{filename}.json"));
+
+    if !file_path.exists() {
+        log::info!("Recovery file not found: {file_path:?}");
+        return Err("File not found".to_string());
+    }
+
+    let contents = std::fs::read_to_string(&file_path).map_err(|e| {
+        log::error!("Failed to read recovery file: {e}");
+        format!("Failed to read file: {e}")
+    })?;
+
+    let data: Value = serde_json::from_str(&contents).map_err(|e| {
+        log::error!("Failed to parse recovery JSON: {e}");
+        format!("Failed to parse data: {e}")
+    })?;
+
+    log::info!("Successfully loaded emergency data");
+    Ok(data)
+}
+
+#[tauri::command]
+async fn cleanup_old_recovery_files(app: AppHandle) -> Result<u32, String> {
+    log::info!("Cleaning up old recovery files");
+
+    let recovery_dir = get_recovery_dir(&app)?;
+    let mut removed_count = 0;
+
+    // Calculate cutoff time (7 days ago)
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_err(|e| format!("Failed to get current time: {e}"))?
+        .as_secs();
+    let seven_days_ago = now - (7 * 24 * 60 * 60);
+
+    // Read directory and check each file
+    let entries = std::fs::read_dir(&recovery_dir).map_err(|e| {
+        log::error!("Failed to read recovery directory: {e}");
+        format!("Failed to read directory: {e}")
+    })?;
+
+    for entry in entries {
+        let entry = match entry {
+            Ok(e) => e,
+            Err(e) => {
+                log::warn!("Failed to read directory entry: {e}");
+                continue;
+            }
+        };
+
+        let path = entry.path();
+
+        // Only process JSON files
+        if path.extension().is_none_or(|ext| ext != "json") {
+            continue;
+        }
+
+        // Check file modification time
+        let metadata = match std::fs::metadata(&path) {
+            Ok(m) => m,
+            Err(e) => {
+                log::warn!("Failed to get file metadata: {e}");
+                continue;
+            }
+        };
+
+        let modified = match metadata.modified() {
+            Ok(m) => m,
+            Err(e) => {
+                log::warn!("Failed to get file modification time: {e}");
+                continue;
+            }
+        };
+
+        let modified_secs = match modified.duration_since(UNIX_EPOCH) {
+            Ok(d) => d.as_secs(),
+            Err(e) => {
+                log::warn!("Failed to convert modification time: {e}");
+                continue;
+            }
+        };
+
+        // Remove if older than 7 days
+        if modified_secs < seven_days_ago {
+            match std::fs::remove_file(&path) {
+                Ok(_) => {
+                    log::info!("Removed old recovery file: {path:?}");
+                    removed_count += 1;
+                }
+                Err(e) => {
+                    log::warn!("Failed to remove old recovery file: {e}");
+                }
+            }
+        }
+    }
+
+    log::info!("Cleanup complete. Removed {removed_count} old recovery files");
+    Ok(removed_count)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -182,7 +344,10 @@ pub fn run() {
             greet,
             load_preferences,
             save_preferences,
-            send_native_notification
+            send_native_notification,
+            save_emergency_data,
+            load_emergency_data,
+            cleanup_old_recovery_files
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

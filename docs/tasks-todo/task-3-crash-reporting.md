@@ -27,9 +27,8 @@ cleanupOldFiles() // Remove files older than 7 days
 ### 1. Copy Preferences Pattern
 
 - Add `save_emergency_data(filename, data)` Tauri command
-- Add `load_emergency_data(filename)` Tauri command
 - Use same atomic write pattern as preferences
-- Save to `~/Library/Application Support/[app]/recovery/`
+- Save to `~/Library/Application Support/[app]/recovery/` (don't hardcode path, obvs)
 
 ### 2. Add Cleanup Function
 
@@ -59,7 +58,7 @@ cleanupOldFiles() // Remove files older than 7 days
 
 ## Acceptance Criteria
 
-- [ ] Can save/load JSON files using same pattern as preferences
+- [ ] Can save JSON files using same pattern as preferences
 - [ ] Files go to recovery subdirectory in app data
 - [ ] Old files are cleaned up automatically on startup
 - [ ] Error boundary saves basic app state on crashes
