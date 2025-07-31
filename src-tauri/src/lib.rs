@@ -1,3 +1,4 @@
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::path::PathBuf;
@@ -5,9 +6,53 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder};
 use tauri::{AppHandle, Emitter, Manager};
 
+// Validation functions
+fn validate_filename(filename: &str) -> Result<(), String> {
+    // Regex pattern: only alphanumeric, dash, underscore, dot
+    let filename_pattern = Regex::new(r"^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9]+)?$")
+        .map_err(|e| format!("Regex compilation error: {e}"))?;
+
+    if filename.is_empty() {
+        return Err("Filename cannot be empty".to_string());
+    }
+
+    if filename.len() > 100 {
+        return Err("Filename too long (max 100 characters)".to_string());
+    }
+
+    if !filename_pattern.is_match(filename) {
+        return Err(
+            "Invalid filename: only alphanumeric characters, dashes, underscores, and dots allowed"
+                .to_string(),
+        );
+    }
+
+    Ok(())
+}
+
+fn validate_string_input(input: &str, max_len: usize, field_name: &str) -> Result<(), String> {
+    if input.len() > max_len {
+        return Err(format!("{field_name} too long (max {max_len} characters)"));
+    }
+    Ok(())
+}
+
+fn validate_theme(theme: &str) -> Result<(), String> {
+    match theme {
+        "light" | "dark" | "system" => Ok(()),
+        _ => Err("Invalid theme: must be 'light', 'dark', or 'system'".to_string()),
+    }
+}
+
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
+    // Input validation
+    if let Err(e) = validate_string_input(name, 100, "Name") {
+        log::warn!("Invalid greet input: {e}");
+        return format!("Error: {e}");
+    }
+
     log::info!("Greeting user: {name}");
     format!("Hello, {name}! You've been greeted from Rust!")
 }
@@ -70,6 +115,9 @@ async fn load_preferences(app: AppHandle) -> Result<AppPreferences, String> {
 
 #[tauri::command]
 async fn save_preferences(app: AppHandle, preferences: AppPreferences) -> Result<(), String> {
+    // Validate theme value
+    validate_theme(&preferences.theme)?;
+
     log::debug!("Saving preferences to disk: {preferences:?}");
     let prefs_path = get_preferences_path(&app)?;
 
@@ -152,9 +200,14 @@ fn get_recovery_dir(app: &AppHandle) -> Result<PathBuf, String> {
 async fn save_emergency_data(app: AppHandle, filename: String, data: Value) -> Result<(), String> {
     log::info!("Saving emergency data to file: {filename}");
 
-    // Validate filename (basic safety check)
-    if filename.contains("..") || filename.contains("/") || filename.contains("\\") {
-        return Err("Invalid filename".to_string());
+    // Validate filename with proper security checks
+    validate_filename(&filename)?;
+
+    // Validate data size (10MB limit)
+    let data_str = serde_json::to_string(&data)
+        .map_err(|e| format!("Failed to serialize data for size check: {e}"))?;
+    if data_str.len() > 10_485_760 {
+        return Err("Data too large (max 10MB)".to_string());
     }
 
     let recovery_dir = get_recovery_dir(&app)?;
@@ -186,10 +239,8 @@ async fn save_emergency_data(app: AppHandle, filename: String, data: Value) -> R
 async fn load_emergency_data(app: AppHandle, filename: String) -> Result<Value, String> {
     log::info!("Loading emergency data from file: {filename}");
 
-    // Validate filename (basic safety check)
-    if filename.contains("..") || filename.contains("/") || filename.contains("\\") {
-        return Err("Invalid filename".to_string());
-    }
+    // Validate filename with proper security checks
+    validate_filename(&filename)?;
 
     let recovery_dir = get_recovery_dir(&app)?;
     let file_path = recovery_dir.join(format!("{filename}.json"));

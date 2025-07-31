@@ -16,7 +16,9 @@ A production-ready template for building modern desktop applications with Tauri 
 ## 🛠 Architecture
 
 ### Command System
+
 Centralized command palette with keyboard shortcuts and menu integration:
+
 ```typescript
 // Execute commands via palette (Cmd+K), shortcuts, or menus
 const commands = [
@@ -26,12 +28,15 @@ const commands = [
 ```
 
 ### State Management Onion
+
 Layered state management approach:
+
 - **useState**: Component-local state
 - **Zustand**: App-wide UI state (sidebar visibility, themes)
 - **TanStack Query**: Server state and caching (preferences, data)
 
 ### Performance Patterns
+
 ```typescript
 // ✅ Use getState() to avoid render cascades
 const handleAction = useCallback(() => {
@@ -50,11 +55,13 @@ const handleAction = useCallback(() => {
 ## 🏗 Quick Start
 
 ### Prerequisites
+
 - [Node.js](https://nodejs.org/) (v18+)
 - [Rust](https://rustup.rs/) (latest stable)
 - Platform-specific dependencies (see [Tauri Prerequisites](https://tauri.app/start/prerequisites/))
 
 ### Development
+
 ```bash
 # Clone and install
 git clone <your-repo>
@@ -72,6 +79,7 @@ npm run build
 ```
 
 ### Project Structure
+
 ```
 ├── src/                    # React frontend
 │   ├── components/         # UI components
@@ -94,7 +102,7 @@ npm run check:all  # Runs all checks below:
 ```
 
 - ✅ TypeScript type checking
-- ✅ ESLint code linting  
+- ✅ ESLint code linting
 - ✅ Prettier code formatting
 - ✅ Rust formatting (cargo fmt)
 - ✅ Rust linting (cargo clippy)
@@ -104,13 +112,15 @@ npm run check:all  # Runs all checks below:
 ## 🎯 What You Get
 
 ### Native Desktop Experience
+
 - **Native menus** with keyboard shortcuts
-- **System notifications** and tray integration  
+- **System notifications** and tray integration
 - **Auto-updater** with GitHub releases
 - **File system access** with security validation
 - **Cross-platform** builds (macOS, Windows, Linux)
 
 ### Developer Experience
+
 - **Hot reload** in development
 - **Comprehensive testing** setup
 - **Type-safe** Rust ↔ React communication
@@ -118,6 +128,7 @@ npm run check:all  # Runs all checks below:
 - **AI assistants** for code generation and review
 
 ### Production Ready
+
 - **Security best practices** built-in
 - **Error handling** and logging
 - **Performance optimization** patterns
@@ -127,15 +138,50 @@ npm run check:all  # Runs all checks below:
 ## 🔧 Customization
 
 ### Adding New Features
+
 1. **Commands**: Add to `src/lib/commands/`
 2. **UI State**: Extend Zustand stores in `src/store/`
 3. **Rust APIs**: Add Tauri commands in `src-tauri/src/lib.rs`
 4. **Documentation**: Update relevant docs in `docs/`
 
 ### Configuration
+
 - **App metadata**: `src-tauri/tauri.conf.json`
 - **Build settings**: `src-tauri/Cargo.toml`
 - **Dependencies**: `package.json`
+
+## 🚀 Production Checklist
+
+Before deploying your application to production, ensure you complete these critical steps:
+
+### Security Requirements (CRITICAL)
+
+- [ ] **Generate proper Ed25519 updater keys** - Replace placeholder keys in `src-tauri/tauri.conf.json`
+- [ ] **Store private keys securely** - Never commit signing keys to version control
+- [ ] **Review plugin permissions** - Remove unused permissions in `src-tauri/capabilities/desktop.json`
+
+### App Configuration
+
+- [ ] **Update app metadata** - Change productName, version, identifier, publisher in `tauri.conf.json`
+- [ ] **Update package.json** - Set correct name, author, license, and copyright
+- [ ] **Configure proper logging** - Set production log levels (Info, not Debug)
+- [ ] **Set up error tracking** - Add Sentry, Rollbar, or similar service
+
+### Quality Assurance
+
+- [ ] **Run full test suite** - `npm run check:all` must pass
+- [ ] **Test on all target platforms** - macOS, Windows, Linux as needed
+- [ ] **Verify auto-updater flow** - Test with signed releases
+- [ ] **Performance testing** - Ensure app performs well with real data
+
+### Distribution
+
+- [ ] **Code signing certificates** - Set up proper certificates for each platform
+- [ ] **Release automation** - Configure CI/CD for automated builds and releases
+- [ ] **Update server setup** - Configure server for hosting app updates
+- [ ] **Analytics setup** - Add usage analytics if desired
+
+**📖 For detailed security instructions, see [SECURITY_PRODUCTION.md](docs/SECURITY_PRODUCTION.md)**
 
 ## 📋 License
 

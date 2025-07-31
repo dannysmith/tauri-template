@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useUIStore } from '@/store/ui-store'
 import { useCommandContext } from '@/hooks/use-command-context'
 import { getAllCommands, executeCommand } from '@/lib/commands'
@@ -17,21 +17,23 @@ export function CommandPalette() {
   const commandContext = useCommandContext()
   const [search, setSearch] = useState('')
 
-  // Get all available commands
-  const commands = getAllCommands(commandContext, search)
+  // Get all available commands (memoized to prevent re-filtering on every render)
+  const commandGroups = useMemo(() => {
+    const commands = getAllCommands(commandContext, search)
 
-  // Group commands by their group property
-  const commandGroups = commands.reduce(
-    (groups, command) => {
-      const group = command.group || 'other'
-      if (!groups[group]) {
-        groups[group] = []
-      }
-      groups[group].push(command)
-      return groups
-    },
-    {} as Record<string, typeof commands>
-  )
+    // Group commands by their group property
+    return commands.reduce(
+      (groups, command) => {
+        const group = command.group || 'other'
+        if (!groups[group]) {
+          groups[group] = []
+        }
+        groups[group].push(command)
+        return groups
+      },
+      {} as Record<string, typeof commands>
+    )
+  }, [commandContext, search])
 
   // Handle command execution
   const handleCommandSelect = useCallback(

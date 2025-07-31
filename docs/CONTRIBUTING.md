@@ -5,12 +5,14 @@ Thank you for your interest in contributing to this Tauri React Template! This d
 ## 🚀 Quick Start for Contributors
 
 ### Prerequisites
+
 - [Node.js](https://nodejs.org/) (v18+)
 - [Rust](https://rustup.rs/) (latest stable)
 - [Git](https://git-scm.com/)
 - Familiarity with React, TypeScript, and Rust
 
 ### Development Setup
+
 ```bash
 # Fork and clone the repository
 git clone https://github.com/your-username/tauri-template.git
@@ -29,12 +31,14 @@ npm run check:all
 ## 📋 How to Contribute
 
 ### 1. Issues
+
 - **Bug Reports**: Use the bug report template
 - **Feature Requests**: Use the feature request template
 - **Questions**: Use GitHub Discussions for questions
 - **Security Issues**: See [SECURITY.md](SECURITY.md)
 
 ### 2. Pull Requests
+
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Make your changes following our guidelines
@@ -48,6 +52,7 @@ npm run check:all
 ### Code Style
 
 #### TypeScript/React
+
 - Use TypeScript for all new code
 - Follow existing component patterns
 - Use functional components with hooks
@@ -58,7 +63,7 @@ npm run check:all
 // ✅ Good
 const UserProfile = ({ userId }: { userId: string }) => {
   const { data: user, isLoading } = useUser(userId)
-  
+
   if (isLoading) return <LoadingSpinner />
   return <div>{user?.name}</div>
 }
@@ -71,6 +76,7 @@ const UP = (props: any) => {
 ```
 
 #### Rust
+
 - Follow Rust conventions and idioms
 - Use `cargo fmt` and `cargo clippy`
 - Write descriptive error messages
@@ -81,7 +87,7 @@ const UP = (props: any) => {
 #[tauri::command]
 async fn save_user_data(app: AppHandle, data: UserData) -> Result<(), String> {
     validate_user_data(&data)?;
-    
+
     let file_path = get_safe_user_data_path(&app)?;
     write_data_atomically(&file_path, &data)
         .map_err(|e| format!("Failed to save user data: {e}"))
@@ -99,17 +105,21 @@ fn save(app: AppHandle, d: Value) -> Result<(), String> {
 ### Architecture Guidelines
 
 #### State Management
+
 Follow the State Management Onion pattern:
+
 - **useState**: Component-local state
 - **Zustand**: App-wide UI state
 - **TanStack Query**: Server state and caching
 
 #### Performance
+
 - Use `getState()` pattern to avoid render cascades
 - Implement proper memoization where needed
 - Optimize bundle size and load times
 
 #### File Organization
+
 ```
 src/
 ├── components/          # Reusable UI components
@@ -127,6 +137,7 @@ src/
 All contributions must include appropriate tests:
 
 ### Frontend Testing
+
 ```typescript
 // Component tests
 import { render, screen } from '@testing-library/react'
@@ -139,6 +150,7 @@ test('renders user profile with loading state', () => {
 ```
 
 ### Backend Testing
+
 ```rust
 #[cfg(test)]
 mod tests {
@@ -148,7 +160,7 @@ mod tests {
     fn test_validate_user_data() {
         let valid_data = UserData { name: "John".to_string() };
         assert!(validate_user_data(&valid_data).is_ok());
-        
+
         let invalid_data = UserData { name: "".to_string() };
         assert!(validate_user_data(&invalid_data).is_err());
     }
@@ -156,7 +168,9 @@ mod tests {
 ```
 
 ### Quality Gates
+
 All PRs must pass:
+
 - ✅ TypeScript type checking
 - ✅ ESLint linting
 - ✅ Prettier formatting
@@ -182,6 +196,7 @@ git commit -m "test: add unit tests for preferences service"
 ```
 
 ### Commit Types
+
 - `feat`: New features
 - `fix`: Bug fixes
 - `docs`: Documentation changes
@@ -193,6 +208,7 @@ git commit -m "test: add unit tests for preferences service"
 ## 🎯 Areas for Contribution
 
 ### High Priority
+
 - **Performance optimizations**
 - **Security improvements**
 - **Cross-platform compatibility**
@@ -200,12 +216,14 @@ git commit -m "test: add unit tests for preferences service"
 - **Documentation improvements**
 
 ### Medium Priority
+
 - **UI/UX improvements**
 - **Additional Tauri plugins integration**
 - **Testing coverage expansion**
 - **Developer experience enhancements**
 
 ### Ideas for New Contributors
+
 - **Fix typos and improve documentation**
 - **Add missing TypeScript types**
 - **Improve error messages**
@@ -215,12 +233,14 @@ git commit -m "test: add unit tests for preferences service"
 ## 🔍 Code Review Process
 
 ### For Contributors
+
 - Keep PRs focused and reasonably sized
 - Write clear PR descriptions
 - Respond to feedback promptly
 - Update documentation as needed
 
 ### Review Criteria
+
 - **Functionality**: Does the code work as intended?
 - **Security**: Are there any security implications?
 - **Performance**: Does it impact app performance?
@@ -231,6 +251,7 @@ git commit -m "test: add unit tests for preferences service"
 ## 📚 Documentation
 
 ### Code Documentation
+
 - Add JSDoc comments for complex functions
 - Document public APIs thoroughly
 - Include usage examples where helpful
@@ -251,7 +272,9 @@ export function sanitizeInput(input: string, maxLength: number): string {
 ```
 
 ### Architecture Documentation
+
 When adding new patterns or systems:
+
 - Update `docs/developer/architecture-guide.md`
 - Add examples to relevant documentation
 - Consider creating new guide documents for complex features
@@ -259,6 +282,7 @@ When adding new patterns or systems:
 ## 🌟 Recognition
 
 Contributors will be recognized in:
+
 - **README.md**: Major contributors listed
 - **Release Notes**: Contributions acknowledged
 - **GitHub**: Contributor badge and statistics
@@ -266,11 +290,13 @@ Contributors will be recognized in:
 ## 🆘 Getting Help
 
 ### Community Support
+
 - **GitHub Discussions**: Ask questions and share ideas
 - **Issues**: Report bugs and request features
 - **Discord/Slack**: [Add your community links if available]
 
 ### Maintainer Contact
+
 - **Project Lead**: [Your contact information]
 - **Technical Questions**: Create a GitHub issue
 - **Security Issues**: See [SECURITY.md](SECURITY.md)
@@ -278,6 +304,7 @@ Contributors will be recognized in:
 ## 📄 Legal
 
 By contributing to this project, you agree that:
+
 - Your contributions will be licensed under the same license as the project (AGPL-3.0-or-later)
 - You have the right to contribute the code/content
 - Your contributions are your original work or properly attributed

@@ -35,14 +35,17 @@ https://www.gnu.org/licenses/agpl-3.0.txt
 This project includes software with the following licenses:
 
 ### Tauri
+
 Licensed under the Apache License 2.0 or MIT License
 https://github.com/tauri-apps/tauri
 
 ### React
+
 Licensed under the MIT License
 https://github.com/facebook/react
 
 ### TypeScript
+
 Licensed under the Apache License 2.0
 https://github.com/Microsoft/TypeScript
 

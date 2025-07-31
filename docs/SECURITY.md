@@ -22,6 +22,7 @@ Please do not report security vulnerabilities through public GitHub issues, disc
 Send details of the vulnerability to: **[security@yourorganization.com]** (replace with your actual security contact)
 
 Include the following information:
+
 - Description of the vulnerability
 - Steps to reproduce the issue
 - Potential impact assessment
@@ -64,6 +65,7 @@ This template includes several security measures by default:
 When building applications with this template:
 
 ### 1. Environment Variables
+
 ```bash
 # Never commit secrets to version control
 echo "API_KEY=your-secret-key" >> .env.local
@@ -71,6 +73,7 @@ echo "API_KEY=your-secret-key" >> .env.local
 ```
 
 ### 2. File Operations
+
 ```rust
 // ✅ Good: Validate file paths
 if filename.contains("..") || filename.contains("/") {
@@ -82,6 +85,7 @@ std::fs::write(user_input, data) // Dangerous!
 ```
 
 ### 3. User Input Validation
+
 ```typescript
 // ✅ Good: Validate and sanitize
 const sanitizeInput = (input: string) => {
@@ -93,6 +97,7 @@ dangerouslySetInnerHTML={{ __html: userInput }}
 ```
 
 ### 4. Network Requests
+
 ```typescript
 // ✅ Good: Validate URLs and use HTTPS
 const isValidUrl = (url: string) => {
@@ -108,7 +113,9 @@ const isValidUrl = (url: string) => {
 ## Common Vulnerabilities to Avoid
 
 ### 1. Path Traversal
+
 Always validate file paths to prevent access to system files:
+
 ```rust
 // Prevent "../../../etc/passwd" attacks
 fn validate_filename(filename: &str) -> bool {
@@ -117,7 +124,9 @@ fn validate_filename(filename: &str) -> bool {
 ```
 
 ### 2. Command Injection
+
 Never pass user input directly to system commands:
+
 ```typescript
 // ❌ Dangerous
 await invoke('execute_command', { command: userInput })
@@ -127,7 +136,9 @@ await invoke('predefined_safe_command', { args: validatedArgs })
 ```
 
 ### 3. Information Disclosure
+
 Avoid exposing sensitive information in error messages:
+
 ```rust
 // ❌ Bad: Exposes file system structure
 Err(format!("File not found: {}", full_path))
@@ -139,6 +150,7 @@ Err("File not found".to_string())
 ## Dependencies Security
 
 ### Regular Audits
+
 ```bash
 # Check for vulnerabilities
 npm audit
@@ -149,6 +161,7 @@ npm audit fix
 ```
 
 ### Dependency Management
+
 - Keep dependencies updated
 - Review dependency licenses
 - Monitor security advisories
@@ -157,6 +170,7 @@ npm audit fix
 ## Production Deployment
 
 ### Code Signing
+
 ```bash
 # macOS
 codesign --force --options runtime --sign "Developer ID Application" app.app
@@ -166,6 +180,7 @@ signtool sign /f certificate.p12 /p password app.exe
 ```
 
 ### Distribution Security
+
 - Use HTTPS for all downloads
 - Provide checksums for verification
 - Sign all releases
@@ -174,12 +189,14 @@ signtool sign /f certificate.p12 /p password app.exe
 ## Security Testing
 
 ### Automated Testing
+
 - Security-focused unit tests
 - Integration tests for authentication
 - Dependency vulnerability scanning
 - Static code analysis
 
 ### Manual Testing
+
 - Penetration testing for critical applications
 - Code reviews focusing on security
 - Input validation testing
@@ -205,6 +222,7 @@ In case of a security incident:
 ## Contact Information
 
 For security-related questions or concerns:
+
 - **Security Team**: [security@yourorganization.com]
 - **General Contact**: [contact@yourorganization.com]
 - **Documentation Issues**: Open a GitHub issue (for non-security matters only)

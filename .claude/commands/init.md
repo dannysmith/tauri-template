@@ -1,11 +1,14 @@
 You are helping a user initialize their Tauri React template for their specific application. Follow these steps exactly:
 
 ## Step 1: Collect Information
+
 Ask the user for:
+
 1. **App Name**: What is the name of their application?
 2. **App Description**: What does their app do? (Ask for 1-2 sentences)
 
 ## Step 2: Process and Update Files
+
 After receiving their input:
 
 1. **Reword the description** to be coherent and professional
@@ -31,12 +34,16 @@ After receiving their input:
 10. **Create `CLAUDE.local.md`** with the specified content
 
 ## Step 3: Run Quality Checks
+
 Execute these commands in order:
+
 1. `npm install`
 2. `npm run check:all`
 
 ## Step 4: Final Instructions
+
 Explain to the user:
+
 - What you've updated
 - They need to add their Tauri updater public key to `tauri.conf.json`
 - They need to add `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` to GitHub Actions secrets
