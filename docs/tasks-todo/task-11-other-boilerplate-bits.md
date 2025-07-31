@@ -8,11 +8,11 @@ Add essential boilerplate files that any open-source project needs, plus a place
 
 ### Part 1: Standard Open-Source Boilerplate
 
-- [ ] **`.cursorignore`** - Ignore patterns for Cursor AI
-- [ ] **`LICENSE.md`** - AGPL-3.0-or-later license (matches package.json)
-- [ ] **`README.md`** - Update main README to be template-focused
-- [ ] **`docs/SECURITY.md`** - Basic security policy template
-- [ ] **`docs/CONTRIBUTING.md`** - Contributing guidelines template
+- [x] **`.cursorignore`** - Ignore patterns for Cursor AI
+- [x] **`LICENSE.md`** - AGPL-3.0-or-later license (matches package.json)
+- [x] **`README.md`** - Update main README to be template-focused
+- [x] **`docs/SECURITY.md`** - Basic security policy template
+- [x] **`docs/CONTRIBUTING.md`** - Contributing guidelines template
 
 ### Part 2: Icon System
 
