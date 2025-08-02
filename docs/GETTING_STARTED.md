@@ -213,6 +213,10 @@ src-tauri/              # Rust backend
 4. **Set up error tracking** for production
 5. **Configure auto-updates** (see [SECURITY_PRODUCTION.md](SECURITY_PRODUCTION.md))
 
+### Generating App Icons
+
+You can create an app icon based on [this Figma Template](https://www.figma.com/design/1wLFubQxRb5mM0ZopsY14d/Tauri-Icon-Template?node-id=0-1&t=CclJKx6Z7vFqxA3z-1) and export it to `public/` as both SVG and a 512x512 PNG. You can then generate the required icons with `tauri icon ./public/icon.png`.
+
 ### Common Tasks
 
 - **Add a new page**: Create component + route (if using routing)
