@@ -185,7 +185,9 @@ Before deploying your application to production, ensure you complete these criti
 
 ## 📋 License
 
-This project is licensed under the [AGPL-3.0-or-later](LICENSE.md) license.
+This project is licensed under the [MIT](LICENSE.md) license.
+
+**Note:** Earlier versions incorrectly stated AGPL-3.0-or-later licensing. This was an error; all versions should be considered MIT licensed.
 
 ## 🤝 Contributing
 

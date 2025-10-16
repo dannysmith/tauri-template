@@ -305,7 +305,7 @@ Contributors will be recognized in:
 
 By contributing to this project, you agree that:
 
-- Your contributions will be licensed under the same license as the project (AGPL-3.0-or-later)
+- Your contributions will be licensed under the same license as the project
 - You have the right to contribute the code/content
 - Your contributions are your original work or properly attributed
 

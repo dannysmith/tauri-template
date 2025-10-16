@@ -1,52 +1,21 @@
-# GNU Affero General Public License v3.0 or later
+# MIT License
 
-Copyright (C) 2024 Tauri Template Contributors
+Copyright (c) 2025 Tauri Template Contributors
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as published
-by the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Affero General Public License for more details.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-You should have received a copy of the GNU Affero General Public License
-along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-## Additional Terms
-
-When you use this software to create applications, you must:
-
-1. Include this license notice in any substantial portions of the software
-2. Make the source code of your application available under the same license
-3. If you run a networked service using this software, you must make the source code available to users of that service
-
-## Full License Text
-
-The full text of the GNU Affero General Public License v3.0 can be found at:
-https://www.gnu.org/licenses/agpl-3.0.txt
-
----
-
-## Third-Party Licenses
-
-This project includes software with the following licenses:
-
-### Tauri
-
-Licensed under the Apache License 2.0 or MIT License
-https://github.com/tauri-apps/tauri
-
-### React
-
-Licensed under the MIT License
-https://github.com/facebook/react
-
-### TypeScript
-
-Licensed under the Apache License 2.0
-https://github.com/Microsoft/TypeScript
-
-For a complete list of dependencies and their licenses, see the `package.json` and `src-tauri/Cargo.toml` files.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

@@ -5,7 +5,7 @@
   "type": "module",
   "author": "Danny Smith",
   "copyright": "Copyright © 2025 Danny Smith. All rights reserved.",
-  "license": "AGPL-3.0-or-later",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
