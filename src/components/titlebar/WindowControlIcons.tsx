@@ -2,7 +2,7 @@ import type { SVGProps } from 'react'
 // From https://raw.githubusercontent.com/agmmnn/tauri-controls/refs/heads/master/apps/tauri-controls/src/tauri-controls/components/icons.tsx
 
 export const Icons = {
-  closeMac: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
+  closeMac: (props: SVGProps<SVGSVGElement>) => (
     <svg
       width="6"
       height="6"
@@ -17,7 +17,7 @@ export const Icons = {
       />
     </svg>
   ),
-  minMac: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
+  minMac: (props: SVGProps<SVGSVGElement>) => (
     <svg
       width="8"
       height="8"
@@ -36,7 +36,7 @@ export const Icons = {
       </g>
     </svg>
   ),
-  fullMac: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
+  fullMac: (props: SVGProps<SVGSVGElement>) => (
     <svg
       width="6"
       height="6"
@@ -55,7 +55,7 @@ export const Icons = {
       </g>
     </svg>
   ),
-  plusMac: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
+  plusMac: (props: SVGProps<SVGSVGElement>) => (
     <svg
       width="8"
       height="8"

@@ -50,6 +50,17 @@ export function CommandPalette() {
     [commandContext, setCommandPaletteOpen]
   )
 
+  // Handle dialog open/close with search clearing
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      setCommandPaletteOpen(open)
+      if (!open) {
+        setSearch('') // Clear search when closing
+      }
+    },
+    [setCommandPaletteOpen]
+  )
+
   // Keyboard shortcut handler
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -63,17 +74,10 @@ export function CommandPalette() {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [commandPaletteOpen, setCommandPaletteOpen])
 
-  // Clear search when dialog opens
-  useEffect(() => {
-    if (commandPaletteOpen) {
-      setSearch('')
-    }
-  }, [commandPaletteOpen])
-
   return (
     <CommandDialog
       open={commandPaletteOpen}
-      onOpenChange={setCommandPaletteOpen}
+      onOpenChange={handleOpenChange}
       title="Command Palette"
       description="Type a command or search..."
     >

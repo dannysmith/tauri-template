@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState, useRef } from 'react'
 import { ThemeProviderContext, type Theme } from '@/lib/theme-context'
 import { usePreferences } from '@/services/preferences'
 
@@ -20,13 +20,18 @@ export function ThemeProvider({
 
   // Load theme from persistent preferences
   const { data: preferences } = usePreferences()
+  const hasSyncedPreferences = useRef(false)
 
   // Sync theme with preferences when they load
-  useEffect(() => {
-    if (preferences?.theme && preferences.theme !== theme) {
+  // This is a legitimate case of syncing with external async state (persistent preferences)
+  // The ref ensures this only happens once when preferences first load
+  useLayoutEffect(() => {
+    if (preferences?.theme && !hasSyncedPreferences.current) {
+      hasSyncedPreferences.current = true
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing with external async preferences on initial load
       setTheme(preferences.theme as Theme)
     }
-  }, [preferences?.theme, theme])
+  }, [preferences?.theme])
 
   useEffect(() => {
     const root = window.document.documentElement
