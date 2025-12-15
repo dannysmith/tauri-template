@@ -13,9 +13,8 @@ vi.mock('@/store/ui-store', () => ({
   useUIStore: mockUIStore,
 }))
 
-const { registerCommands, getAllCommands, executeCommand } = await import(
-  './registry'
-)
+const { registerCommands, getAllCommands, executeCommand } =
+  await import('./registry')
 const { navigationCommands } = await import('./navigation-commands')
 
 const createMockContext = (): CommandContext => ({
