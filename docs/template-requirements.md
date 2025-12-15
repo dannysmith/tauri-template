@@ -11,7 +11,7 @@ This setup is designed to be highly effective for human developers and AI coding
 - Base: Tauri 2, React 19+ & Typescript, Rust
 - UI: Tailwind 4 & Shadcn 4
 - State: Tanstack Query & Zustand 5
-- Tests: Built-in for Rust & Vitest 3 for TS
+- Tests: Built-in for Rust & Vitest 4 for TS
 - CI & Releases: GitHub Actions + GitHub
 - DX: VSCode/Cursor, Claude Code
 
