@@ -14,7 +14,8 @@ import {
  * Place this after window controls on macOS, or at the start on Windows/Linux.
  */
 export function TitleBarLeftActions() {
-  const { leftSidebarVisible, toggleLeftSidebar } = useUIStore()
+  const leftSidebarVisible = useUIStore(state => state.leftSidebarVisible)
+  const toggleLeftSidebar = useUIStore(state => state.toggleLeftSidebar)
 
   return (
     <div className="flex items-center gap-1">
@@ -40,7 +41,8 @@ export function TitleBarLeftActions() {
  * Place this before window controls on Windows, or at the end on macOS/Linux.
  */
 export function TitleBarRightActions() {
-  const { rightSidebarVisible, toggleRightSidebar } = useUIStore()
+  const rightSidebarVisible = useUIStore(state => state.rightSidebarVisible)
+  const toggleRightSidebar = useUIStore(state => state.toggleRightSidebar)
   const commandContext = useCommandContext()
 
   const handleOpenPreferences = async () => {

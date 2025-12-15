@@ -13,7 +13,8 @@ import {
 } from '@/components/ui/command'
 
 export function CommandPalette() {
-  const { commandPaletteOpen, setCommandPaletteOpen } = useUIStore()
+  const commandPaletteOpen = useUIStore(state => state.commandPaletteOpen)
+  const setCommandPaletteOpen = useUIStore(state => state.setCommandPaletteOpen)
   const commandContext = useCommandContext()
   const [search, setSearch] = useState('')
 

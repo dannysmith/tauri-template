@@ -30,14 +30,16 @@
     "tauri:build": "npm run tauri build",
     "tauri:check": "npm run typecheck && npm run tauri build --check",
     "test:all": "npm run test:run && npm run rust:test",
-    "check:all": "npm run typecheck && npm run lint && npm run format:check && npm run rust:fmt:check && npm run rust:clippy && npm run test:run && npm run rust:test",
+    "check:all": "npm run typecheck && npm run lint && npm run ast:lint && npm run format:check && npm run rust:fmt:check && npm run rust:clippy && npm run test:run && npm run rust:test",
     "fix:all": "npm run lint:fix && npm run format && npm run rust:fmt && npm run rust:clippy:fix",
     "build:analyze": "vite build && echo '\\n📊 Bundle analysis complete. Check dist/ folder sizes or use a tool like webpack-bundle-analyzer on the dist folder.'",
     "release:prepare": "node scripts/prepare-release.js",
     "task:complete": "node scripts/complete-task.js",
     "task:rename-done": "node scripts/complete-task.js --rename-existing",
     "knip": "knip",
-    "jscpd": "jscpd"
+    "jscpd": "jscpd",
+    "ast:lint": "ast-grep scan",
+    "ast:fix": "ast-grep scan --fix"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -82,6 +84,7 @@
     "zustand": "^5.0.9"
   },
   "devDependencies": {
+    "@ast-grep/cli": "^0.40.3",
     "@eslint/js": "^9.39.2",
     "@tauri-apps/cli": "^2.9.6",
     "@testing-library/jest-dom": "^6.9.1",

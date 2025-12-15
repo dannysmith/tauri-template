@@ -64,7 +64,8 @@ const getPaneTitle = (pane: PreferencePane): string => {
 
 export function PreferencesDialog() {
   const [activePane, setActivePane] = useState<PreferencePane>('general')
-  const { preferencesOpen, setPreferencesOpen } = useUIStore()
+  const preferencesOpen = useUIStore(state => state.preferencesOpen)
+  const setPreferencesOpen = useUIStore(state => state.setPreferencesOpen)
 
   return (
     <Dialog open={preferencesOpen} onOpenChange={setPreferencesOpen}>
