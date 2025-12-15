@@ -50,10 +50,10 @@ const leftSidebarVisible = useUIStore(state => state.leftSidebarVisible)
 
 ```typescript
 // BAD: lib/utils.ts
-export function useMyHook() { }
+export function useMyHook() {}
 
 // GOOD: hooks/use-my-hook.ts
-export function useMyHook() { }
+export function useMyHook() {}
 ```
 
 **Why:** Maintains separation between pure logic and React code. The `lib/` directory should contain only pure business logic and utilities.
@@ -94,7 +94,7 @@ message: |
 severity: error # or warning
 language: Tsx # or TypeScript
 files: # Optional: restrict to paths
-  - "src/lib/**/*.ts"
+  - 'src/lib/**/*.ts'
 rule:
   pattern: $PATTERN
 note: |
@@ -130,12 +130,12 @@ rule:
 
 ## Tool Comparison
 
-| Tool     | Purpose                 | In check:all |
-| -------- | ----------------------- | ------------ |
-| ESLint   | Syntax, style, TS rules | Yes          |
-| ast-grep | Architecture patterns   | Yes          |
-| Knip     | Unused code             | No (periodic)|
-| jscpd    | Duplicate code          | No (periodic)|
+| Tool     | Purpose                 | In check:all  |
+| -------- | ----------------------- | ------------- |
+| ESLint   | Syntax, style, TS rules | Yes           |
+| ast-grep | Architecture patterns   | Yes           |
+| Knip     | Unused code             | No (periodic) |
+| jscpd    | Duplicate code          | No (periodic) |
 
 ## Troubleshooting
 

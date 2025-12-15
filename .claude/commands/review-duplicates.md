@@ -76,14 +76,16 @@ For High/Medium risk, use AskUserQuestion:
 
 ```typescript
 {
-  questions: [{
-    question: "Should we refactor this duplicate?",
-    header: "Refactor?",
-    options: [
-      { label: "Yes, extract now", description: "Create shared function" },
-      { label: "Keep as-is", description: "Intentional duplication" }
-    ]
-  }]
+  questions: [
+    {
+      question: 'Should we refactor this duplicate?',
+      header: 'Refactor?',
+      options: [
+        { label: 'Yes, extract now', description: 'Create shared function' },
+        { label: 'Keep as-is', description: 'Intentional duplication' },
+      ],
+    },
+  ]
 }
 ```
 

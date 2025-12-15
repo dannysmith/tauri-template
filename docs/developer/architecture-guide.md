@@ -233,13 +233,13 @@ This includes:
 
 ### Static Analysis Tools
 
-| Tool           | Purpose                      | Usage              |
-| -------------- | ---------------------------- | ------------------ |
-| ESLint         | Syntax, style, TS rules      | `npm run lint`     |
-| ast-grep       | Architecture patterns        | `npm run ast:lint` |
-| React Compiler | Automatic memoization        | Build-time         |
-| Knip           | Unused code detection        | `npm run knip`     |
-| jscpd          | Duplicate code detection     | `npm run jscpd`    |
+| Tool           | Purpose                  | Usage              |
+| -------------- | ------------------------ | ------------------ |
+| ESLint         | Syntax, style, TS rules  | `npm run lint`     |
+| ast-grep       | Architecture patterns    | `npm run ast:lint` |
+| React Compiler | Automatic memoization    | Build-time         |
+| Knip           | Unused code detection    | `npm run knip`     |
+| jscpd          | Duplicate code detection | `npm run jscpd`    |
 
 **React Compiler** handles memoization automatically - no manual `useMemo`/`useCallback` needed.
 

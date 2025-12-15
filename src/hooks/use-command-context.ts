@@ -11,7 +11,10 @@ export function useCommandContext(): CommandContext {
     useUIStore.getState().togglePreferences()
   }
 
-  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+  const showToast = (
+    message: string,
+    type: 'success' | 'error' | 'info' = 'info'
+  ) => {
     notify(message, undefined, { type })
   }
 

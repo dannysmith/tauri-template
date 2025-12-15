@@ -78,15 +78,17 @@ For items needing review, provide context and use AskUserQuestion:
 
 ```typescript
 {
-  questions: [{
-    question: "Should we remove the unused 'example-module.ts' file?",
-    header: "Remove?",
-    multiSelect: false,
-    options: [
-      { label: "Yes, remove", description: "File has no imports anywhere" },
-      { label: "Keep", description: "I plan to use this" }
-    ]
-  }]
+  questions: [
+    {
+      question: "Should we remove the unused 'example-module.ts' file?",
+      header: 'Remove?',
+      multiSelect: false,
+      options: [
+        { label: 'Yes, remove', description: 'File has no imports anywhere' },
+        { label: 'Keep', description: 'I plan to use this' },
+      ],
+    },
+  ]
 }
 ```
 
