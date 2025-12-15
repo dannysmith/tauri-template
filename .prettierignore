@@ -18,6 +18,7 @@ tailwind.config.js
 # Generated files
 package-lock.json
 .git/
+src/lib/bindings.ts
 
 # Logs
 *.log
