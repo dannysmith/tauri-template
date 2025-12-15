@@ -1,5 +1,5 @@
-import { invoke } from '@tauri-apps/api/core'
 import { logger } from '@/lib/logger'
+import { commands, type JsonValue } from '@/lib/tauri-bindings'
 
 /**
  * Simple data recovery pattern for saving important data to disk
@@ -34,20 +34,20 @@ export async function saveEmergencyData(
   data: unknown,
   options: RecoveryOptions = {}
 ): Promise<void> {
-  try {
-    logger.debug('Saving emergency data', { filename, dataType: typeof data })
+  logger.debug('Saving emergency data', { filename, dataType: typeof data })
 
-    await invoke('save_emergency_data', {
+  const result = await commands.saveEmergencyData(filename, data as JsonValue)
+
+  if (result.status === 'error') {
+    logger.error('Failed to save emergency data', {
       filename,
-      data,
+      error: result.error,
     })
+    throw new Error(result.error)
+  }
 
-    if (!options.silent) {
-      logger.info('Emergency data saved successfully', { filename })
-    }
-  } catch (error) {
-    logger.error('Failed to save emergency data', { filename, error })
-    throw error
+  if (!options.silent) {
+    logger.info('Emergency data saved successfully', { filename })
   }
 }
 
@@ -69,28 +69,25 @@ export async function saveEmergencyData(
 export async function loadEmergencyData<T = unknown>(
   filename: string
 ): Promise<T | null> {
-  try {
-    logger.debug('Loading emergency data', { filename })
+  logger.debug('Loading emergency data', { filename })
 
-    const data = await invoke<T>('load_emergency_data', {
-      filename,
-    })
+  const result = await commands.loadEmergencyData(filename)
 
-    logger.info('Emergency data loaded successfully', { filename })
-    return data
-  } catch (error) {
-    if (
-      error &&
-      typeof error === 'string' &&
-      error.includes('File not found')
-    ) {
+  if (result.status === 'error') {
+    if (result.error.includes('File not found')) {
       logger.debug('Recovery file not found', { filename })
       return null
     }
 
-    logger.error('Failed to load emergency data', { filename, error })
-    throw error
+    logger.error('Failed to load emergency data', {
+      filename,
+      error: result.error,
+    })
+    throw new Error(result.error)
   }
+
+  logger.info('Emergency data loaded successfully', { filename })
+  return result.data as T
 }
 
 /**
@@ -106,22 +103,25 @@ export async function loadEmergencyData<T = unknown>(
  * ```
  */
 export async function cleanupOldFiles(): Promise<number> {
-  try {
-    logger.debug('Starting recovery file cleanup')
+  logger.debug('Starting recovery file cleanup')
 
-    const removedCount = await invoke<number>('cleanup_old_recovery_files')
+  const result = await commands.cleanupOldRecoveryFiles()
 
-    if (removedCount > 0) {
-      logger.info('Cleaned up old recovery files', { removedCount })
-    } else {
-      logger.debug('No old recovery files to clean up')
-    }
-
-    return removedCount
-  } catch (error) {
-    logger.error('Failed to cleanup old recovery files', { error })
-    throw error
+  if (result.status === 'error') {
+    logger.error('Failed to cleanup old recovery files', {
+      error: result.error,
+    })
+    throw new Error(result.error)
   }
+
+  const removedCount = result.data
+  if (removedCount > 0) {
+    logger.info('Cleaned up old recovery files', { removedCount })
+  } else {
+    logger.debug('No old recovery files to clean up')
+  }
+
+  return removedCount
 }
 
 /**

@@ -1,8 +1,10 @@
+mod bindings;
 mod utils;
 
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use specta::Type;
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder};
@@ -48,6 +50,7 @@ fn validate_theme(theme: &str) -> Result<(), String> {
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
+#[specta::specta]
 fn greet(name: &str) -> String {
     // Input validation
     if let Err(e) = validate_string_input(name, 100, "Name") {
@@ -61,7 +64,7 @@ fn greet(name: &str) -> String {
 
 // Preferences data structure
 // Only contains settings that should be persisted to disk
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct AppPreferences {
     pub theme: String,
     // Add new persistent preferences here, e.g.:
@@ -92,6 +95,7 @@ fn get_preferences_path(app: &AppHandle) -> Result<PathBuf, String> {
 }
 
 #[tauri::command]
+#[specta::specta]
 async fn load_preferences(app: AppHandle) -> Result<AppPreferences, String> {
     log::debug!("Loading preferences from disk");
     let prefs_path = get_preferences_path(&app)?;
@@ -116,6 +120,7 @@ async fn load_preferences(app: AppHandle) -> Result<AppPreferences, String> {
 }
 
 #[tauri::command]
+#[specta::specta]
 async fn save_preferences(app: AppHandle, preferences: AppPreferences) -> Result<(), String> {
     // Validate theme value
     validate_theme(&preferences.theme)?;
@@ -146,6 +151,7 @@ async fn save_preferences(app: AppHandle, preferences: AppPreferences) -> Result
 }
 
 #[tauri::command]
+#[specta::specta]
 async fn send_native_notification(
     app: AppHandle,
     title: String,
@@ -199,6 +205,7 @@ fn get_recovery_dir(app: &AppHandle) -> Result<PathBuf, String> {
 }
 
 #[tauri::command]
+#[specta::specta]
 async fn save_emergency_data(app: AppHandle, filename: String, data: Value) -> Result<(), String> {
     log::info!("Saving emergency data to file: {filename}");
 
@@ -238,6 +245,7 @@ async fn save_emergency_data(app: AppHandle, filename: String, data: Value) -> R
 }
 
 #[tauri::command]
+#[specta::specta]
 async fn load_emergency_data(app: AppHandle, filename: String) -> Result<Value, String> {
     log::info!("Loading emergency data from file: {filename}");
 
@@ -267,6 +275,7 @@ async fn load_emergency_data(app: AppHandle, filename: String) -> Result<Value, 
 }
 
 #[tauri::command]
+#[specta::specta]
 async fn cleanup_old_recovery_files(app: AppHandle) -> Result<u32, String> {
     log::info!("Cleaning up old recovery files");
 
@@ -397,6 +406,12 @@ fn create_app_menu(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let builder = bindings::generate_bindings();
+
+    // Export TypeScript bindings in debug builds
+    #[cfg(debug_assertions)]
+    bindings::export_ts_bindings();
+
     tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
@@ -510,15 +525,7 @@ pub fn run() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![
-            greet,
-            load_preferences,
-            save_preferences,
-            send_native_notification,
-            save_emergency_data,
-            load_emergency_data,
-            cleanup_old_recovery_files
-        ])
+        .invoke_handler(builder.invoke_handler())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

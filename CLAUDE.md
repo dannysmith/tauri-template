@@ -65,8 +65,25 @@ const handleAction = useCallback(() => {
 ### Event-Driven Bridge
 
 - **Rust → React**: `app.emit("event-name", data)` → `listen("event-name", handler)`
-- **React → Rust**: `invoke("command_name", args)` with TanStack Query
+- **React → Rust**: Use typed commands from `@/lib/tauri-bindings` (tauri-specta)
 - **Commands**: All actions flow through centralized command system
+
+### Tauri Command Pattern (tauri-specta)
+
+```typescript
+// ✅ GOOD: Type-safe commands with Result handling
+import { commands } from '@/lib/tauri-bindings'
+
+const result = await commands.loadPreferences()
+if (result.status === 'ok') {
+  console.log(result.data.theme)
+}
+
+// ❌ BAD: String-based invoke (no type safety)
+const prefs = await invoke('load_preferences')
+```
+
+**Adding commands**: See `docs/developer/tauri-commands.md`
 
 ### Documentation & Versions
 

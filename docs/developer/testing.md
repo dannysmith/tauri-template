@@ -115,11 +115,13 @@ test('toggles sidebar visibility', () => {
 
 ### Mocking Tauri APIs
 
+The template uses tauri-specta for type-safe commands. Mocks are configured in `src/test/setup.ts`:
+
 ```typescript
 // src/test/setup.ts
 import { vi } from 'vitest'
 
-// Mock Tauri APIs for tests
+// Mock Tauri event APIs
 vi.mock('@tauri-apps/api/event', () => ({
   listen: vi.fn().mockResolvedValue(() => {}),
 }))
@@ -128,9 +130,42 @@ vi.mock('@tauri-apps/plugin-updater', () => ({
   check: vi.fn().mockResolvedValue(null),
 }))
 
-vi.mock('@tauri-apps/api/core', () => ({
-  invoke: vi.fn(),
+// Mock typed Tauri bindings (tauri-specta generated)
+vi.mock('@/lib/tauri-bindings', () => ({
+  commands: {
+    greet: vi.fn().mockResolvedValue('Hello, test!'),
+    loadPreferences: vi
+      .fn()
+      .mockResolvedValue({ status: 'ok', data: { theme: 'system' } }),
+    savePreferences: vi.fn().mockResolvedValue({ status: 'ok', data: null }),
+    sendNativeNotification: vi
+      .fn()
+      .mockResolvedValue({ status: 'ok', data: null }),
+    saveEmergencyData: vi.fn().mockResolvedValue({ status: 'ok', data: null }),
+    loadEmergencyData: vi.fn().mockResolvedValue({ status: 'ok', data: null }),
+    cleanupOldRecoveryFiles: vi
+      .fn()
+      .mockResolvedValue({ status: 'ok', data: 0 }),
+  },
 }))
+```
+
+Commands return `Result` types that tests should handle:
+
+```typescript
+// Example: Testing with typed commands
+import { commands } from '@/lib/tauri-bindings'
+
+const mockCommands = vi.mocked(commands)
+
+test('loads preferences', async () => {
+  mockCommands.loadPreferences.mockResolvedValue({
+    status: 'ok',
+    data: { theme: 'dark' },
+  })
+
+  // ... test code
+})
 ```
 
 ### Testing Async Operations
@@ -140,14 +175,17 @@ vi.mock('@tauri-apps/api/core', () => ({
 import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { vi } from 'vitest'
-import { invoke } from '@tauri-apps/api/core'
+import { commands } from '@/lib/tauri-bindings'
 import { usePreferences } from './preferences'
 
-const mockInvoke = vi.mocked(invoke)
+const mockCommands = vi.mocked(commands)
 
 test('loads preferences successfully', async () => {
   const mockPreferences = { theme: 'dark' }
-  mockInvoke.mockResolvedValue(mockPreferences)
+  mockCommands.loadPreferences.mockResolvedValue({
+    status: 'ok',
+    data: mockPreferences,
+  })
 
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -164,7 +202,7 @@ test('loads preferences successfully', async () => {
   })
 
   expect(result.current.data).toEqual(mockPreferences)
-  expect(mockInvoke).toHaveBeenCalledWith('load_preferences')
+  expect(mockCommands.loadPreferences).toHaveBeenCalled()
 })
 ```
 
@@ -441,17 +479,22 @@ test('command executes correctly', () => {
 
 ```typescript
 test('handles API errors gracefully', async () => {
-  mockInvoke.mockRejectedValue(new Error('Network error'))
+  const mockCommands = vi.mocked(commands)
+  mockCommands.loadPreferences.mockResolvedValue({
+    status: 'error',
+    error: 'Failed to load preferences',
+  })
 
   const { result } = renderHook(() => usePreferences(), {
     wrapper: TestProviders,
   })
 
+  // Note: usePreferences returns defaults on error, doesn't throw
   await waitFor(() => {
-    expect(result.current.isError).toBe(true)
+    expect(result.current.isSuccess).toBe(true)
   })
 
-  expect(result.current.error).toBeInstanceOf(Error)
+  expect(result.current.data).toEqual({ theme: 'system' }) // Default value
 })
 ```
 

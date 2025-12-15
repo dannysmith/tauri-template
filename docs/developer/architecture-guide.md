@@ -163,6 +163,32 @@ pub fn sanitize_filename(filename: &str) -> String {
 
 ## Integration Patterns
 
+### Type-Safe Tauri Commands (tauri-specta)
+
+All Tauri commands are type-safe using [tauri-specta](https://github.com/specta-rs/tauri-specta). TypeScript bindings are auto-generated from Rust.
+
+```typescript
+// ✅ Good: Type-safe with autocomplete and compile-time checking
+import { commands, type AppPreferences } from '@/lib/tauri-bindings'
+
+const result = await commands.loadPreferences()
+if (result.status === 'ok') {
+  console.log(result.data.theme) // Type-safe access
+}
+
+// ❌ Bad: String-based invoke (no type safety)
+const prefs = await invoke<AppPreferences>('load_preferences')
+```
+
+**Adding new commands:**
+
+1. Add `#[specta::specta]` to Rust command
+2. Register in `src-tauri/src/bindings.rs`
+3. Run `npm run rust:bindings` to regenerate TypeScript
+4. Import from `@/lib/tauri-bindings`
+
+See [tauri-commands.md](./tauri-commands.md) for details.
+
 ### Multi-Source Event Coordination
 
 The same action can be triggered from multiple sources:

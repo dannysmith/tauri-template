@@ -24,6 +24,7 @@
     "rust:clippy": "source ~/.cargo/env && cd src-tauri && cargo clippy -- -D warnings",
     "rust:clippy:fix": "source ~/.cargo/env && cd src-tauri && cargo clippy --fix --allow-dirty",
     "rust:test": "source ~/.cargo/env && cd src-tauri && cargo test",
+    "rust:bindings": "source ~/.cargo/env && cd src-tauri && cargo test export_bindings -- --ignored --nocapture",
     "tauri": "tauri",
     "tauri:dev": "source ~/.cargo/env && npm run tauri dev",
     "tauri:build": "npm run tauri build",
