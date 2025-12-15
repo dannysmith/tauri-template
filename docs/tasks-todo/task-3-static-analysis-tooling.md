@@ -13,16 +13,17 @@ Add comprehensive static analysis tooling to catch issues early and enforce arch
 
 ### Why These Tools?
 
-| Tool | Purpose | When to Run |
-|------|---------|-------------|
-| **React Compiler** | Auto-memoize, catch hook issues | Always (build-time) |
-| **Knip** | Find unused code/deps | Periodically (refactoring) |
-| **jscpd** | Find duplicate code | Periodically (refactoring) |
-| **ast-grep** | Enforce architecture patterns | Always (in check:all) |
+| Tool               | Purpose                         | When to Run                |
+| ------------------ | ------------------------------- | -------------------------- |
+| **React Compiler** | Auto-memoize, catch hook issues | Always (build-time)        |
+| **Knip**           | Find unused code/deps           | Periodically (refactoring) |
+| **jscpd**          | Find duplicate code             | Periodically (refactoring) |
+| **ast-grep**       | Enforce architecture patterns   | Always (in check:all)      |
 
 ### Template Value
 
 This establishes patterns for apps built with this template:
+
 - React Compiler eliminates manual `useMemo`/`useCallback` optimization
 - Knip prevents dependency bloat over time
 - jscpd catches copy-paste debt before it accumulates
@@ -35,6 +36,7 @@ This establishes patterns for apps built with this template:
 **Goal:** Enable React Compiler for automatic memoization and hook validation.
 
 **Current State:**
+
 - React 19 (compatible)
 - Vite with `@vitejs/plugin-react`
 - No babel configuration currently
@@ -54,11 +56,13 @@ This establishes patterns for apps built with this template:
 ### Implementation
 
 **Install:**
+
 ```bash
 pnpm add -D babel-plugin-react-compiler@latest
 ```
 
 **Update vite.config.ts:**
+
 ```typescript
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
@@ -116,29 +120,26 @@ export default defineConfig(async () => ({
 ### Implementation
 
 **Install:**
+
 ```bash
 pnpm add -D knip
 ```
 
 **Create knip.json:**
+
 ```json
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "entry": ["src/main.tsx"],
   "project": ["src/**/*.{ts,tsx}"],
-  "ignore": [
-    "src/components/ui/**",
-    "src/test/**"
-  ],
-  "ignoreDependencies": [
-    "@tauri-apps/*",
-    "@radix-ui/*"
-  ],
+  "ignore": ["src/components/ui/**", "src/test/**"],
+  "ignoreDependencies": ["@tauri-apps/*", "@radix-ui/*"],
   "ignoreExportsUsedInFile": true
 }
 ```
 
 **Add to package.json:**
+
 ```json
 {
   "scripts": {
@@ -162,6 +163,7 @@ description: 'Run knip and intelligently clean up unused code and dependencies'
 ## Purpose
 
 Run knip to find unused files, dependencies, and exports, then intelligently clean up while preserving:
+
 - shadcn/ui components (future use)
 - Radix dependencies used by shadcn components
 - Barrel exports (intentionally export everything)
@@ -188,12 +190,13 @@ ls src/components/ui/
 Build mapping of Radix packages used by shadcn components:
 
 \`\`\`bash
-grep -r "from '@radix-ui" src/components/ui/*.tsx 2>/dev/null || echo "No Radix imports found"
+grep -r "from '@radix-ui" src/components/ui/\*.tsx 2>/dev/null || echo "No Radix imports found"
 \`\`\`
 
 ### 3. Categorize Items
 
 **KEEP (DO NOT REMOVE):**
+
 - All files in `src/components/ui/` (shadcn - future use)
 - Radix dependencies used by ANY shadcn component
 - All barrel exports (`index.ts` files)
@@ -201,11 +204,13 @@ grep -r "from '@radix-ui" src/components/ui/*.tsx 2>/dev/null || echo "No Radix 
 - Core dependencies: `zod`, `react-hook-form`, `@hookform/resolvers`, `date-fns`
 
 **SAFE TO AUTO-REMOVE:**
+
 - Unused non-shadcn files with no imports anywhere
 - Dependencies with zero usage
 - Unused devDependencies for tools not configured
 
 **NEEDS USER REVIEW:**
+
 - Files that might be planned features
 - Ambiguous dependency usage
 - Type exports (might be external API)
@@ -215,10 +220,13 @@ grep -r "from '@radix-ui" src/components/ui/*.tsx 2>/dev/null || echo "No Radix 
 For safe items:
 
 \`\`\`bash
+
 # Unused dependencies
+
 pnpm remove <package-name>
 
 # Unused files
+
 rm -f <file-path>
 \`\`\`
 
@@ -228,35 +236,40 @@ For items needing review, provide context and use AskUserQuestion:
 
 \`\`\`typescript
 {
-  questions: [{
-    question: "Should we remove the unused 'example-module.ts' file?",
-    header: "Remove?",
-    multiSelect: false,
-    options: [
-      { label: "Yes, remove", description: "File has no imports anywhere" },
-      { label: "Keep", description: "I plan to use this" }
-    ]
-  }]
+questions: [{
+question: "Should we remove the unused 'example-module.ts' file?",
+header: "Remove?",
+multiSelect: false,
+options: [
+{ label: "Yes, remove", description: "File has no imports anywhere" },
+{ label: "Keep", description: "I plan to use this" }
+]
+}]
 }
 \`\`\`
 
 ### 6. Output Format
 
 \`\`\`markdown
+
 # Knip Cleanup Summary
 
 ## Auto-Removed (X items)
+
 - [file/package] - reason
 
 ## Kept (X items)
+
 - [file/package] - reason (shadcn/Radix/barrel/etc.)
 
 ## Needs Your Review (X items)
+
 ### [Item Name]
+
 - Type: [file/dependency/export]
 - Context: [why might still be needed]
 - Recommendation: [remove/keep with confidence]
-\`\`\`
+  \`\`\`
 
 ### 7. After Cleanup
 
@@ -300,11 +313,13 @@ pnpm run check:all
 ### Implementation
 
 **Install:**
+
 ```bash
 pnpm add -D jscpd
 ```
 
 **Create .jscpd.json:**
+
 ```json
 {
   "threshold": 0,
@@ -327,6 +342,7 @@ pnpm add -D jscpd
 ```
 
 **Add to package.json:**
+
 ```json
 {
   "scripts": {
@@ -336,6 +352,7 @@ pnpm add -D jscpd
 ```
 
 **Add to .gitignore:**
+
 ```
 jscpd-report/
 ```
@@ -375,6 +392,7 @@ cat jscpd-report/jscpd-report.json
 ### 3. Categorize Each Duplicate
 
 **By Type:**
+
 - **Business Logic** - Algorithms, data processing (high priority)
 - **Component Patterns** - React patterns (might be intentional)
 - **Utility Functions** - Helpers (medium priority)
@@ -382,6 +400,7 @@ cat jscpd-report/jscpd-report.json
 - **Setup/Config** - Initialization (low priority)
 
 **By Risk:**
+
 - **High** (>15 lines business logic, complex conditionals)
 - **Medium** (10-15 lines utilities, transformations)
 - **Low** (<10 lines, patterns, boilerplate)
@@ -389,12 +408,15 @@ cat jscpd-report/jscpd-report.json
 ### 4. Present Findings
 
 \`\`\`markdown
+
 # Duplicate Code Review
 
 Found X duplicates across Y files
 
 ## High Priority - Business Logic
+
 ### Duplicate #1: [Name]
+
 - **Type**: Business Logic
 - **Risk**: High
 - **Lines**: X lines (Y tokens)
@@ -406,10 +428,12 @@ Found X duplicates across Y files
 - **Confidence**: X%
 
 ## Low Priority - Likely Intentional
+
 ### Duplicate #N: [Name]
+
 - **Analysis**: Intentional pattern for [reason]
 - **Recommendation**: Keep as-is
-\`\`\`
+  \`\`\`
 
 ### 5. Interactive Review
 
@@ -417,14 +441,14 @@ For High/Medium risk, use AskUserQuestion:
 
 \`\`\`typescript
 {
-  questions: [{
-    question: "Should we refactor this duplicate?",
-    header: "Refactor?",
-    options: [
-      { label: "Yes, extract now", description: "Create shared function" },
-      { label: "Keep as-is", description: "Intentional duplication" }
-    ]
-  }]
+questions: [{
+question: "Should we refactor this duplicate?",
+header: "Refactor?",
+options: [
+{ label: "Yes, extract now", description: "Create shared function" },
+{ label: "Keep as-is", description: "Intentional duplication" }
+]
+}]
 }
 \`\`\`
 
@@ -471,6 +495,7 @@ rm -rf jscpd-report
 **Goal:** Add ast-grep for architectural pattern enforcement.
 
 **Why ast-grep?**
+
 - ESLint can't enforce directory boundaries or structural patterns
 - Extremely fast (Rust-based)
 - Machine-readable output for AI agents
@@ -495,19 +520,21 @@ rm -rf jscpd-report
 ### Implementation
 
 **Install:**
+
 ```bash
 pnpm add -D @ast-grep/cli
 ```
 
 **Create sgconfig.yml:**
+
 ```yaml
 ruleDirs:
   - ./.ast-grep/rules
 
 languageGlobs:
   typescript:
-    - "src/**/*.ts"
-    - "src/**/*.tsx"
+    - 'src/**/*.ts'
+    - 'src/**/*.tsx'
 
 testConfigs:
   - testDir: ./.ast-grep/test
@@ -518,6 +545,7 @@ output:
 ```
 
 **Add to package.json:**
+
 ```json
 {
   "scripts": {
@@ -572,8 +600,8 @@ message: |
 severity: error
 language: typescript
 files:
-  - "src/lib/**/*.ts"
-  - "src/lib/**/*.tsx"
+  - 'src/lib/**/*.ts'
+  - 'src/lib/**/*.tsx'
 rule:
   pattern: export function $HOOK($$) { $$ }
   kind: function_declaration
@@ -605,8 +633,8 @@ message: |
 severity: error
 language: typescript
 files:
-  - "src/lib/**/*.ts"
-  - "src/lib/**/*.tsx"
+  - 'src/lib/**/*.ts'
+  - 'src/lib/**/*.tsx'
 rule:
   pattern: useUIStore($$)
 note: |
@@ -670,6 +698,7 @@ Create `docs/developer/ast-grep-linting.md`:
 ## Overview
 
 ast-grep enforces architectural patterns that ESLint cannot detect:
+
 - Directory boundaries (hooks in hooks/, not lib/)
 - Structural patterns (no Zustand destructuring)
 - Complex rules (getState() pattern)
@@ -684,13 +713,17 @@ ast-grep enforces architectural patterns that ESLint cannot detect:
 ## Usage
 
 \`\`\`bash
+
 # Scan for violations
+
 pnpm run ast:lint
 
 # Auto-fix (where possible)
+
 pnpm run ast:fix
 
 # Included in check:all
+
 pnpm run check:all
 \`\`\`
 
@@ -737,6 +770,7 @@ const value = useUIStore.getState().value
 ### When to Add Rules
 
 Add ast-grep rules when:
+
 - You identify a repeated architectural pattern
 - ESLint can't express the rule
 - The pattern has caused bugs or issues
@@ -746,19 +780,20 @@ Add ast-grep rules when:
 \`\`\`yaml
 id: rule-name
 message: |
-  Brief description with examples.
+Brief description with examples.
 
-  ❌ BAD: example
-  ✅ GOOD: example
-severity: error  # or warning
+❌ BAD: example
+✅ GOOD: example
+severity: error # or warning
 language: typescript
-files:  # Optional: restrict to paths
-  - "src/lib/**/*.ts"
-rule:
+files: # Optional: restrict to paths
+
+- "src/lib/\*_/_.ts"
+  rule:
   pattern: $PATTERN
-note: |
+  note: |
   Additional context and doc references.
-\`\`\`
+  \`\`\`
 
 ### Pattern Syntax
 
@@ -769,7 +804,9 @@ note: |
 ### Testing Rules
 
 \`\`\`bash
+
 # Test pattern interactively
+
 npx ast-grep run -p 'const { $$PROPS } = useUIStore($$)'
 \`\`\`
 
@@ -781,19 +818,17 @@ When you add a new Zustand store, update the rules:
 2. Add pattern for new store:
    \`\`\`yaml
    rule:
-     any:
-       - pattern: const { $$PROPS } = useUIStore($$)
-       - pattern: const { $$PROPS } = useNewStore($$)  # Add this
+   any: - pattern: const { $$PROPS } = useUIStore($$) - pattern: const { $$PROPS } = useNewStore($$) # Add this
    \`\`\`
 
 ## Tool Comparison
 
-| Tool | Purpose | In check:all |
-|------|---------|--------------|
-| ESLint | Syntax, style, TS rules | Yes |
-| ast-grep | Architecture patterns | Yes |
-| Knip | Unused code | No (periodic) |
-| jscpd | Duplicate code | No (periodic) |
+| Tool     | Purpose                 | In check:all  |
+| -------- | ----------------------- | ------------- |
+| ESLint   | Syntax, style, TS rules | Yes           |
+| ast-grep | Architecture patterns   | Yes           |
+| Knip     | Unused code             | No (periodic) |
+| jscpd    | Duplicate code          | No (periodic) |
 ```
 
 ### Acceptance Criteria
@@ -834,27 +869,27 @@ When you add a new Zustand store, update the rules:
 
 ### New Files
 
-| File | Purpose |
-|------|---------|
-| `.jscpd.json` | jscpd configuration |
-| `knip.json` | Knip configuration |
-| `sgconfig.yml` | ast-grep configuration |
-| `.ast-grep/rules/zustand/no-destructure.yml` | Zustand rule |
-| `.ast-grep/rules/architecture/hooks-in-hooks-dir.yml` | Hooks rule |
-| `.ast-grep/rules/architecture/no-store-in-lib.yml` | Store rule |
-| `.claude/commands/knip-cleanup.md` | Knip command |
-| `.claude/commands/review-duplicates.md` | jscpd command |
-| `docs/developer/ast-grep-linting.md` | Documentation |
+| File                                                  | Purpose                |
+| ----------------------------------------------------- | ---------------------- |
+| `.jscpd.json`                                         | jscpd configuration    |
+| `knip.json`                                           | Knip configuration     |
+| `sgconfig.yml`                                        | ast-grep configuration |
+| `.ast-grep/rules/zustand/no-destructure.yml`          | Zustand rule           |
+| `.ast-grep/rules/architecture/hooks-in-hooks-dir.yml` | Hooks rule             |
+| `.ast-grep/rules/architecture/no-store-in-lib.yml`    | Store rule             |
+| `.claude/commands/knip-cleanup.md`                    | Knip command           |
+| `.claude/commands/review-duplicates.md`               | jscpd command          |
+| `docs/developer/ast-grep-linting.md`                  | Documentation          |
 
 ### Modified Files
 
-| File | Changes |
-|------|---------|
-| `vite.config.ts` | Add React Compiler babel plugin |
-| `package.json` | Add scripts and devDependencies |
-| `.gitignore` | Add jscpd-report/ |
-| `docs/developer/architecture-guide.md` | Reference static analysis |
-| `CLAUDE.md` | Note React Compiler, ast-grep |
+| File                                   | Changes                         |
+| -------------------------------------- | ------------------------------- |
+| `vite.config.ts`                       | Add React Compiler babel plugin |
+| `package.json`                         | Add scripts and devDependencies |
+| `.gitignore`                           | Add jscpd-report/               |
+| `docs/developer/architecture-guide.md` | Reference static analysis       |
+| `CLAUDE.md`                            | Note React Compiler, ast-grep   |
 
 ---
 

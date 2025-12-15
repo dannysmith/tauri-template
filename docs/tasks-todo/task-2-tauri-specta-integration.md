@@ -27,12 +27,13 @@ Integrate [tauri-specta](https://github.com/specta-rs/tauri-specta) to generate 
 
 ### Rust Backend
 
-| Category | Count | Location |
-|----------|-------|----------|
-| Commands | 7 | `lib.rs` |
-| Model structs | 1 | `AppPreferences` in `lib.rs` |
+| Category      | Count | Location                     |
+| ------------- | ----- | ---------------------------- |
+| Commands      | 7     | `lib.rs`                     |
+| Model structs | 1     | `AppPreferences` in `lib.rs` |
 
 **Commands:**
+
 - `greet` - Simple sync command
 - `load_preferences` - Uses `AppHandle`
 - `save_preferences` - Uses `AppHandle`
@@ -43,12 +44,13 @@ Integrate [tauri-specta](https://github.com/specta-rs/tauri-specta) to generate 
 
 ### Frontend
 
-| Category | Count | Location |
-|----------|-------|----------|
-| Files using `invoke()` | 4 | `services/`, `lib/` |
-| Manual type definitions | 1 | `src/types/preferences.ts` |
+| Category                | Count | Location                   |
+| ----------------------- | ----- | -------------------------- |
+| Files using `invoke()`  | 4     | `services/`, `lib/`        |
+| Manual type definitions | 1     | `src/types/preferences.ts` |
 
 **Files:**
+
 - `src/services/preferences.ts` - `load_preferences`, `save_preferences`
 - `src/lib/recovery.ts` - `save_emergency_data`, `load_emergency_data`, `cleanup_old_recovery_files`
 - `src/lib/notifications.ts` - `send_native_notification`
@@ -65,6 +67,7 @@ Commands using `Value` (like `save_emergency_data`) will have `unknown` typed pa
 ### 2. Six Commands Use `AppHandle`
 
 These require the `tauri` feature on specta:
+
 - `load_preferences`, `save_preferences`
 - `send_native_notification`
 - `save_emergency_data`, `load_emergency_data`, `cleanup_old_recovery_files`
@@ -102,6 +105,7 @@ tauri-specta = { version = "=2.0.0-rc.21", features = ["typescript"] }
 ```
 
 **Required features:**
+
 - `derive` - enables `#[derive(Type)]` macro
 - `tauri` - required for `AppHandle` support in 6 commands
 - `typescript` - generates `.ts` bindings
@@ -234,6 +238,7 @@ const prefs = await commands.loadPreferences()
 **4.3 Remove manual type definitions**
 
 After migration:
+
 - [ ] Delete or deprecate `src/types/preferences.ts`
 - [ ] Update imports to use generated types from `@/lib/tauri-bindings`
 
@@ -260,6 +265,7 @@ vi.mock('@/lib/tauri-bindings', () => ({
 ```
 
 **Files to check:**
+
 - [ ] `src/App.test.tsx`
 - [ ] Any other files mocking `invoke`
 
@@ -273,6 +279,7 @@ vi.mock('@/lib/tauri-bindings', () => ({
 **6.2 Create commands guide**
 
 Create `docs/developer/tauri-commands.md` covering:
+
 - How to add new commands with specta
 - Generated bindings location and usage
 - Testing patterns
@@ -287,35 +294,35 @@ Note the tauri-specta pattern in the Technology Stack section.
 
 ### Rust
 
-| File | Action |
-|------|--------|
-| `src-tauri/Cargo.toml` | Add specta dependencies |
-| `src-tauri/src/lib.rs` | Add Type derive, specta macro, update builder |
-| `src-tauri/src/bindings.rs` | **CREATE** |
+| File                        | Action                                        |
+| --------------------------- | --------------------------------------------- |
+| `src-tauri/Cargo.toml`      | Add specta dependencies                       |
+| `src-tauri/src/lib.rs`      | Add Type derive, specta macro, update builder |
+| `src-tauri/src/bindings.rs` | **CREATE**                                    |
 
 ### Frontend
 
-| File | Action |
-|------|--------|
-| `src/lib/bindings.ts` | **GENERATED** - commit this |
-| `src/lib/tauri-bindings.ts` | **CREATE** - wrapper |
-| `src/services/preferences.ts` | Update to use typed commands |
-| `src/lib/recovery.ts` | Update to use typed commands |
-| `src/lib/notifications.ts` | Update to use typed commands |
-| `src/lib/logger.ts` | Update or remove commented code |
-| `src/types/preferences.ts` | Delete or deprecate |
+| File                          | Action                          |
+| ----------------------------- | ------------------------------- |
+| `src/lib/bindings.ts`         | **GENERATED** - commit this     |
+| `src/lib/tauri-bindings.ts`   | **CREATE** - wrapper            |
+| `src/services/preferences.ts` | Update to use typed commands    |
+| `src/lib/recovery.ts`         | Update to use typed commands    |
+| `src/lib/notifications.ts`    | Update to use typed commands    |
+| `src/lib/logger.ts`           | Update or remove commented code |
+| `src/types/preferences.ts`    | Delete or deprecate             |
 
 ### Tests
 
-| File | Action |
-|------|--------|
+| File               | Action       |
+| ------------------ | ------------ |
 | `src/App.test.tsx` | Update mocks |
 
 ### Documentation
 
-| File | Action |
-|------|--------|
-| `docs/developer/tauri-commands.md` | **CREATE** |
+| File                                   | Action             |
+| -------------------------------------- | ------------------ |
+| `docs/developer/tauri-commands.md`     | **CREATE**         |
 | `docs/developer/architecture-guide.md` | Add specta section |
 
 ---
@@ -399,11 +406,11 @@ Builder::<tauri::Wry>::new()
 
 ## Risks and Mitigations
 
-| Risk | Mitigation |
-|------|------------|
-| RC version instability | Lock exact versions (`=`), test before updating |
-| `serde_json::Value` handling | Accept `unknown` type, document pattern |
-| Test mock updates | Simple scope - only a few files to update |
+| Risk                         | Mitigation                                      |
+| ---------------------------- | ----------------------------------------------- |
+| RC version instability       | Lock exact versions (`=`), test before updating |
+| `serde_json::Value` handling | Accept `unknown` type, document pattern         |
+| Test mock updates            | Simple scope - only a few files to update       |
 
 ---
 

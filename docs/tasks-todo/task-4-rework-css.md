@@ -51,6 +51,7 @@ Review and modernize CSS usage, Tailwind/shadcn patterns, and React component ar
 The current dark mode approach (`.dark` class + CSS variables) works well and is the standard shadcn/ui pattern. The `light-dark()` function is newer but may not integrate as cleanly with Tailwind's class-based system. Decision should prioritize compatibility with shadcn/ui.
 
 **References:**
+
 - [CSS light-dark() function](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/light-dark)
 - [Tailwind Dark Mode](https://tailwindcss.com/docs/dark-mode)
 
@@ -63,6 +64,7 @@ The current dark mode approach (`.dark` class + CSS variables) works well and is
 ### Known Issues
 
 1. **MainWindow.tsx (line 20-21)** - Destructures from useUIStore:
+
    ```typescript
    // ❌ Current (causes render cascades)
    const { leftSidebarVisible, rightSidebarVisible } = useUIStore()
@@ -123,26 +125,31 @@ The current dark mode approach (`.dark` class + CSS variables) works well and is
 # UI Patterns Guide
 
 ## Styling Approach
+
 - Tailwind v4 with CSS-based config
 - shadcn/ui for components
 - OKLCH color space
 
 ## Dark Mode
+
 - Uses `.dark` class on `<html>`
 - CSS variables in App.css
 - ThemeProvider for React context
 
 ## Component Organization
+
 - ui/ - shadcn primitives
 - layout/ - app structure
 - titlebar/ - window chrome
 - preferences/ - settings UI
 
 ## Adding New Components
+
 - shadcn CLI usage
 - Customization patterns
 
 ## Desktop-Specific Styles
+
 - User selection disabled by default
 - Cursor defaults to 'default'
 - Overscroll behavior prevented
@@ -176,22 +183,22 @@ The current dark mode approach (`.dark` class + CSS variables) works well and is
 
 ### CSS
 
-| File | Action |
-|------|--------|
+| File          | Action                         |
+| ------------- | ------------------------------ |
 | `src/App.css` | Review, potentially reorganize |
 
 ### Components to Fix
 
-| File | Issue |
-|------|-------|
+| File                                   | Issue                     |
+| -------------------------------------- | ------------------------- |
 | `src/components/layout/MainWindow.tsx` | Fix Zustand destructuring |
 | `src/components/titlebar/TitleBar.tsx` | Fix Zustand destructuring |
 
 ### Documentation to Create
 
-| File | Purpose |
-|------|---------|
-| `docs/developer/ui-patterns.md` | **CREATE** - UI guidelines |
+| File                                   | Purpose                     |
+| -------------------------------------- | --------------------------- |
+| `docs/developer/ui-patterns.md`        | **CREATE** - UI guidelines  |
 | `docs/developer/architecture-guide.md` | Update with styling section |
 
 ---
