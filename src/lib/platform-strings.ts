@@ -107,20 +107,23 @@ export function formatShortcut(
   key: string,
   modifiers: ('mod' | 'shift' | 'alt')[] = ['mod']
 ): string {
-  const strings = getPlatformStrings(platform)
+  // Normalize platform to match getPlatformStrings default behavior
+  const normalizedPlatform: AppPlatform = platform ?? 'macos'
+  const strings = getPlatformStrings(normalizedPlatform)
+  const isMac = normalizedPlatform === 'macos'
   const parts: string[] = []
 
   if (modifiers.includes('shift')) {
-    parts.push(platform === 'macos' ? '⇧' : 'Shift+')
+    parts.push(isMac ? '⇧' : 'Shift+')
   }
 
   if (modifiers.includes('alt')) {
-    parts.push(platform === 'macos' ? strings.optionKeySymbol : 'Alt+')
+    parts.push(isMac ? strings.optionKeySymbol : 'Alt+')
   }
 
   if (modifiers.includes('mod')) {
     parts.push(strings.modifierKeySymbol)
-    if (platform !== 'macos') {
+    if (!isMac) {
       parts.push('+')
     }
   }

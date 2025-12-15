@@ -27,16 +27,18 @@ export function WindowsWindowControls() {
 
     // Subscribe to resize events to keep state in sync
     // (handles maximize/unmaximize via title bar double-click, etc.)
+    let isMounted = true
     const unsubscribe = appWindow.onResized(async () => {
       try {
         const maximized = await appWindow.isMaximized()
-        setIsMaximized(maximized)
+        if (isMounted) setIsMaximized(maximized)
       } catch {
         // Ignore errors during cleanup
       }
     })
 
     return () => {
+      isMounted = false
       unsubscribe.then(unsub => unsub())
     }
   }, [])
@@ -77,6 +79,7 @@ export function WindowsWindowControls() {
         onClick={handleMinimize}
         className={cn(buttonClass, 'hover:bg-foreground/10')}
         title="Minimize"
+        aria-label="Minimize window"
       >
         <WindowsIcons.minimize />
       </button>
@@ -87,6 +90,7 @@ export function WindowsWindowControls() {
         onClick={handleMaximizeToggle}
         className={cn(buttonClass, 'hover:bg-foreground/10')}
         title={isMaximized ? 'Restore' : 'Maximize'}
+        aria-label={isMaximized ? 'Restore window' : 'Maximize window'}
       >
         {isMaximized ? <WindowsIcons.restore /> : <WindowsIcons.maximize />}
       </button>
@@ -97,6 +101,7 @@ export function WindowsWindowControls() {
         onClick={handleClose}
         className={cn(buttonClass, 'hover:bg-red-500 hover:text-white')}
         title="Close"
+        aria-label="Close window"
       >
         <WindowsIcons.close />
       </button>
