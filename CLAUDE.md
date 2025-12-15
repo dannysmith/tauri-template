@@ -49,18 +49,24 @@ useState (component) → Zustand (global UI) → TanStack Query (persistent data
 ### Performance Pattern (CRITICAL)
 
 ```typescript
-// ✅ GOOD: Use getState() to avoid render cascades
-const handleAction = useCallback(() => {
+// ✅ GOOD: Selector syntax - only re-renders when specific value changes
+const leftSidebarVisible = useUIStore(state => state.leftSidebarVisible)
+
+// ❌ BAD: Destructuring causes render cascades (caught by ast-grep)
+const { leftSidebarVisible } = useUIStore()
+
+// ✅ GOOD: Use getState() in callbacks for current state
+const handleAction = () => {
   const { data, setData } = useStore.getState()
   setData(newData)
-}, []) // Empty deps = stable
-
-// ❌ BAD: Store subscriptions cause cascades
-const { data, setData } = useStore()
-const handleAction = useCallback(() => {
-  setData(newData)
-}, [data, setData]) // Re-creates constantly
+}
 ```
+
+### Static Analysis
+
+- **React Compiler**: Handles memoization automatically - no manual `useMemo`/`useCallback` needed
+- **ast-grep**: Enforces architecture patterns (e.g., no Zustand destructuring). See `docs/developer/ast-grep-linting.md`
+- **Knip/jscpd**: Periodic cleanup tools. Use `/knip-cleanup` and `/review-duplicates` commands
 
 ### Event-Driven Bridge
 

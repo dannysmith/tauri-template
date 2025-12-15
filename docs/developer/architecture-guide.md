@@ -224,11 +224,28 @@ This includes:
 
 - TypeScript type checking
 - ESLint linting
+- ast-grep architectural linting
 - Prettier formatting
 - Vitest tests
 - Rust formatting (cargo fmt)
 - Rust linting (clippy)
 - Rust tests
+
+### Static Analysis Tools
+
+| Tool           | Purpose                      | Usage              |
+| -------------- | ---------------------------- | ------------------ |
+| ESLint         | Syntax, style, TS rules      | `npm run lint`     |
+| ast-grep       | Architecture patterns        | `npm run ast:lint` |
+| React Compiler | Automatic memoization        | Build-time         |
+| Knip           | Unused code detection        | `npm run knip`     |
+| jscpd          | Duplicate code detection     | `npm run jscpd`    |
+
+**React Compiler** handles memoization automatically - no manual `useMemo`/`useCallback` needed.
+
+**ast-grep** enforces patterns ESLint can't detect (e.g., no Zustand destructuring). See [ast-grep-linting.md](./ast-grep-linting.md).
+
+**Knip/jscpd** are for periodic cleanup, not in `check:all`. Use `/knip-cleanup` and `/review-duplicates` commands.
 
 ### Documentation-Driven Development
 
