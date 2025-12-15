@@ -14,24 +14,19 @@
     "windows": [
       {
         "title": "tauri-app",
-        "width": 800,
-        "height": 600,
+        "width": 1000,
+        "height": 700,
         "minWidth": 1000,
         "minHeight": 700,
         "resizable": true,
         "fullscreen": false,
         "maximized": false,
         "center": true,
-        "decorations": false,
+        "decorations": true,
         "alwaysOnTop": false,
-        "transparent": true,
+        "transparent": false,
         "shadow": true,
-        "dragDropEnabled": true,
-        "windowEffects": {
-          "effects": ["hudWindow"],
-          "radius": 12.0,
-          "state": "active"
-        }
+        "dragDropEnabled": true
       }
     ],
     "security": {

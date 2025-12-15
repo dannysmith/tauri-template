@@ -421,10 +421,10 @@ steps:
 | File                                | Status     |
 | ----------------------------------- | ---------- |
 | `src-tauri/tauri.conf.json`         | ⏳ Pending |
-| `src-tauri/tauri.macos.conf.json`   | ✅ Created |
-| `src-tauri/tauri.windows.conf.json` | ✅ Created |
-| `src-tauri/tauri.linux.conf.json`   | ✅ Created |
-| `src-tauri/Cargo.toml`              | ✅ Updated |
+| `src-tauri/tauri.macos.conf.json`   | ⏳ Pending |
+| `src-tauri/tauri.windows.conf.json` | ⏳ Pending |
+| `src-tauri/tauri.linux.conf.json`   | ⏳ Pending |
+| `src-tauri/Cargo.toml`              | ⏳ Pending |
 
 ### Utilities
 
