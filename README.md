@@ -93,6 +93,42 @@ npm run build
 └── .claude/agents/        # AI development assistants
 ```
 
+## Platform Support
+
+This template supports **macOS**, **Windows**, and **Linux**. macOS is the primary development target, with Windows and Linux builds configured for CI/CD.
+
+### Platform-Specific Features
+
+| Platform | Title Bar            | Window Controls | Bundle Format |
+| -------- | -------------------- | --------------- | ------------- |
+| macOS    | Custom with vibrancy | Traffic lights  | `.dmg`        |
+| Windows  | Custom               | Right side      | `.msi`        |
+| Linux    | Native + toolbar     | Native          | `.AppImage`   |
+
+### Building for Each Platform
+
+You can only build for your current platform without cross-compilation setup:
+
+```bash
+# Build for current platform
+npm run build
+```
+
+For **Linux builds**, install system dependencies first:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y \
+  libwebkit2gtk-4.1-dev \
+  libappindicator3-dev \
+  librsvg2-dev \
+  patchelf
+```
+
+The included GitHub Actions workflow (`.github/workflows/release.yml`) builds for all platforms automatically on release.
+
+See [docs/developer/cross-platform.md](docs/developer/cross-platform.md) for detailed cross-platform development patterns.
+
 ## 🧪 Quality Assurance
 
 This template includes comprehensive quality gates:

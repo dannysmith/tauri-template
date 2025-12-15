@@ -79,6 +79,7 @@ Each major system has focused documentation:
 - **[Testing](./testing.md)** - Quality gates and test patterns
 - **[Releases](./releases.md)** - Automated release process
 - **[Auto-Updates](./auto-updates.md)** - Update system integration
+- **[Cross-Platform](./cross-platform.md)** - Platform detection and OS-specific patterns
 
 ### Component Hierarchy
 
@@ -230,6 +231,46 @@ When adding entirely new systems:
 3. **Integrate with command system** - Make actions discoverable
 4. **Add keyboard shortcuts** - Follow shortcut conventions
 5. **Update this guide** - Add system to architecture overview
+
+## Cross-Platform Architecture
+
+This template supports macOS, Windows, and Linux with platform-specific UI adaptations.
+
+### Platform Detection
+
+```typescript
+// Frontend: Use hooks for platform-aware rendering
+import { usePlatform, getPlatform } from '@/hooks/use-platform'
+
+const platform = usePlatform() // 'macos' | 'windows' | 'linux'
+```
+
+```rust
+// Backend: Use conditional compilation
+#[cfg(target_os = "macos")]
+fn macos_specific() { /* ... */ }
+```
+
+### Title Bar Strategy
+
+| Platform | Approach                                    |
+| -------- | ------------------------------------------- |
+| macOS    | Custom title bar with traffic light buttons |
+| Windows  | Custom title bar with controls on right     |
+| Linux    | Native decorations + custom toolbar         |
+
+### Configuration Merging
+
+Tauri v2 automatically merges platform-specific configs:
+
+```
+tauri.conf.json         # Base (safe defaults)
+tauri.macos.conf.json   # macOS overrides
+tauri.windows.conf.json # Windows overrides
+tauri.linux.conf.json   # Linux overrides
+```
+
+See [cross-platform.md](./cross-platform.md) for detailed patterns.
 
 ## Best Practices Summary
 
