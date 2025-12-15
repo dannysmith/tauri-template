@@ -32,7 +32,8 @@ const MAIN_CONTENT_DEFAULT =
 
 export function MainWindow() {
   const { theme } = useTheme()
-  const { leftSidebarVisible, rightSidebarVisible } = useUIStore()
+  const leftSidebarVisible = useUIStore(state => state.leftSidebarVisible)
+  const rightSidebarVisible = useUIStore(state => state.rightSidebarVisible)
 
   // Set up global event listeners (keyboard shortcuts, etc.)
   useMainWindowEventListeners()

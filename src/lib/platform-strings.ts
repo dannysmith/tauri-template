@@ -91,19 +91,21 @@ export function getPlatformStrings(
  * Format a keyboard shortcut for display.
  *
  * @param platform - The current platform
- * @param key - The key (e.g., 'K', 'S', 'Enter')
- * @param modifiers - Additional modifiers ('shift', 'alt')
+ * @param key - The key (e.g., 'K', 'S', 'Enter', 'F1')
+ * @param modifiers - Modifiers to include ('mod' for Cmd/Ctrl, 'shift', 'alt')
  * @returns Formatted shortcut string (e.g., '⌘K' or 'Ctrl+K')
  *
  * @example
  * formatShortcut('macos', 'K') // '⌘K'
  * formatShortcut('windows', 'K') // 'Ctrl+K'
- * formatShortcut('macos', 'K', ['shift']) // '⇧⌘K'
+ * formatShortcut('macos', 'K', ['shift', 'mod']) // '⇧⌘K'
+ * formatShortcut('macos', 'F1', []) // 'F1' (no modifier)
+ * formatShortcut('macos', 'Escape', []) // 'Escape'
  */
 export function formatShortcut(
   platform: AppPlatform | undefined,
   key: string,
-  modifiers: ('shift' | 'alt')[] = []
+  modifiers: ('mod' | 'shift' | 'alt')[] = ['mod']
 ): string {
   const strings = getPlatformStrings(platform)
   const parts: string[] = []
@@ -116,10 +118,11 @@ export function formatShortcut(
     parts.push(platform === 'macos' ? strings.optionKeySymbol : 'Alt+')
   }
 
-  parts.push(strings.modifierKeySymbol)
-
-  if (platform !== 'macos') {
-    parts.push('+')
+  if (modifiers.includes('mod')) {
+    parts.push(strings.modifierKeySymbol)
+    if (platform !== 'macos') {
+      parts.push('+')
+    }
   }
 
   parts.push(key)

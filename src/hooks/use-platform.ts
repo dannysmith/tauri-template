@@ -1,4 +1,5 @@
 import { platform, type Platform } from '@tauri-apps/plugin-os'
+import { logger } from '@/lib/logger'
 
 /**
  * Supported desktop platforms for this template.
@@ -8,6 +9,15 @@ export type AppPlatform = 'macos' | 'windows' | 'linux'
 
 // Module-level cache for platform detection
 let cachedPlatform: AppPlatform | null = null
+
+/**
+ * Reset the platform cache.
+ * Only exported for testing purposes - allows tests to simulate different platforms.
+ * @internal
+ */
+export function __resetPlatformCache(): void {
+  cachedPlatform = null
+}
 
 /**
  * Maps the Tauri platform string to our supported platform types.
@@ -29,6 +39,7 @@ function initPlatform(): AppPlatform {
       cachedPlatform = mapPlatform(platform())
     } catch {
       // Fallback if platform() fails (e.g., in non-Tauri environment during tests)
+      logger.warn('Platform detection failed, defaulting to macOS')
       cachedPlatform = 'macos'
     }
   }

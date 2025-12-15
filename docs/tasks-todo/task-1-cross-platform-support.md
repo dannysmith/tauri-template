@@ -156,189 +156,80 @@ export function getPlatform(): AppPlatform {
 
 ---
 
-## Phase 3: Conditional Compilation & Configuration
+## Phase 3: Conditional Compilation & Configuration ✅ COMPLETE
 
 **Goal:** Set up proper conditional compilation in Rust and platform-specific Tauri configs.
 
-**Current State (from `tauri.conf.json`):**
-
-```json
-{
-  "decorations": false,
-  "transparent": true,
-  "windowEffects": { "effects": ["hudWindow"], ... },
-  "macOSPrivateApi": true
-}
-```
-
-These are all macOS-specific and need to be moved/conditionally applied.
-
 **Approach:**
 
-Tauri v2 **automatically merges** platform-specific config files using [JSON Merge Patch (RFC 7396)](https://datatracker.ietf.org/doc/html/rfc7396). The supported files are:
+Tauri v2 **automatically merges** platform-specific config files using [JSON Merge Patch (RFC 7396)](https://datatracker.ietf.org/doc/html/rfc7396).
 
-- `tauri.macos.conf.json`
-- `tauri.windows.conf.json`
-- `tauri.linux.conf.json`
-- `tauri.android.conf.json`
-- `tauri.ios.conf.json`
-
-These are automatically looked up and merged with `tauri.conf.json` when building for the corresponding platform. No `--config` flag needed.
-
-- Base `tauri.conf.json` has safe cross-platform defaults
-- Platform-specific configs override as needed:
-  - `tauri.macos.conf.json` - decorations: false, transparent: true, macOSPrivateApi: true
-  - `tauri.windows.conf.json` - decorations: false (custom title bar)
-  - `tauri.linux.conf.json` - decorations: true (native chrome)
+**CRITICAL LEARNING:** JSON Merge Patch **replaces arrays entirely**, not element-by-element. This means each platform-specific config must include the **COMPLETE** `windows` array with all properties, not just overrides.
 
 **Tasks:**
 
 1. **Refactor base Tauri config**
-   - [ ] Set safe defaults in `tauri.conf.json`: `decorations: true`, `transparent: false`
-   - [ ] Remove macOS-specific settings from base config
-   - [ ] Remove `windowEffects` from base (macOS only)
+   - [x] Set safe defaults in `tauri.conf.json`: `decorations: true`, `transparent: false`
+   - [x] Remove macOS-specific settings from base config (windowEffects)
+   - [x] Keep `macOSPrivateApi: true` in base (required for Cargo feature validation, harmless on other platforms)
 
 2. **Create platform-specific configs**
-   - [ ] Create `tauri.macos.conf.json` with macOS settings
-   - [ ] Create `tauri.windows.conf.json` with `decorations: false`
-   - [ ] Create `tauri.linux.conf.json` with `decorations: true`
+   - [x] Create `tauri.macos.conf.json` with COMPLETE windows array + macOS settings
+   - [x] Create `tauri.windows.conf.json` with COMPLETE windows array + decorations: false
+   - [x] Create `tauri.linux.conf.json` with COMPLETE windows array + decorations: true
 
 3. **Handle Rust conditional compilation**
-   - [ ] Review `Cargo.toml` for any macOS-only features
-   - [ ] Add `#[cfg(target_os = "...")]` where needed in Rust code
-   - [ ] Ensure builds don't fail on other platforms
+   - [x] Review `Cargo.toml` - `macos-private-api` feature is safe on all platforms
+   - [x] Existing `#[cfg(target_os = "macos")]` in lib.rs for logging is correct
+   - [x] Builds work on all platforms
 
 4. **Update capabilities if needed**
-   - [ ] Verify `core:window:allow-start-dragging` is in capabilities
-   - [ ] Add any other cross-platform window permissions
-
-**Config Pattern:**
-
-```json
-// tauri.macos.conf.json
-{
-  "$schema": "https://schema.tauri.app/config/2",
-  "app": {
-    "macOSPrivateApi": true,
-    "windows": [
-      {
-        "decorations": false,
-        "transparent": true,
-        "windowEffects": {
-          "effects": ["hudWindow"],
-          "radius": 12.0,
-          "state": "active"
-        }
-      }
-    ]
-  }
-}
-```
-
-```json
-// tauri.windows.conf.json
-{
-  "$schema": "https://schema.tauri.app/config/2",
-  "app": {
-    "windows": [
-      {
-        "decorations": false
-      }
-    ]
-  }
-}
-```
-
-```json
-// tauri.linux.conf.json
-{
-  "$schema": "https://schema.tauri.app/config/2",
-  "app": {
-    "windows": [
-      {
-        "decorations": true
-      }
-    ]
-  }
-}
-```
+   - [x] Verified `core:window:allow-start-dragging` is in capabilities
+   - [x] All required window permissions already present
 
 **Acceptance Criteria:**
 
-- [ ] macOS build still works with vibrancy effects
-- [ ] Configs merge correctly per platform
-- [ ] No build failures from platform-specific code
+- [x] macOS build still works with vibrancy effects
+- [x] Configs merge correctly per platform
+- [x] No build failures from platform-specific code
 
 ---
 
-## Phase 4: CI/Build System Setup
+## Phase 4: CI/Build System Setup ✅ COMPLETE
 
 **Goal:** Configure GitHub Actions to build for all platforms.
-
-**Current State:**
-
-```yaml
-matrix:
-  include:
-    - platform: 'macos-latest'
-      args: '--bundles app,dmg'
-```
-
-Only builds for macOS.
 
 **Tasks:**
 
 1. **Update release workflow matrix**
-   - [ ] Add Windows build (`windows-latest`)
-   - [ ] Add Linux build (`ubuntu-22.04` or `ubuntu-latest`)
-   - [ ] Configure platform-specific bundle arguments
+   - [x] Add Windows build (`windows-latest`)
+   - [x] Add Linux build (`ubuntu-22.04`)
+   - [x] Configure platform-specific bundle arguments
 
 2. **Add Linux dependencies step**
-   - [ ] Install required Linux libraries (webkit2gtk, appindicator, etc.)
+   - [x] Install required Linux libraries (libwebkit2gtk-4.1-dev, libappindicator3-dev, librsvg2-dev, patchelf)
 
 3. **Configure bundle settings**
-   - [ ] Windows: MSI (no code signing for now)
-   - [ ] Linux: AppImage
-   - [ ] macOS: Keep current DMG setup
+   - [x] Windows: MSI (no code signing)
+   - [x] Linux: AppImage
+   - [x] macOS: DMG (unchanged)
 
 4. **Verify auto-updater works**
-   - [ ] Confirm `includeUpdaterJson: true` is set (already present)
-   - [ ] Verify `latest.json` includes all platform entries after build
-   - [ ] Update release notes template with Windows/Linux instructions
+   - [x] `includeUpdaterJson: true` is set
+   - [x] Update release notes template with Windows/Linux instructions
+   - Note: `latest.json` generation requires `TAURI_SIGNING_PRIVATE_KEY` to be set by template users
 
 5. **Test builds**
-   - [ ] Trigger test build on feature branch
-   - [ ] Verify all platform artifacts are produced
-   - [ ] Verify `latest.json` contains entries for all platforms
-
-**Workflow Pattern:**
-
-```yaml
-strategy:
-  fail-fast: false
-  matrix:
-    include:
-      - platform: 'macos-latest'
-        args: '--bundles app,dmg'
-      - platform: 'windows-latest'
-        args: '--bundles msi'
-      - platform: 'ubuntu-22.04'
-        args: '--bundles appimage'
-
-steps:
-  - name: Install Linux dependencies
-    if: matrix.platform == 'ubuntu-22.04'
-    run: |
-      sudo apt-get update
-      sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-```
+   - [x] Triggered test build - all platforms compile successfully
+   - [x] Signing step fails without keys (expected for template)
+   - [x] Artifacts are produced before signing step
 
 **Acceptance Criteria:**
 
-- [ ] GitHub Actions produces Windows MSI artifact
-- [ ] GitHub Actions produces Linux AppImage artifact
-- [ ] macOS DMG release unchanged
-- [ ] All builds complete successfully
+- [x] GitHub Actions produces Windows MSI artifact (before signing)
+- [x] GitHub Actions produces Linux AppImage artifact (before signing)
+- [x] macOS DMG release unchanged
+- [x] All builds compile successfully (signing requires user's keys)
 
 ---
 
@@ -418,13 +309,13 @@ steps:
 
 ### Configuration
 
-| File                                | Status     |
-| ----------------------------------- | ---------- |
-| `src-tauri/tauri.conf.json`         | ⏳ Pending |
-| `src-tauri/tauri.macos.conf.json`   | ⏳ Pending |
-| `src-tauri/tauri.windows.conf.json` | ⏳ Pending |
-| `src-tauri/tauri.linux.conf.json`   | ⏳ Pending |
-| `src-tauri/Cargo.toml`              | ⏳ Pending |
+| File                                | Status                         |
+| ----------------------------------- | ------------------------------ |
+| `src-tauri/tauri.conf.json`         | ✅ Updated                     |
+| `src-tauri/tauri.macos.conf.json`   | ✅ Created                     |
+| `src-tauri/tauri.windows.conf.json` | ✅ Created                     |
+| `src-tauri/tauri.linux.conf.json`   | ✅ Created                     |
+| `src-tauri/Cargo.toml`              | ✅ Unchanged (already correct) |
 
 ### Utilities
 
@@ -439,7 +330,7 @@ steps:
 
 | File                            | Status     |
 | ------------------------------- | ---------- |
-| `.github/workflows/release.yml` | ⏳ Pending |
+| `.github/workflows/release.yml` | ✅ Updated |
 
 ### Documentation
 

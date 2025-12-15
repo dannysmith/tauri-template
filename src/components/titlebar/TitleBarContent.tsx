@@ -43,10 +43,17 @@ export function TitleBarRightActions() {
   const { rightSidebarVisible, toggleRightSidebar } = useUIStore()
   const commandContext = useCommandContext()
 
+  const handleOpenPreferences = async () => {
+    const result = await executeCommand('open-preferences', commandContext)
+    if (!result.success && result.error) {
+      commandContext.showToast(result.error, 'error')
+    }
+  }
+
   return (
     <div className="flex items-center gap-1">
       <Button
-        onClick={() => executeCommand('open-preferences', commandContext)}
+        onClick={handleOpenPreferences}
         variant="ghost"
         size="icon"
         className="h-6 w-6 text-foreground/70 hover:text-foreground"

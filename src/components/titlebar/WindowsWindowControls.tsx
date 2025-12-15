@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { useCommandContext } from '@/hooks/use-command-context'
 import { executeCommand } from '@/lib/commands'
@@ -12,6 +12,34 @@ import { WindowsIcons } from './WindowControlIcons'
 export function WindowsWindowControls() {
   const context = useCommandContext()
   const [isMaximized, setIsMaximized] = useState(false)
+
+  // Initialize and sync maximized state with actual window state
+  useEffect(() => {
+    const appWindow = getCurrentWindow()
+
+    // Query initial state
+    appWindow
+      .isMaximized()
+      .then(setIsMaximized)
+      .catch(() => {
+        // Ignore errors - window may not be ready
+      })
+
+    // Subscribe to resize events to keep state in sync
+    // (handles maximize/unmaximize via title bar double-click, etc.)
+    const unsubscribe = appWindow.onResized(async () => {
+      try {
+        const maximized = await appWindow.isMaximized()
+        setIsMaximized(maximized)
+      } catch {
+        // Ignore errors during cleanup
+      }
+    })
+
+    return () => {
+      unsubscribe.then(unsub => unsub())
+    }
+  }, [])
 
   const handleClose = async () => {
     await executeCommand('window-close', context)
