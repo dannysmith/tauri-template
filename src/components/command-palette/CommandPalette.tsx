@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useUIStore } from '@/store/ui-store'
 import { useCommandContext } from '@/hooks/use-command-context'
 import { getAllCommands, executeCommand } from '@/lib/commands'
@@ -17,49 +17,39 @@ export function CommandPalette() {
   const commandContext = useCommandContext()
   const [search, setSearch] = useState('')
 
-  // Get all available commands (memoized to prevent re-filtering on every render)
-  const commandGroups = useMemo(() => {
-    const commands = getAllCommands(commandContext, search)
-
-    // Group commands by their group property
-    return commands.reduce(
-      (groups, command) => {
-        const group = command.group || 'other'
-        if (!groups[group]) {
-          groups[group] = []
-        }
-        groups[group].push(command)
-        return groups
-      },
-      {} as Record<string, typeof commands>
-    )
-  }, [commandContext, search])
+  // Get all available commands grouped by category
+  const commands = getAllCommands(commandContext, search)
+  const commandGroups = commands.reduce(
+    (groups, command) => {
+      const group = command.group || 'other'
+      if (!groups[group]) {
+        groups[group] = []
+      }
+      groups[group].push(command)
+      return groups
+    },
+    {} as Record<string, typeof commands>
+  )
 
   // Handle command execution
-  const handleCommandSelect = useCallback(
-    async (commandId: string) => {
-      setCommandPaletteOpen(false)
-      setSearch('') // Clear search when closing
+  const handleCommandSelect = async (commandId: string) => {
+    setCommandPaletteOpen(false)
+    setSearch('') // Clear search when closing
 
-      const result = await executeCommand(commandId, commandContext)
+    const result = await executeCommand(commandId, commandContext)
 
-      if (!result.success && result.error) {
-        commandContext.showToast(result.error, 'error')
-      }
-    },
-    [commandContext, setCommandPaletteOpen]
-  )
+    if (!result.success && result.error) {
+      commandContext.showToast(result.error, 'error')
+    }
+  }
 
   // Handle dialog open/close with search clearing
-  const handleOpenChange = useCallback(
-    (open: boolean) => {
-      setCommandPaletteOpen(open)
-      if (!open) {
-        setSearch('') // Clear search when closing
-      }
-    },
-    [setCommandPaletteOpen]
-  )
+  const handleOpenChange = (open: boolean) => {
+    setCommandPaletteOpen(open)
+    if (!open) {
+      setSearch('') // Clear search when closing
+    }
+  }
 
   // Keyboard shortcut handler
   useEffect(() => {

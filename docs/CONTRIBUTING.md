@@ -115,7 +115,7 @@ Follow the State Management Onion pattern:
 #### Performance
 
 - Use `getState()` pattern to avoid render cascades
-- Implement proper memoization where needed
+- React Compiler handles memoization automatically (no manual `useMemo`/`useCallback` needed)
 - Optimize bundle size and load times
 
 #### File Organization

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import {
@@ -42,16 +42,13 @@ export const AppearancePane: React.FC = () => {
   const { theme, setTheme } = useTheme()
   const savePreferences = useSavePreferences()
 
-  const handleThemeChange = useCallback(
-    async (value: 'light' | 'dark' | 'system') => {
-      // Update the theme provider immediately for instant UI feedback
-      setTheme(value)
+  const handleThemeChange = async (value: 'light' | 'dark' | 'system') => {
+    // Update the theme provider immediately for instant UI feedback
+    setTheme(value)
 
-      // Persist the theme preference to disk
-      savePreferences.mutate({ theme: value })
-    },
-    [setTheme, savePreferences]
-  )
+    // Persist the theme preference to disk
+    savePreferences.mutate({ theme: value })
+  }
 
   return (
     <div className="space-y-6">

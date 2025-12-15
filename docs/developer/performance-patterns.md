@@ -57,16 +57,16 @@ For stateful UI components (like `react-resizable-panels`), use CSS visibility:
 <ResizablePanel className={sidebarVisible ? '' : 'hidden'} />
 ```
 
-### Strategic React.memo Placement
+### React Compiler (Automatic Memoization)
 
-Use React.memo to break render cascades at component boundaries:
+This template uses [React Compiler](https://react.dev/learn/react-compiler) which automatically handles memoization. You do **not** need to manually add:
 
-```typescript
-// ✅ GOOD: Breaks cascade propagation
-const EditorArea = React.memo(({ panelVisible }) => {
-  // Component only re-renders when panelVisible changes
-  // Not affected by parent re-renders from unrelated state
-})
-```
+- `useMemo` for computed values
+- `useCallback` for function references
+- `React.memo` for component memoization
+
+The compiler analyzes your code and adds memoization where beneficial. Focus on writing clear, readable code instead.
+
+**Note:** The `getState()` pattern above is still important - it's about avoiding store subscriptions, not memoization.
 
 ---
