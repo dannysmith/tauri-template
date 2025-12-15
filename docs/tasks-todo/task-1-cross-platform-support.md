@@ -15,7 +15,7 @@ This is structured as work that can be done and tested on macOS. Actual Windows/
 
 ---
 
-## Phase 1: Platform Detection Utilities
+## Phase 1: Platform Detection Utilities ✅ COMPLETE
 
 **Goal:** Create reusable platform detection for React components and Rust code.
 
@@ -32,24 +32,31 @@ This is structured as work that can be done and tested on macOS. Actual Windows/
 **Tasks:**
 
 1. **Install OS plugin**
-   - [ ] Add `tauri-plugin-os` to Cargo.toml
-   - [ ] Initialize plugin in `lib.rs`
-   - [ ] Install `@tauri-apps/plugin-os` npm package
+   - [x] Add `tauri-plugin-os` to Cargo.toml
+   - [x] Initialize plugin in `lib.rs`
+   - [x] Install `@tauri-apps/plugin-os` npm package
+   - [x] Add `os:default` permission to capabilities
 
 2. **Create platform detection hook**
-   - [ ] Create `src/hooks/use-platform.ts`
-   - [ ] Export `usePlatform()` hook returning `'macos' | 'windows' | 'linux' | undefined`
-   - [ ] Export `getPlatform()` async function for non-hook contexts
+   - [x] Create `src/hooks/use-platform.ts`
+   - [x] Export `usePlatform()` hook returning `'macos' | 'windows' | 'linux'`
+   - [x] Export `getPlatform()` function for non-hook contexts
+   - [x] Add convenience hooks: `useIsMacOS()`, `useIsWindows()`, `useIsLinux()`
 
 3. **Create platform-specific strings utility**
-   - [ ] Create `src/lib/platform-strings.ts`
-   - [ ] Map platform to UI strings (e.g., "Reveal in Finder" vs "Show in Explorer")
+   - [x] Create `src/lib/platform-strings.ts`
+   - [x] Map platform to UI strings (e.g., "Reveal in Finder" vs "Show in Explorer")
+   - [x] Add `formatShortcut()` helper for platform-aware keyboard shortcut display
 
 4. **Create Rust platform helpers**
-   - [ ] Create `src-tauri/src/utils/platform.rs` (if needed for future commands)
-   - [ ] Add `#[cfg(target_os = "...")]` patterns documentation
+   - [x] Create `src-tauri/src/utils/platform.rs`
+   - [x] Add `normalize_path_for_serialization()` function
+   - [x] Add platform detection helpers (`is_macos()`, `is_windows()`, `is_linux()`, `current_platform()`)
+   - [x] Add `#[cfg(target_os = "...")]` patterns in documentation
 
-**Code Pattern:**
+**Implementation Notes:**
+
+The `platform()` function from `@tauri-apps/plugin-os` is **synchronous** (not async as originally documented). The actual implementation:
 
 ```typescript
 // src/hooks/use-platform.ts
@@ -57,30 +64,32 @@ import { platform, type Platform } from '@tauri-apps/plugin-os'
 
 export type AppPlatform = 'macos' | 'windows' | 'linux'
 
-export function usePlatform(): AppPlatform | undefined {
-  const [currentPlatform, setCurrentPlatform] = useState<AppPlatform>()
+function mapPlatform(p: Platform): AppPlatform {
+  if (p === 'macos') return 'macos'
+  if (p === 'windows') return 'windows'
+  return 'linux'
+}
 
-  useEffect(() => {
-    platform().then((p: Platform) => {
-      if (p === 'macos') setCurrentPlatform('macos')
-      else if (p === 'windows') setCurrentPlatform('windows')
-      else setCurrentPlatform('linux')
-    })
-  }, [])
+export function usePlatform(): AppPlatform {
+  // Platform is synchronous and cached
+  return mapPlatform(platform())
+}
 
-  return currentPlatform
+export function getPlatform(): AppPlatform {
+  return mapPlatform(platform())
 }
 ```
 
 **Acceptance Criteria:**
 
-- [ ] `usePlatform()` hook works on macOS (returns 'macos')
-- [ ] Pattern documented for future use
-- [ ] No breaking changes to existing functionality
+- [x] `usePlatform()` hook works on macOS (returns 'macos')
+- [x] Pattern documented for future use
+- [x] No breaking changes to existing functionality
+- [x] All checks pass (`npm run check:all`)
 
 ---
 
-## Phase 2: Title Bar Refactoring
+## Phase 2: Title Bar Refactoring ✅ COMPLETE
 
 **Goal:** Decompose the unified title bar to support platform-specific implementations.
 
@@ -100,29 +109,32 @@ export function usePlatform(): AppPlatform | undefined {
 **Tasks:**
 
 1. **Extract shared components**
-   - [ ] Identify shared title bar content (toolbar items, title text)
-   - [ ] Create `TitleBarContent.tsx` for shared toolbar/content
-   - [ ] Ensure macOS version still works identically after extraction
+   - [x] Identify shared title bar content (toolbar items, title text)
+   - [x] Create `TitleBarContent.tsx` with composable pieces:
+     - `TitleBarLeftActions` - left toolbar buttons
+     - `TitleBarRightActions` - right toolbar buttons
+     - `TitleBarTitle` - centered title
+   - [x] Ensure macOS version still works identically after extraction
 
 2. **Create Windows title bar**
-   - [ ] Create `WindowsWindowControls.tsx` with controls on RIGHT
-   - [ ] Use Windows-style icons (not traffic lights)
-   - [ ] Wire up minimize/maximize/close to Tauri window API
-   - [ ] Apply `data-tauri-drag-region` for dragging
+   - [x] Create `WindowsWindowControls.tsx` with controls on RIGHT
+   - [x] Use Windows-style icons (minimize line, maximize square, close X)
+   - [x] Wire up minimize/maximize/close to Tauri window API
+   - [x] Apply `data-tauri-drag-region` for dragging
 
 3. **Create Linux toolbar**
-   - [ ] Create `LinuxTitleBar.tsx` as toolbar only (no window controls)
-   - [ ] Styled to work below native window decorations
-   - [ ] Include same toolbar items as other platforms
+   - [x] Create `LinuxTitleBar.tsx` as toolbar only (no window controls)
+   - [x] Styled to work below native window decorations
+   - [x] Include same toolbar items as other platforms
 
 4. **Create platform wrapper**
-   - [ ] Update `TitleBar.tsx` to use `usePlatform()`
-   - [ ] Conditionally render correct component per platform
-   - [ ] Add loading state while platform is detected
+   - [x] Update `TitleBar.tsx` to use `usePlatform()`
+   - [x] Conditionally render correct component per platform
+   - [x] No loading state needed (platform detection is synchronous)
 
 5. **Add development toggle**
-   - [ ] Add dev-only mechanism to force platform for visual testing
-   - [ ] Allow testing Windows/Linux layouts on macOS
+   - [x] Add `forcePlatform` prop to `TitleBar` for dev testing
+   - [x] Only works when `import.meta.env.DEV` is true
 
 **Windows CSS Requirement:**
 
@@ -135,11 +147,12 @@ export function usePlatform(): AppPlatform | undefined {
 
 **Acceptance Criteria:**
 
-- [ ] macOS title bar unchanged in appearance and behavior
-- [ ] Windows title bar renders with controls on right
-- [ ] Linux toolbar renders without window controls
-- [ ] Platform switching works (via dev toggle)
-- [ ] Window dragging works on all variants
+- [x] macOS title bar unchanged in appearance and behavior
+- [x] Windows title bar renders with controls on right
+- [x] Linux toolbar renders without window controls
+- [x] Platform switching works (via `forcePlatform` prop in dev)
+- [ ] Window dragging works on all variants (needs manual testing)
+- [x] All checks pass (`npm run check:all`)
 
 ---
 
@@ -161,6 +174,16 @@ export function usePlatform(): AppPlatform | undefined {
 These are all macOS-specific and need to be moved/conditionally applied.
 
 **Approach:**
+
+Tauri v2 **automatically merges** platform-specific config files using [JSON Merge Patch (RFC 7396)](https://datatracker.ietf.org/doc/html/rfc7396). The supported files are:
+
+- `tauri.macos.conf.json`
+- `tauri.windows.conf.json`
+- `tauri.linux.conf.json`
+- `tauri.android.conf.json`
+- `tauri.ios.conf.json`
+
+These are automatically looked up and merged with `tauri.conf.json` when building for the corresponding platform. No `--config` flag needed.
 
 - Base `tauri.conf.json` has safe cross-platform defaults
 - Platform-specific configs override as needed:
@@ -194,6 +217,7 @@ These are all macOS-specific and need to be moved/conditionally applied.
 ```json
 // tauri.macos.conf.json
 {
+  "$schema": "https://schema.tauri.app/config/2",
   "app": {
     "macOSPrivateApi": true,
     "windows": [
@@ -214,6 +238,7 @@ These are all macOS-specific and need to be moved/conditionally applied.
 ```json
 // tauri.windows.conf.json
 {
+  "$schema": "https://schema.tauri.app/config/2",
   "app": {
     "windows": [
       {
@@ -227,6 +252,7 @@ These are all macOS-specific and need to be moved/conditionally applied.
 ```json
 // tauri.linux.conf.json
 {
+  "$schema": "https://schema.tauri.app/config/2",
   "app": {
     "windows": [
       {
@@ -316,40 +342,27 @@ steps:
 
 ---
 
-## Phase 5: Path Handling Utilities
+## Phase 5: Path Handling Utilities ✅ COMPLETE (merged into Phase 1)
 
 **Goal:** Add utilities for cross-platform path handling (primarily for future use).
 
-**Note:** This template doesn't have complex path handling like Astro Editor, but we should establish patterns for apps built with it.
+**Note:** This was merged into Phase 1. The `normalize_path_for_serialization()` function was added to `src-tauri/src/utils/platform.rs`.
 
 **Tasks:**
 
 1. **Create Rust path utilities**
-   - [ ] Create `src-tauri/src/utils/path.rs`
-   - [ ] Add `normalize_path_for_serialization()` function
-   - [ ] Document pattern for normalizing paths to forward slashes
+   - [x] Create `src-tauri/src/utils/platform.rs` (combined with platform detection)
+   - [x] Add `normalize_path_for_serialization()` function
+   - [x] Document pattern for normalizing paths to forward slashes
 
 2. **Document path handling patterns**
    - [ ] Add section to cross-platform docs
    - [ ] Note that Windows uses backslashes but frontend expects forward slashes
    - [ ] Provide examples for common operations
 
-**Code Pattern:**
-
-```rust
-// src-tauri/src/utils/path.rs
-use std::path::Path;
-
-/// Normalizes a path to use forward slashes for consistent frontend handling.
-/// Windows paths like `C:\Users\foo` become `C:/Users/foo`.
-pub fn normalize_path_for_serialization(path: &Path) -> String {
-    path.display().to_string().replace('\\', "/")
-}
-```
-
 **Acceptance Criteria:**
 
-- [ ] Path utility module exists
+- [x] Path utility module exists
 - [ ] Pattern documented for template users
 
 ---
@@ -395,46 +408,46 @@ pub fn normalize_path_for_serialization(path: &Path) -> String {
 
 ### Title Bar Components
 
-| File                                                | Action                                        |
-| --------------------------------------------------- | --------------------------------------------- |
-| `src/components/titlebar/TitleBar.tsx`              | Add platform detection, conditional rendering |
-| `src/components/titlebar/MacOSWindowControls.tsx`   | Keep as-is, rename if needed                  |
-| `src/components/titlebar/WindowsWindowControls.tsx` | **CREATE**                                    |
-| `src/components/titlebar/LinuxTitleBar.tsx`         | **CREATE**                                    |
-| `src/components/titlebar/TitleBarContent.tsx`       | **CREATE** - shared content                   |
+| File                                                | Status       |
+| --------------------------------------------------- | ------------ |
+| `src/components/titlebar/TitleBar.tsx`              | ✅ Updated   |
+| `src/components/titlebar/MacOSWindowControls.tsx`   | ✅ Unchanged |
+| `src/components/titlebar/WindowsWindowControls.tsx` | ✅ Created   |
+| `src/components/titlebar/LinuxTitleBar.tsx`         | ✅ Created   |
+| `src/components/titlebar/TitleBarContent.tsx`       | ✅ Created   |
 
 ### Configuration
 
-| File                                | Action                                   |
-| ----------------------------------- | ---------------------------------------- |
-| `src-tauri/tauri.conf.json`         | Remove macOS-specific, set safe defaults |
-| `src-tauri/tauri.macos.conf.json`   | **CREATE**                               |
-| `src-tauri/tauri.windows.conf.json` | **CREATE**                               |
-| `src-tauri/tauri.linux.conf.json`   | **CREATE**                               |
-| `src-tauri/Cargo.toml`              | Review for conditional deps              |
+| File                                | Status     |
+| ----------------------------------- | ---------- |
+| `src-tauri/tauri.conf.json`         | ⏳ Pending |
+| `src-tauri/tauri.macos.conf.json`   | ✅ Created |
+| `src-tauri/tauri.windows.conf.json` | ✅ Created |
+| `src-tauri/tauri.linux.conf.json`   | ✅ Created |
+| `src-tauri/Cargo.toml`              | ✅ Updated |
 
 ### Utilities
 
-| File                          | Action               |
-| ----------------------------- | -------------------- |
-| `src/hooks/use-platform.ts`   | **CREATE**           |
-| `src/lib/platform-strings.ts` | **CREATE**           |
-| `src-tauri/src/utils/path.rs` | **CREATE**           |
-| `src-tauri/src/utils/mod.rs`  | **CREATE** or update |
+| File                              | Status     |
+| --------------------------------- | ---------- |
+| `src/hooks/use-platform.ts`       | ✅ Created |
+| `src/lib/platform-strings.ts`     | ✅ Created |
+| `src-tauri/src/utils/platform.rs` | ✅ Created |
+| `src-tauri/src/utils/mod.rs`      | ✅ Created |
 
 ### CI/Build
 
-| File                            | Action                      |
-| ------------------------------- | --------------------------- |
-| `.github/workflows/release.yml` | Add Windows/Linux to matrix |
+| File                            | Status     |
+| ------------------------------- | ---------- |
+| `.github/workflows/release.yml` | ⏳ Pending |
 
 ### Documentation
 
-| File                                   | Action                           |
-| -------------------------------------- | -------------------------------- |
-| `docs/developer/cross-platform.md`     | **CREATE**                       |
-| `docs/developer/architecture-guide.md` | Update with cross-platform notes |
-| `README.md`                            | Update platform support info     |
+| File                                   | Status     |
+| -------------------------------------- | ---------- |
+| `docs/developer/cross-platform.md`     | ⏳ Pending |
+| `docs/developer/architecture-guide.md` | ⏳ Pending |
+| `README.md`                            | ⏳ Pending |
 
 ---
 
@@ -457,7 +470,7 @@ The following are explicitly **not** included in this task:
 Since we're developing on macOS:
 
 1. **macOS:** Full manual testing
-2. **Windows/Linux layouts:** Use dev toggle to visually verify
+2. **Windows/Linux layouts:** Use `forcePlatform` prop to visually verify
 3. **Builds:** Verify via CI that artifacts are produced
 4. **Actual Windows/Linux testing:** Separate future tasks
 
@@ -468,3 +481,4 @@ Since we're developing on macOS:
 - The `transform-gpu` CSS class may be needed for opacity transitions on Windows title bar (fixes WebKit rendering quirk)
 - Linux has many desktop environments - native decorations are the safest approach
 - Keep the implementation simple - this is a template, not a full application
+- Platform-specific configs are automatically merged by Tauri v2 - no CLI flags needed

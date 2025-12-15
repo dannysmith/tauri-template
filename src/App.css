@@ -154,4 +154,10 @@
   .cursor-pointer {
     cursor: pointer !important;
   }
+
+  /* Required for drag regions to work with touch/pen on Windows */
+  *[data-tauri-drag-region] {
+    -webkit-app-region: drag;
+    app-region: drag;
+  }
 }

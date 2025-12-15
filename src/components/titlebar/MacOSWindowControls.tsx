@@ -1,6 +1,6 @@
 import React, { useEffect, useState, type HTMLProps } from 'react'
 import { cn } from '@/lib/utils'
-import { Icons } from './WindowControlIcons'
+import { MacOSIcons } from './WindowControlIcons'
 import { useCommandContext } from '@/hooks/use-command-context'
 import { executeCommand } from '@/lib/commands'
 import { getCurrentWindow } from '@tauri-apps/api/window'
@@ -18,7 +18,11 @@ export function MacOSWindowControls({
   const [isHovering, setIsHovering] = useState(false)
   const [isWindowFocused, setIsWindowFocused] = useState(true)
 
-  const last = isAltKeyPressed ? <Icons.plusMac /> : <Icons.fullMac />
+  const last = isAltKeyPressed ? (
+    <MacOSIcons.maximize />
+  ) : (
+    <MacOSIcons.fullscreen />
+  )
   const key = 'Alt'
 
   const handleMouseEnter = () => {
@@ -139,7 +143,7 @@ export function MacOSWindowControls({
       >
         <div className="flex h-3 w-3 items-center justify-center">
           {isHovering && (
-            <Icons.closeMac className="h-[6px] w-[6px] opacity-60" />
+            <MacOSIcons.close className="h-[6px] w-[6px] opacity-60" />
           )}
         </div>
       </button>
@@ -155,7 +159,7 @@ export function MacOSWindowControls({
       >
         <div className="flex h-3 w-3 items-center justify-center">
           {isHovering && (
-            <Icons.minMac className="h-[2px] w-[6px] opacity-60" />
+            <MacOSIcons.minimize className="h-[2px] w-[6px] opacity-60" />
           )}
         </div>
       </button>

@@ -1,8 +1,17 @@
 import type { SVGProps } from 'react'
-// From https://raw.githubusercontent.com/agmmnn/tauri-controls/refs/heads/master/apps/tauri-controls/src/tauri-controls/components/icons.tsx
 
-export const Icons = {
-  closeMac: (props: SVGProps<SVGSVGElement>) => (
+/**
+ * Window control icons for all platforms.
+ *
+ * macOS icons from: https://github.com/agmmnn/tauri-controls
+ */
+
+// =============================================================================
+// macOS Icons
+// =============================================================================
+
+export const MacOSIcons = {
+  close: (props: SVGProps<SVGSVGElement>) => (
     <svg
       width="6"
       height="6"
@@ -17,7 +26,7 @@ export const Icons = {
       />
     </svg>
   ),
-  minMac: (props: SVGProps<SVGSVGElement>) => (
+  minimize: (props: SVGProps<SVGSVGElement>) => (
     <svg
       width="8"
       height="8"
@@ -36,7 +45,7 @@ export const Icons = {
       </g>
     </svg>
   ),
-  fullMac: (props: SVGProps<SVGSVGElement>) => (
+  fullscreen: (props: SVGProps<SVGSVGElement>) => (
     <svg
       width="6"
       height="6"
@@ -55,7 +64,7 @@ export const Icons = {
       </g>
     </svg>
   ),
-  plusMac: (props: SVGProps<SVGSVGElement>) => (
+  maximize: (props: SVGProps<SVGSVGElement>) => (
     <svg
       width="8"
       height="8"
@@ -72,6 +81,63 @@ export const Icons = {
           fill="currentColor"
         />
       </g>
+    </svg>
+  ),
+}
+
+// =============================================================================
+// Windows Icons
+// =============================================================================
+
+export const WindowsIcons = {
+  minimize: (props: SVGProps<SVGSVGElement>) => (
+    <svg
+      width="10"
+      height="1"
+      viewBox="0 0 10 1"
+      fill="currentColor"
+      {...props}
+    >
+      <rect width="10" height="1" />
+    </svg>
+  ),
+  maximize: (props: SVGProps<SVGSVGElement>) => (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      fill="none"
+      stroke="currentColor"
+      {...props}
+    >
+      <rect x="0.5" y="0.5" width="9" height="9" strokeWidth="1" />
+    </svg>
+  ),
+  restore: (props: SVGProps<SVGSVGElement>) => (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      fill="none"
+      stroke="currentColor"
+      {...props}
+    >
+      {/* Back window */}
+      <path d="M2 0.5h7.5v7.5" strokeWidth="1" />
+      {/* Front window */}
+      <rect x="0.5" y="2.5" width="7" height="7" strokeWidth="1" />
+    </svg>
+  ),
+  close: (props: SVGProps<SVGSVGElement>) => (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      fill="none"
+      stroke="currentColor"
+      {...props}
+    >
+      <path d="M0 0L10 10M10 0L0 10" strokeWidth="1" />
     </svg>
   ),
 }
