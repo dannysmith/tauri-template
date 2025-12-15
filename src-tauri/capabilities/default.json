@@ -20,6 +20,7 @@
     "fs:default",
     "log:default",
     "notification:default",
-    "process:default"
+    "process:default",
+    "os:default"
   ]
 }
