@@ -12,6 +12,8 @@ pub fn generate_bindings() -> Builder<tauri::Wry> {
         crate::show_quick_pane,
         crate::dismiss_quick_pane,
         crate::toggle_quick_pane,
+        crate::get_default_quick_pane_shortcut,
+        crate::update_quick_pane_shortcut,
     ])
 }
 

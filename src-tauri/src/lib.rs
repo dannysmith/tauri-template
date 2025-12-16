@@ -117,16 +117,19 @@ fn greet(name: &str) -> String {
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct AppPreferences {
     pub theme: String,
-    // Add new persistent preferences here, e.g.:
-    // pub auto_save: bool,
-    // pub language: String,
+    /// Global shortcut for quick pane (e.g., "CommandOrControl+Shift+.")
+    /// If None, uses the default shortcut
+    pub quick_pane_shortcut: Option<String>,
 }
+
+/// Default shortcut for the quick pane
+pub const DEFAULT_QUICK_PANE_SHORTCUT: &str = "CommandOrControl+Shift+.";
 
 impl Default for AppPreferences {
     fn default() -> Self {
         Self {
             theme: "system".to_string(),
-            // Add defaults for new preferences here
+            quick_pane_shortcut: None, // None means use default
         }
     }
 }
@@ -634,6 +637,61 @@ fn toggle_quick_pane(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+/// Updates the global shortcut for the quick pane.
+/// Unregisters the old shortcut and registers the new one.
+/// Returns the default shortcut constant for frontend use.
+#[tauri::command]
+#[specta::specta]
+fn get_default_quick_pane_shortcut() -> String {
+    DEFAULT_QUICK_PANE_SHORTCUT.to_string()
+}
+
+/// Updates the global shortcut for the quick pane.
+/// Pass None to reset to default.
+#[tauri::command]
+#[specta::specta]
+fn update_quick_pane_shortcut(app: AppHandle, shortcut: Option<String>) -> Result<(), String> {
+    #[cfg(desktop)]
+    {
+        use tauri_plugin_global_shortcut::GlobalShortcutExt;
+
+        let global_shortcut = app.global_shortcut();
+        let new_shortcut = shortcut.as_deref().unwrap_or(DEFAULT_QUICK_PANE_SHORTCUT);
+
+        log::info!("Updating quick pane shortcut to: {new_shortcut}");
+
+        // Unregister all shortcuts first (we only have one registered)
+        if let Err(e) = global_shortcut.unregister_all() {
+            log::warn!("Failed to unregister old shortcuts: {e}");
+            // Continue anyway - the old shortcut may not have been registered
+        }
+
+        // Register the new shortcut
+        let app_handle = app.clone();
+        global_shortcut
+            .on_shortcut(new_shortcut, move |_app, _shortcut, event| {
+                use tauri_plugin_global_shortcut::ShortcutState;
+                if event.state == ShortcutState::Pressed {
+                    log::info!("Quick pane shortcut triggered");
+                    if let Err(e) = toggle_quick_pane(app_handle.clone()) {
+                        log::error!("Failed to toggle quick pane: {e}");
+                    }
+                }
+            })
+            .map_err(|e| format!("Failed to register shortcut '{new_shortcut}': {e}"))?;
+
+        log::info!("Quick pane shortcut updated successfully");
+    }
+
+    #[cfg(not(desktop))]
+    {
+        let _ = (app, shortcut);
+        log::warn!("Global shortcuts not supported on this platform");
+    }
+
+    Ok(())
+}
+
 // Create the native menu system
 fn create_app_menu(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Setting up native menu system");
@@ -739,32 +797,59 @@ pub fn run() {
                 app.package_info().name
             );
 
-            // Set up global shortcut for quick pane
+            // Load saved preferences to get configured shortcut
+            let saved_shortcut = {
+                let prefs_path = get_preferences_path(app.handle());
+                match prefs_path {
+                    Ok(path) if path.exists() => match std::fs::read_to_string(&path) {
+                        Ok(contents) => match serde_json::from_str::<AppPreferences>(&contents) {
+                            Ok(prefs) => prefs.quick_pane_shortcut,
+                            Err(e) => {
+                                log::warn!("Failed to parse preferences: {e}");
+                                None
+                            }
+                        },
+                        Err(e) => {
+                            log::warn!("Failed to read preferences: {e}");
+                            None
+                        }
+                    },
+                    _ => None,
+                }
+            };
+
+            let shortcut_to_register = saved_shortcut
+                .as_deref()
+                .unwrap_or(DEFAULT_QUICK_PANE_SHORTCUT);
+            log::info!("Registering quick pane shortcut: {shortcut_to_register}");
+
+            // Set up global shortcut plugin (without any shortcuts - we register them separately)
             #[cfg(desktop)]
             {
-                use tauri_plugin_global_shortcut::{Builder, Code, Modifiers, ShortcutState};
+                use tauri_plugin_global_shortcut::Builder;
+
+                app.handle().plugin(Builder::new().build())?;
+            }
+
+            // Register the quick pane shortcut using the same mechanism as update_quick_pane_shortcut
+            // This ensures unregister_all() works consistently for both startup and runtime changes
+            #[cfg(desktop)]
+            {
+                use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 
                 let app_handle = app.handle().clone();
-                app.handle().plugin(
-                    Builder::new()
-                        .with_shortcut("CommandOrControl+Shift+.")?
-                        .with_handler(move |_app, shortcut, event| {
-                            if event.state == ShortcutState::Pressed
-                                && (shortcut
-                                    .matches(Modifiers::CONTROL | Modifiers::SHIFT, Code::Period)
-                                    || shortcut
-                                        .matches(Modifiers::SUPER | Modifiers::SHIFT, Code::Period))
-                            {
-                                log::info!("Quick pane shortcut triggered");
-                                // Call directly - handler runs on main thread, toggle_quick_pane is sync
-                                if let Err(e) = toggle_quick_pane(app_handle.clone()) {
-                                    log::error!("Failed to toggle quick pane: {e}");
-                                }
+                app.global_shortcut().on_shortcut(
+                    shortcut_to_register,
+                    move |_app, _shortcut, event| {
+                        if event.state == ShortcutState::Pressed {
+                            log::info!("Quick pane shortcut triggered");
+                            if let Err(e) = toggle_quick_pane(app_handle.clone()) {
+                                log::error!("Failed to toggle quick pane: {e}");
                             }
-                        })
-                        .build(),
+                        }
+                    },
                 )?;
-                log::info!("Global shortcut registered: Cmd/Ctrl+Shift+.");
+                log::info!("Global shortcut registered: {shortcut_to_register}");
             }
 
             // Create the quick pane window (hidden) - must be done on main thread

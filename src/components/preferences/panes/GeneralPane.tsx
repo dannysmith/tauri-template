@@ -1,8 +1,14 @@
 import React, { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
+import { ShortcutPicker } from '../ShortcutPicker'
+import { usePreferences, useSavePreferences } from '@/services/preferences'
+import { commands } from '@/lib/tauri-bindings'
+import { logger } from '@/lib/logger'
 
 const SettingsField: React.FC<{
   label: string
@@ -39,8 +45,58 @@ export const GeneralPane: React.FC = () => {
   const [exampleText, setExampleText] = useState('Example value')
   const [exampleToggle, setExampleToggle] = useState(true)
 
+  // Load preferences for keyboard shortcuts
+  const { data: preferences } = usePreferences()
+  const savePreferences = useSavePreferences()
+
+  // Get the default shortcut from the backend
+  const { data: defaultShortcut } = useQuery({
+    queryKey: ['default-quick-pane-shortcut'],
+    queryFn: async () => {
+      return await commands.getDefaultQuickPaneShortcut()
+    },
+    staleTime: Infinity, // Never refetch - this is a constant
+  })
+
+  const handleShortcutChange = async (newShortcut: string | null) => {
+    if (!preferences) return
+
+    logger.info('Updating quick pane shortcut', { newShortcut })
+
+    // First, try to register the new shortcut
+    const result = await commands.updateQuickPaneShortcut(newShortcut)
+
+    if (result.status === 'error') {
+      logger.error('Failed to register shortcut', { error: result.error })
+      toast.error('Failed to register shortcut', {
+        description: result.error,
+      })
+      return
+    }
+
+    // If registration succeeded, save the preference
+    savePreferences.mutate({
+      ...preferences,
+      quick_pane_shortcut: newShortcut,
+    })
+  }
+
   return (
     <div className="space-y-6">
+      <SettingsSection title="Keyboard Shortcuts">
+        <SettingsField
+          label="Quick Pane Shortcut"
+          description="Global keyboard shortcut to toggle the quick pane from any application"
+        >
+          <ShortcutPicker
+            value={preferences?.quick_pane_shortcut ?? null}
+            defaultValue={defaultShortcut ?? 'CommandOrControl+Shift+.'}
+            onChange={handleShortcutChange}
+            disabled={!preferences || savePreferences.isPending}
+          />
+        </SettingsField>
+      </SettingsSection>
+
       <SettingsSection title="Example Settings">
         <SettingsField
           label="Example Text Setting"

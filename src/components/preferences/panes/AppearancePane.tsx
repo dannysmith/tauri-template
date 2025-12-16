@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useTheme } from '@/hooks/use-theme'
-import { useSavePreferences } from '@/services/preferences'
+import { usePreferences, useSavePreferences } from '@/services/preferences'
 
 const SettingsField: React.FC<{
   label: string
@@ -40,14 +40,17 @@ const SettingsSection: React.FC<{
 
 export const AppearancePane: React.FC = () => {
   const { theme, setTheme } = useTheme()
+  const { data: preferences } = usePreferences()
   const savePreferences = useSavePreferences()
 
   const handleThemeChange = async (value: 'light' | 'dark' | 'system') => {
     // Update the theme provider immediately for instant UI feedback
     setTheme(value)
 
-    // Persist the theme preference to disk
-    savePreferences.mutate({ theme: value })
+    // Persist the theme preference to disk, preserving other preferences
+    if (preferences) {
+      savePreferences.mutate({ ...preferences, theme: value })
+    }
   }
 
   return (

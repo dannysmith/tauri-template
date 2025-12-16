@@ -92,6 +92,26 @@ async toggleQuickPane() : Promise<Result<null, string>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+/**
+ * Updates the global shortcut for the quick pane.
+ * Unregisters the old shortcut and registers the new one.
+ * Returns the default shortcut constant for frontend use.
+ */
+async getDefaultQuickPaneShortcut() : Promise<string> {
+    return await TAURI_INVOKE("get_default_quick_pane_shortcut");
+},
+/**
+ * Updates the global shortcut for the quick pane.
+ * Pass None to reset to default.
+ */
+async updateQuickPaneShortcut(shortcut: string | null) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("update_quick_pane_shortcut", { shortcut }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -105,7 +125,12 @@ async toggleQuickPane() : Promise<Result<null, string>> {
 
 /** user-defined types **/
 
-export type AppPreferences = { theme: string }
+export type AppPreferences = { theme: string; 
+/**
+ * Global shortcut for quick pane (e.g., "CommandOrControl+Shift+.")
+ * If None, uses the default shortcut
+ */
+quick_pane_shortcut: string | null }
 export type JsonValue = null | boolean | number | string | JsonValue[] | Partial<{ [key in string]: JsonValue }>
 /**
  * Error types for recovery operations (typed for frontend matching)

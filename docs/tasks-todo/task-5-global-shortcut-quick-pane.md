@@ -2,7 +2,7 @@
 
 ## Session Notes
 
-**Phases 1-4 completed.** Remaining: Phase 5 (Configurable Shortcut), Phase 6 (Polish & Docs).
+**Phases 1-5 completed.** Remaining: Phase 6 (Polish & Docs).
 
 **Current state:** Quick pane fully functional - appears over fullscreen apps, accepts keyboard input, dismisses correctly without space-switching, returns focus to previous app. Visual styling is basic (semi-transparent CSS, no native frosted glass blur due to window-vibrancy conflict with tauri-nspanel).
 
@@ -298,23 +298,45 @@ objc2-foundation = "0.3"
 
 ---
 
-### Phase 5: Configurable Shortcut
+### Phase 5: Configurable Shortcut (Complete)
 
 **Goal:** Users can customize the global shortcut in settings.
 
 **Tasks:**
 
-- [ ] Add `quickPaneShortcut: string` field to `AppPreferences` type (Rust + TS)
-- [ ] Create `ShortcutPicker` component for settings:
-  - Displays current shortcut (formatted nicely)
+- [x] Add `quickPaneShortcut: Option<String>` field to `AppPreferences` type (Rust + TS)
+- [x] Create `ShortcutPicker` component for settings:
+  - Displays current shortcut (formatted nicely with platform symbols)
   - Click to enter capture mode ("Press shortcut...")
   - Press key combination to set
   - Escape to cancel capture
   - On capture: attempt to register, show error if fails, revert to previous
-- [ ] Add shortcut setting to Preferences dialog
-- [ ] On preference change: unregister old shortcut, register new one
-- [ ] On app startup: load saved shortcut (or use default if not set/invalid)
-- [ ] Test: Change shortcut in settings, new shortcut works immediately
+- [x] Add shortcut setting to Preferences dialog (GeneralPane)
+- [x] On preference change: unregister old shortcut, register new one
+- [x] On app startup: load saved shortcut (or use default if not set/invalid)
+- [x] Test: Change shortcut in settings, new shortcut works immediately
+
+**Implementation Notes:**
+
+1. **AppPreferences changes:**
+   - Added `quick_pane_shortcut: Option<String>` field (None = use default)
+   - Default constant: `DEFAULT_QUICK_PANE_SHORTCUT = "CommandOrControl+Shift+."`
+   - TypeScript type auto-generated via tauri-specta
+
+2. **New Tauri commands:**
+   - `get_default_quick_pane_shortcut()` - Returns the default shortcut string
+   - `update_quick_pane_shortcut(shortcut: Option<String>)` - Re-registers the shortcut at runtime
+
+3. **ShortcutPicker component:**
+   - Location: `src/components/preferences/ShortcutPicker.tsx`
+   - Formats shortcuts with platform symbols (e.g., `CommandOrControl+Shift+.` -> `⌘⇧.` on macOS)
+   - Captures keyboard events and converts to Tauri-compatible format
+   - Shows "Reset" button when custom shortcut is set
+
+4. **Startup shortcut loading:**
+   - Setup closure reads preferences.json synchronously
+   - Uses saved shortcut or falls back to default
+   - Shortcut registration uses simplified handler (no complex modifier matching needed)
 
 **Testable State:** Full feature complete - configurable shortcut persisted and working.
 
