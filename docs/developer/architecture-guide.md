@@ -73,6 +73,7 @@ Each major system has focused documentation:
 - **[Command System](./command-system.md)** - Unified action dispatch
 - **[Keyboard Shortcuts](./keyboard-shortcuts.md)** - Native event handling
 - **[Native Menus](./menus.md)** - Cross-platform menu integration
+- **[Quick Panes](./quick-panes.md)** - Multi-window quick entry pattern
 - **[Data Persistence](./data-persistence.md)** - Disk storage patterns
 - **[Notifications](./notifications.md)** - Toast and native notifications
 - **[Logging](./logging.md)** - Rust and TypeScript logging
@@ -111,6 +112,39 @@ src/
 ├── store/               # Zustand stores
 └── types/               # Shared TypeScript types
 ```
+
+### Multi-Window Architecture
+
+Tauri applications can have multiple windows, each running a separate JavaScript context. This means windows cannot share React state directly.
+
+**Key patterns:**
+
+1. **Separate entry points** - Each window has its own HTML file and React root
+2. **Event-based communication** - Use Tauri events to communicate between windows
+3. **Window reuse** - Create windows once at startup, then show/hide as needed
+4. **Theme synchronization** - Emit theme changes so all windows stay in sync
+
+```typescript
+// Window A: emit event
+await emit('data-updated', { value: 'new data' })
+
+// Window B: listen and react
+listen('data-updated', ({ payload }) => {
+  setData(payload.value)
+})
+```
+
+**Window creation pattern:**
+
+```rust
+// Create at startup (in setup closure, runs on main thread)
+init_secondary_window(app.handle())?;
+
+// Show/hide via commands (fast, window already exists)
+show_secondary_window(app_handle);
+```
+
+See [Quick Panes](./quick-panes.md) for a complete implementation example.
 
 ## Performance Patterns
 

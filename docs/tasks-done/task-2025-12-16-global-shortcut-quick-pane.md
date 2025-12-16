@@ -2,11 +2,11 @@
 
 ## Session Notes
 
-**Phases 1-5 completed.** Remaining: Phase 6 (Polish & Docs).
+**All phases completed.** Task ready for completion.
 
-**Current state:** Quick pane fully functional - appears over fullscreen apps, accepts keyboard input, dismisses correctly without space-switching, returns focus to previous app. Visual styling is basic (semi-transparent CSS, no native frosted glass blur due to window-vibrancy conflict with tauri-nspanel).
+**Current state:** Quick pane fully functional - appears over fullscreen apps on the monitor containing the cursor, accepts keyboard input, dismisses correctly without space-switching. Visual styling uses CSS backdrop-blur (no native frosted glass blur due to window-vibrancy conflict with tauri-nspanel).
 
-**Code review needed:** Phase 4 required adding objc2 dependencies and manual previous-app tracking via NSWorkspace/NSRunningApplication. This feels like overkill - Handy's implementation didn't need this. Investigate whether there's a simpler tauri-nspanel configuration that avoids the space-switching issue without manual app tracking.
+**Code review opportunity:** Phase 4 required adding resign_key_window() call before hiding to prevent space-switching. The objc2 dependencies for previous-app tracking were removed as they weren't needed - resign_key_window() alone was sufficient.
 
 ### Implementation Notes
 
@@ -14,7 +14,7 @@
 - **Theme sync between windows:** Quick pane is a separate JS context, so it can't share React state. We emit a `theme-changed` Tauri event from ThemeProvider when theme changes, and quick pane listens for it. This prevents flash of wrong theme when re-showing the window.
 - **Window reuse pattern:** Quick pane window is created once, then shown/hidden. Much faster than recreating each time. Theme is re-synced on focus gain.
 - **Styling:** Used transparent window + CSS `backdrop-blur-xl` + `bg-white/90` / `bg-zinc-900/90` for frosted glass effect that respects theme. Window is 500x72.
-- **Test button:** Left a temporary "Show Quick Pane (Test)" button in MainWindowContent.tsx - remove after Phase 6.
+- **Cursor-based positioning:** Quick pane centers on the monitor containing the mouse cursor using `app.cursor_position()` and `app.monitor_from_point()`.
 
 ---
 
@@ -342,20 +342,21 @@ objc2-foundation = "0.3"
 
 ---
 
-### Phase 6: Polish & Documentation
+### Phase 6: Polish & Documentation (Complete)
 
 **Goal:** Production-ready with documentation.
 
 **Tasks:**
 
-- [ ] Position quick pane on monitor with mouse cursor (use `cursor_position()` API)
-- [ ] Clear input field after successful submit
-- [ ] Add developer documentation to `docs/developer/quick-panes.md`:
+- [x] Position quick pane on monitor with mouse cursor (use `cursor_position()` API)
+- [x] Clear input field after successful submit (was already implemented in Phase 2)
+- [x] Remove test button from MainWindowContent.tsx
+- [x] Add developer documentation to `docs/developer/quick-panes.md`:
   - How to customize pane content
   - How to wire to different actions (Zustand, TanStack, API)
   - Multi-window architecture explanation
   - Platform-specific notes
-- [ ] Update `docs/developer/architecture-guide.md` with cross-window patterns
+- [x] Update `docs/developer/architecture-guide.md` with cross-window patterns
 
 **Testable State:** Feature complete, documented, ready for template users.
 

@@ -514,11 +514,83 @@ fn init_quick_pane_standard(app: &AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+/// Quick pane window dimensions (must match values used in init_quick_pane)
+const QUICK_PANE_WIDTH: f64 = 500.0;
+const QUICK_PANE_HEIGHT: f64 = 72.0;
+
+/// Calculates the position to center a window on the monitor containing the cursor.
+/// Falls back to primary monitor if cursor monitor cannot be determined.
+fn get_centered_position_on_cursor_monitor(app: &AppHandle) -> Option<tauri::PhysicalPosition<i32>> {
+    // Get cursor position
+    let cursor_pos = match app.cursor_position() {
+        Ok(pos) => pos,
+        Err(e) => {
+            log::warn!("Failed to get cursor position: {e}");
+            return None;
+        }
+    };
+
+    log::debug!("Cursor position: ({}, {})", cursor_pos.x, cursor_pos.y);
+
+    // Get the monitor containing the cursor
+    let monitor = match app.monitor_from_point(cursor_pos.x, cursor_pos.y) {
+        Ok(Some(m)) => m,
+        Ok(None) => {
+            log::warn!("No monitor found at cursor position, trying primary monitor");
+            match app.primary_monitor() {
+                Ok(Some(m)) => m,
+                _ => {
+                    log::warn!("Failed to get primary monitor");
+                    return None;
+                }
+            }
+        }
+        Err(e) => {
+            log::warn!("Failed to get monitor from point: {e}");
+            return None;
+        }
+    };
+
+    let monitor_pos = monitor.position();
+    let monitor_size = monitor.size();
+    let scale_factor = monitor.scale_factor();
+
+    log::debug!(
+        "Monitor: pos=({}, {}), size={}x{}, scale={}",
+        monitor_pos.x,
+        monitor_pos.y,
+        monitor_size.width,
+        monitor_size.height,
+        scale_factor
+    );
+
+    // Calculate centered position on this monitor
+    // Window size needs to be scaled by the monitor's scale factor
+    let scaled_width = (QUICK_PANE_WIDTH * scale_factor) as i32;
+    let scaled_height = (QUICK_PANE_HEIGHT * scale_factor) as i32;
+
+    let x = monitor_pos.x + (monitor_size.width as i32 - scaled_width) / 2;
+    let y = monitor_pos.y + (monitor_size.height as i32 - scaled_height) / 2;
+
+    log::debug!("Calculated position: ({x}, {y})");
+
+    Some(tauri::PhysicalPosition::new(x, y))
+}
+
 /// Shows the quick pane window and makes it the key window (for keyboard input).
 #[tauri::command]
 #[specta::specta]
 fn show_quick_pane(app: AppHandle) -> Result<(), String> {
     log::info!("Showing quick pane window");
+
+    // Position the window on the monitor containing the cursor
+    if let Some(position) = get_centered_position_on_cursor_monitor(&app) {
+        if let Some(window) = app.get_webview_window(QUICK_PANE_LABEL) {
+            if let Err(e) = window.set_position(position) {
+                log::warn!("Failed to set window position: {e}");
+            }
+        }
+    }
 
     #[cfg(target_os = "macos")]
     {
@@ -603,6 +675,14 @@ fn toggle_quick_pane(app: AppHandle) -> Result<(), String> {
             panel.hide();
             log::debug!("Quick pane panel hidden (macOS)");
         } else {
+            // Position the window on the monitor containing the cursor before showing
+            if let Some(position) = get_centered_position_on_cursor_monitor(&app) {
+                if let Some(window) = app.get_webview_window(QUICK_PANE_LABEL) {
+                    if let Err(e) = window.set_position(position) {
+                        log::warn!("Failed to set window position: {e}");
+                    }
+                }
+            }
             panel.show_and_make_key();
             log::debug!("Quick pane panel shown (macOS)");
         }
@@ -624,6 +704,12 @@ fn toggle_quick_pane(app: AppHandle) -> Result<(), String> {
                 .map_err(|e| format!("Failed to hide window: {e}"))?;
             log::debug!("Quick pane window hidden");
         } else {
+            // Position the window on the monitor containing the cursor before showing
+            if let Some(position) = get_centered_position_on_cursor_monitor(&app) {
+                if let Err(e) = window.set_position(position) {
+                    log::warn!("Failed to set window position: {e}");
+                }
+            }
             window
                 .show()
                 .map_err(|e| format!("Failed to show window: {e}"))?;
