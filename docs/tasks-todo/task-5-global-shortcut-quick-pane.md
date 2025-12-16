@@ -2,7 +2,9 @@
 
 ## Session Notes
 
-**Phases 1-3 completed.** Remaining: Phase 4 (NSPanel), Phase 5 (Configurable Shortcut), Phase 6 (Polish & Docs).
+**Phases 1-3 completed. Phase 4 in progress.** Remaining: Phase 4 (finish dismiss behavior), Phase 5 (Configurable Shortcut), Phase 6 (Polish & Docs).
+
+**Current state:** Quick pane appears over fullscreen apps and accepts keyboard input. Two issues remain: (1) space-switching when dismissing, (2) Escape key boop sound. See Phase 4 section for detailed learnings and next steps.
 
 ### Implementation Notes
 
@@ -163,22 +165,99 @@ This pattern doesn't constrain the action type - the template demonstrates Zusta
 
 ---
 
-### Phase 4: macOS NSPanel Enhancement
+### Phase 4: macOS NSPanel Enhancement (In Progress)
 
 **Goal:** Native panel behavior on macOS for fullscreen app overlay.
 
 **Tasks:**
 
-- [ ] Add `tauri-nspanel` dependency (macOS only via cfg)
-- [ ] After creating quick pane window, convert to NSPanel on macOS
-- [ ] Configure panel level for proper floating behavior (above fullscreen apps)
-- [ ] Ensure conversion happens before window is ever shown (initialization sequencing)
-- [ ] Test click-outside-to-dismiss behavior (should work natively with NSPanel)
-- [ ] Test: On macOS fullscreen app, shortcut shows pane overlaid correctly
+- [x] Add `tauri-nspanel` dependency (macOS only via cfg)
+- [x] Create quick pane as NSPanel using `PanelBuilder`
+- [x] Configure panel level for proper floating behavior (above fullscreen apps)
+- [x] Panel creation on main thread (critical - see learnings below)
+- [x] Fullscreen overlay working (panel visible over fullscreen apps)
+- [ ] **REMAINING:** Fix space-switching on submit/dismiss (see issues below)
+- [ ] **REMAINING:** Fix Escape key "boop" sound
+- [ ] Test click-outside-to-dismiss behavior
 
-**Note:** Previous-window-reactivation is deferred - would require tracking active app before showing and reactivating on dismiss. Can add in future iteration if needed.
+**Current Implementation:**
 
-**Testable State:** macOS users get native panel UX, pane overlays fullscreen apps correctly.
+```rust
+// Panel class config
+tauri_panel! {
+    panel!(QuickPanePanel {
+        config: {
+            can_become_key_window: true,  // Allows keyboard input
+            can_become_main_window: false,
+            is_floating_panel: true
+        }
+    })
+}
+
+// PanelBuilder config
+PanelBuilder::<_, QuickPanePanel>::new(app, QUICK_PANE_LABEL)
+    .level(PanelLevel::Status)  // High z-order for fullscreen overlay
+    .collection_behavior(
+        CollectionBehavior::new()
+            .full_screen_auxiliary()
+            .can_join_all_spaces(),
+    )
+    .style_mask(StyleMask::empty().nonactivating_panel())  // Required for fullscreen
+    .hides_on_deactivate(false)
+    .works_when_modal(true)
+    // ... other config
+```
+
+**Critical Learnings:**
+
+1. **Threading: NSPanel creation MUST happen on main thread**
+   - Calling `PanelBuilder::build()` from `tauri::async_runtime::spawn` causes silent crashes
+   - The async runtime uses tokio thread pool, not main thread
+   - **Solution:** Create panel during `.setup()` closure (runs on main thread), keep hidden, then show/hide via commands
+   - Reference: Handy PR #361 uses same pattern - creates overlay at startup, hidden
+
+2. **Plugin initialization pattern:**
+   ```rust
+   let mut app_builder = tauri::Builder::default().plugin(...);
+
+   #[cfg(target_os = "macos")]
+   {
+       app_builder = app_builder.plugin(tauri_nspanel::init());
+   }
+
+   app_builder.plugin(...).setup(...)...
+   ```
+
+3. **StyleMask::nonactivating_panel() is required for fullscreen overlay**
+   - Without it, panel is invisible over fullscreen apps (though it still receives input)
+   - The tauri-nspanel docs explicitly state this is "required for fullscreen display"
+
+4. **PanelLevel::Status vs PanelLevel::Floating**
+   - `Status` is higher z-order, better for fullscreen overlay
+   - `Floating` may not be high enough for all fullscreen scenarios
+
+5. **Regular Tauri window methods work after PanelBuilder creates panel**
+   - `app.get_webview_window(label)` still works
+   - `window.show()`, `window.hide()`, `window.set_focus()` work
+   - No need to convert back to panel for show/hide operations
+
+**Remaining Issues to Investigate:**
+
+1. **Space-switching on submit/dismiss:** When user presses Enter or Escape, macOS switches to the space containing the main app window. Theory: Despite `nonactivating_panel()`, something is still activating the app when the panel hides.
+
+2. **Escape key "boop" sound:** The system alert sound plays when Escape is pressed. This usually means macOS blocked an action. Could be:
+   - Frontend event handling issue (not preventing default?)
+   - Some interaction with the app activation
+
+3. **Possible next steps:**
+   - Check if the frontend `hide_quick_pane` call is triggering app activation
+   - Look at how focus is being transferred when panel hides
+   - Consider if we need to manually track and restore the previously active app
+   - Check Handy's implementation for how they handle dismiss behavior
+
+**Reference Implementation:** https://github.com/cjpais/Handy/pull/361
+
+**Testable State:** Panel appears over fullscreen apps correctly. Keyboard input works. Remaining: fix dismiss behavior.
 
 ---
 

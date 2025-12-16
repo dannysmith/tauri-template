@@ -8,8 +8,25 @@ use specta::Type;
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder};
+#[cfg(not(target_os = "macos"))]
 use tauri::webview::WebviewWindowBuilder;
 use tauri::{AppHandle, Emitter, Manager, WebviewUrl};
+
+// macOS-only: NSPanel for native panel behavior
+#[cfg(target_os = "macos")]
+use tauri_nspanel::{tauri_panel, CollectionBehavior, PanelBuilder, PanelLevel, StyleMask};
+
+// Define custom panel class for quick pane (macOS only)
+#[cfg(target_os = "macos")]
+tauri_panel! {
+    panel!(QuickPanePanel {
+        config: {
+            can_become_key_window: true,
+            can_become_main_window: false,
+            is_floating_panel: true
+        }
+    })
+}
 
 /// Error types for recovery operations (typed for frontend matching)
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
@@ -409,31 +426,69 @@ async fn cleanup_old_recovery_files(app: AppHandle) -> Result<u32, RecoveryError
 }
 
 // Quick Pane Window Management
+// The quick pane is created once at app startup (hidden) and then shown/hidden via commands.
+// This is required because NSPanel creation must happen on the main thread.
 const QUICK_PANE_LABEL: &str = "quick-pane";
 
-/// Shows the quick pane window, creating it if it doesn't exist.
-/// The window is a small floating panel for quick text entry.
-#[tauri::command]
-#[specta::specta]
-async fn show_quick_pane(app: AppHandle) -> Result<(), String> {
-    log::info!("Showing quick pane window");
-
-    // Check if window already exists
-    if let Some(window) = app.get_webview_window(QUICK_PANE_LABEL) {
-        // Window exists, just show and focus it
-        window
-            .show()
-            .map_err(|e| format!("Failed to show window: {e}"))?;
-        window
-            .set_focus()
-            .map_err(|e| format!("Failed to focus window: {e}"))?;
-        log::debug!("Quick pane window shown (already existed)");
-        return Ok(());
+/// Creates the quick pane window at app startup.
+/// Must be called from the main thread (e.g., in setup()).
+/// The window starts hidden and is shown via show_quick_pane command.
+pub fn init_quick_pane(app: &AppHandle) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        init_quick_pane_macos(app)
     }
 
-    // Create new window
-    let window = WebviewWindowBuilder::new(
-        &app,
+    #[cfg(not(target_os = "macos"))]
+    {
+        init_quick_pane_standard(app)
+    }
+}
+
+/// Creates the quick pane as an NSPanel on macOS (hidden).
+#[cfg(target_os = "macos")]
+fn init_quick_pane_macos(app: &AppHandle) -> Result<(), String> {
+    use tauri::{LogicalSize, Size};
+
+    log::debug!("Creating quick pane as NSPanel (macOS)");
+
+    let panel = PanelBuilder::<_, QuickPanePanel>::new(app, QUICK_PANE_LABEL)
+        .url(WebviewUrl::App("quick-pane.html".into()))
+        .title("Quick Entry")
+        .size(Size::Logical(LogicalSize::new(500.0, 72.0)))
+        .level(PanelLevel::Status) // Status level to appear above fullscreen apps
+        .transparent(true)
+        .has_shadow(true)
+        .collection_behavior(
+            CollectionBehavior::new()
+                .full_screen_auxiliary()
+                .can_join_all_spaces(),
+        )
+        .style_mask(StyleMask::empty().nonactivating_panel())
+        .hides_on_deactivate(false)
+        .works_when_modal(true)
+        .with_window(|w| {
+            w.decorations(false)
+                .skip_taskbar(true)
+                .resizable(false)
+                .center()
+        })
+        .build()
+        .map_err(|e| format!("Failed to create quick pane panel: {e}"))?;
+
+    // Start hidden - will be shown via show_quick_pane command
+    panel.hide();
+    log::info!("Quick pane NSPanel created (hidden)");
+    Ok(())
+}
+
+/// Creates the quick pane as a standard Tauri window (hidden) on non-macOS platforms.
+#[cfg(not(target_os = "macos"))]
+fn init_quick_pane_standard(app: &AppHandle) -> Result<(), String> {
+    log::debug!("Creating quick pane as standard window");
+
+    WebviewWindowBuilder::new(
+        app,
         QUICK_PANE_LABEL,
         WebviewUrl::App("quick-pane.html".into()),
     )
@@ -443,17 +498,34 @@ async fn show_quick_pane(app: AppHandle) -> Result<(), String> {
     .skip_taskbar(true)
     .decorations(false)
     .transparent(true)
-    .visible(true)
+    .visible(false) // Start hidden
     .resizable(false)
     .center()
     .build()
     .map_err(|e| format!("Failed to create quick pane window: {e}"))?;
 
+    log::info!("Quick pane window created (hidden)");
+    Ok(())
+}
+
+/// Shows the quick pane window.
+#[tauri::command]
+#[specta::specta]
+async fn show_quick_pane(app: AppHandle) -> Result<(), String> {
+    log::info!("Showing quick pane window");
+
+    let window = app.get_webview_window(QUICK_PANE_LABEL).ok_or_else(|| {
+        "Quick pane window not found - was init_quick_pane called at startup?".to_string()
+    })?;
+
+    window
+        .show()
+        .map_err(|e| format!("Failed to show window: {e}"))?;
     window
         .set_focus()
         .map_err(|e| format!("Failed to focus window: {e}"))?;
 
-    log::info!("Quick pane window created successfully");
+    log::debug!("Quick pane window shown");
     Ok(())
 }
 
@@ -481,27 +553,27 @@ async fn hide_quick_pane(app: AppHandle) -> Result<(), String> {
 async fn toggle_quick_pane(app: AppHandle) -> Result<(), String> {
     log::info!("Toggling quick pane window");
 
-    if let Some(window) = app.get_webview_window(QUICK_PANE_LABEL) {
-        let is_visible = window
-            .is_visible()
-            .map_err(|e| format!("Failed to check visibility: {e}"))?;
-        if is_visible {
-            window
-                .hide()
-                .map_err(|e| format!("Failed to hide window: {e}"))?;
-            log::debug!("Quick pane window hidden");
-        } else {
-            window
-                .show()
-                .map_err(|e| format!("Failed to show window: {e}"))?;
-            window
-                .set_focus()
-                .map_err(|e| format!("Failed to focus window: {e}"))?;
-            log::debug!("Quick pane window shown");
-        }
+    let window = app.get_webview_window(QUICK_PANE_LABEL).ok_or_else(|| {
+        "Quick pane window not found - was init_quick_pane called at startup?".to_string()
+    })?;
+
+    let is_visible = window
+        .is_visible()
+        .map_err(|e| format!("Failed to check visibility: {e}"))?;
+
+    if is_visible {
+        window
+            .hide()
+            .map_err(|e| format!("Failed to hide window: {e}"))?;
+        log::debug!("Quick pane window hidden");
     } else {
-        // Window doesn't exist, create and show it
-        show_quick_pane(app).await?;
+        window
+            .show()
+            .map_err(|e| format!("Failed to show window: {e}"))?;
+        window
+            .set_focus()
+            .map_err(|e| format!("Failed to focus window: {e}"))?;
+        log::debug!("Quick pane window shown");
     }
 
     Ok(())
@@ -565,7 +637,8 @@ pub fn run() {
     #[cfg(debug_assertions)]
     bindings::export_ts_bindings();
 
-    tauri::Builder::default()
+    // Build with common plugins
+    let mut app_builder = tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_notification::init())
@@ -589,7 +662,15 @@ pub fn run() {
                     }),
                 ])
                 .build(),
-        )
+        );
+
+    // macOS: Add NSPanel plugin for native panel behavior
+    #[cfg(target_os = "macos")]
+    {
+        app_builder = app_builder.plugin(tauri_nspanel::init());
+    }
+
+    app_builder
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_persisted_scope::init())
         .plugin(tauri_plugin_dialog::init())
@@ -631,6 +712,12 @@ pub fn run() {
                         .build(),
                 )?;
                 log::info!("Global shortcut registered: Cmd/Ctrl+Shift+.");
+            }
+
+            // Create the quick pane window (hidden) - must be done on main thread
+            if let Err(e) = init_quick_pane(app.handle()) {
+                log::error!("Failed to create quick pane: {e}");
+                // Non-fatal: app can still run without quick pane
             }
 
             // Set up native menu system

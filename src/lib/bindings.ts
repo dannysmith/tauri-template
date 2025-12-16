@@ -60,8 +60,7 @@ async cleanupOldRecoveryFiles() : Promise<Result<number, RecoveryError>> {
 }
 },
 /**
- * Shows the quick pane window, creating it if it doesn't exist.
- * The window is a small floating panel for quick text entry.
+ * Shows the quick pane window.
  */
 async showQuickPane() : Promise<Result<null, string>> {
     try {
