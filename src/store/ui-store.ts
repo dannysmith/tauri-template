@@ -6,6 +6,7 @@ interface UIState {
   rightSidebarVisible: boolean
   commandPaletteOpen: boolean
   preferencesOpen: boolean
+  lastQuickPaneEntry: string | null
 
   toggleLeftSidebar: () => void
   setLeftSidebarVisible: (visible: boolean) => void
@@ -15,6 +16,7 @@ interface UIState {
   setCommandPaletteOpen: (open: boolean) => void
   togglePreferences: () => void
   setPreferencesOpen: (open: boolean) => void
+  setLastQuickPaneEntry: (text: string) => void
 }
 
 export const useUIStore = create<UIState>()(
@@ -24,6 +26,7 @@ export const useUIStore = create<UIState>()(
       rightSidebarVisible: true,
       commandPaletteOpen: false,
       preferencesOpen: false,
+      lastQuickPaneEntry: null,
 
       toggleLeftSidebar: () =>
         set(
@@ -72,6 +75,9 @@ export const useUIStore = create<UIState>()(
 
       setPreferencesOpen: open =>
         set({ preferencesOpen: open }, undefined, 'setPreferencesOpen'),
+
+      setLastQuickPaneEntry: text =>
+        set({ lastQuickPaneEntry: text }, undefined, 'setLastQuickPaneEntry'),
     }),
     {
       name: 'ui-store',

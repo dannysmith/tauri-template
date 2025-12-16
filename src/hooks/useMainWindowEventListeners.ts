@@ -94,6 +94,14 @@ export function useMainWindowEventListeners() {
             useUIStore.getState()
           setRightSidebarVisible(!rightSidebarVisible)
         }),
+
+        listen<{ text: string }>('quick-pane-submit', event => {
+          logger.debug('Quick pane submit event received', {
+            text: event.payload.text,
+          })
+          const { setLastQuickPaneEntry } = useUIStore.getState()
+          setLastQuickPaneEntry(event.payload.text)
+        }),
       ])
 
       logger.debug(
