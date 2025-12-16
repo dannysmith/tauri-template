@@ -6,28 +6,32 @@
  *
  * @example
  * ```typescript
- * import { commands, type AppPreferences } from '@/lib/tauri-bindings'
+ * import { commands, unwrapResult } from '@/lib/tauri-bindings'
  *
- * const result = await commands.loadPreferences()
- * if (result.status === 'ok') {
- *   console.log(result.data.theme)
+ * // In TanStack Query - let errors propagate
+ * const prefs = unwrapResult(await commands.loadPreferences())
+ *
+ * // In event handlers - explicit error handling
+ * const result = await commands.savePreferences(prefs)
+ * if (result.status === 'error') {
+ *   toast.error(result.error)
  * }
  * ```
+ *
+ * @see docs/developer/tauri-commands.md for full documentation
  */
 
 export { commands, type Result } from './bindings'
-export type { AppPreferences, JsonValue } from './bindings'
+export type { AppPreferences, JsonValue, RecoveryError } from './bindings'
 
 /**
  * Helper to unwrap a Result type, throwing on error
  */
-export function unwrapResult<T, E>(result: {
-  status: 'ok' | 'error'
-  data?: T
-  error?: E
-}): T {
+export function unwrapResult<T, E>(
+  result: { status: 'ok'; data: T } | { status: 'error'; error: E }
+): T {
   if (result.status === 'ok') {
-    return result.data as T
+    return result.data
   }
   throw result.error
 }

@@ -35,7 +35,7 @@ async sendNativeNotification(title: string, body: string | null) : Promise<Resul
     else return { status: "error", error: e  as any };
 }
 },
-async saveEmergencyData(filename: string, data: JsonValue) : Promise<Result<null, string>> {
+async saveEmergencyData(filename: string, data: JsonValue) : Promise<Result<null, RecoveryError>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("save_emergency_data", { filename, data }) };
 } catch (e) {
@@ -43,7 +43,7 @@ async saveEmergencyData(filename: string, data: JsonValue) : Promise<Result<null
     else return { status: "error", error: e  as any };
 }
 },
-async loadEmergencyData(filename: string) : Promise<Result<JsonValue, string>> {
+async loadEmergencyData(filename: string) : Promise<Result<JsonValue, RecoveryError>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("load_emergency_data", { filename }) };
 } catch (e) {
@@ -51,7 +51,7 @@ async loadEmergencyData(filename: string) : Promise<Result<JsonValue, string>> {
     else return { status: "error", error: e  as any };
 }
 },
-async cleanupOldRecoveryFiles() : Promise<Result<number, string>> {
+async cleanupOldRecoveryFiles() : Promise<Result<number, RecoveryError>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("cleanup_old_recovery_files") };
 } catch (e) {
@@ -73,6 +73,30 @@ async cleanupOldRecoveryFiles() : Promise<Result<number, string>> {
 
 export type AppPreferences = { theme: string }
 export type JsonValue = null | boolean | number | string | JsonValue[] | Partial<{ [key in string]: JsonValue }>
+/**
+ * Error types for recovery operations (typed for frontend matching)
+ */
+export type RecoveryError = 
+/**
+ * File does not exist (expected case, not a failure)
+ */
+{ type: "FileNotFound" } | 
+/**
+ * Filename validation failed
+ */
+{ type: "ValidationError"; message: string } | 
+/**
+ * Data exceeds size limit
+ */
+{ type: "DataTooLarge"; max_bytes: number } | 
+/**
+ * File system read/write error
+ */
+{ type: "IoError"; message: string } | 
+/**
+ * JSON serialization/deserialization error
+ */
+{ type: "ParseError"; message: string }
 
 /** tauri-specta globals **/
 

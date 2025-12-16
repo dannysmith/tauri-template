@@ -224,8 +224,8 @@ import { invoke } from '@tauri-apps/api/core'
 const prefs = await invoke<AppPreferences>('load_preferences')
 
 // After (full type safety)
-import { commands } from '@/lib/tauri-bindings'
-const prefs = await commands.loadPreferences()
+import { commands, unwrapResult } from '@/lib/tauri-bindings'
+const prefs = unwrapResult(await commands.loadPreferences())
 ```
 
 **Files to update:**

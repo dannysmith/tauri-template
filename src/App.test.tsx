@@ -23,6 +23,6 @@ describe('App', () => {
           button.className.includes('window-control')
       )
     // Should have at least the window control buttons
-    expect(titleBarButtons.length).toBeGreaterThanOrEqual(0)
+    expect(titleBarButtons.length).toBeGreaterThan(0)
   })
 })

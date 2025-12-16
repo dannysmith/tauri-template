@@ -10,6 +10,36 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder};
 use tauri::{AppHandle, Emitter, Manager};
 
+/// Error types for recovery operations (typed for frontend matching)
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(tag = "type")]
+pub enum RecoveryError {
+    /// File does not exist (expected case, not a failure)
+    FileNotFound,
+    /// Filename validation failed
+    ValidationError { message: String },
+    /// Data exceeds size limit
+    DataTooLarge { max_bytes: u32 },
+    /// File system read/write error
+    IoError { message: String },
+    /// JSON serialization/deserialization error
+    ParseError { message: String },
+}
+
+impl std::fmt::Display for RecoveryError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RecoveryError::FileNotFound => write!(f, "File not found"),
+            RecoveryError::ValidationError { message } => write!(f, "Validation error: {message}"),
+            RecoveryError::DataTooLarge { max_bytes } => {
+                write!(f, "Data too large (max {max_bytes} bytes)")
+            }
+            RecoveryError::IoError { message } => write!(f, "IO error: {message}"),
+            RecoveryError::ParseError { message } => write!(f, "Parse error: {message}"),
+        }
+    }
+}
+
 // Validation functions
 fn validate_filename(filename: &str) -> Result<(), String> {
     // Regex pattern: only alphanumeric, dash, underscore, dot
@@ -204,27 +234,36 @@ fn get_recovery_dir(app: &AppHandle) -> Result<PathBuf, String> {
     Ok(recovery_dir)
 }
 
+const MAX_RECOVERY_DATA_BYTES: usize = 10_485_760; // 10MB
+
 #[tauri::command]
 #[specta::specta]
-async fn save_emergency_data(app: AppHandle, filename: String, data: Value) -> Result<(), String> {
+async fn save_emergency_data(
+    app: AppHandle,
+    filename: String,
+    data: Value,
+) -> Result<(), RecoveryError> {
     log::info!("Saving emergency data to file: {filename}");
 
     // Validate filename with proper security checks
-    validate_filename(&filename)?;
+    validate_filename(&filename).map_err(|e| RecoveryError::ValidationError { message: e })?;
 
     // Validate data size (10MB limit)
     let data_str = serde_json::to_string(&data)
-        .map_err(|e| format!("Failed to serialize data for size check: {e}"))?;
-    if data_str.len() > 10_485_760 {
-        return Err("Data too large (max 10MB)".to_string());
+        .map_err(|e| RecoveryError::ParseError { message: e.to_string() })?;
+    if data_str.len() > MAX_RECOVERY_DATA_BYTES {
+        return Err(RecoveryError::DataTooLarge {
+            max_bytes: MAX_RECOVERY_DATA_BYTES as u32,
+        });
     }
 
-    let recovery_dir = get_recovery_dir(&app)?;
+    let recovery_dir =
+        get_recovery_dir(&app).map_err(|e| RecoveryError::IoError { message: e })?;
     let file_path = recovery_dir.join(format!("{filename}.json"));
 
     let json_content = serde_json::to_string_pretty(&data).map_err(|e| {
         log::error!("Failed to serialize emergency data: {e}");
-        format!("Failed to serialize data: {e}")
+        RecoveryError::ParseError { message: e.to_string() }
     })?;
 
     // Write to a temporary file first, then rename (atomic operation)
@@ -232,12 +271,12 @@ async fn save_emergency_data(app: AppHandle, filename: String, data: Value) -> R
 
     std::fs::write(&temp_path, json_content).map_err(|e| {
         log::error!("Failed to write emergency data file: {e}");
-        format!("Failed to write data file: {e}")
+        RecoveryError::IoError { message: e.to_string() }
     })?;
 
     std::fs::rename(&temp_path, &file_path).map_err(|e| {
         log::error!("Failed to finalize emergency data file: {e}");
-        format!("Failed to finalize data file: {e}")
+        RecoveryError::IoError { message: e.to_string() }
     })?;
 
     log::info!("Successfully saved emergency data to {file_path:?}");
@@ -246,28 +285,32 @@ async fn save_emergency_data(app: AppHandle, filename: String, data: Value) -> R
 
 #[tauri::command]
 #[specta::specta]
-async fn load_emergency_data(app: AppHandle, filename: String) -> Result<Value, String> {
+async fn load_emergency_data(
+    app: AppHandle,
+    filename: String,
+) -> Result<Value, RecoveryError> {
     log::info!("Loading emergency data from file: {filename}");
 
     // Validate filename with proper security checks
-    validate_filename(&filename)?;
+    validate_filename(&filename).map_err(|e| RecoveryError::ValidationError { message: e })?;
 
-    let recovery_dir = get_recovery_dir(&app)?;
+    let recovery_dir =
+        get_recovery_dir(&app).map_err(|e| RecoveryError::IoError { message: e })?;
     let file_path = recovery_dir.join(format!("{filename}.json"));
 
     if !file_path.exists() {
         log::info!("Recovery file not found: {file_path:?}");
-        return Err("File not found".to_string());
+        return Err(RecoveryError::FileNotFound);
     }
 
     let contents = std::fs::read_to_string(&file_path).map_err(|e| {
         log::error!("Failed to read recovery file: {e}");
-        format!("Failed to read file: {e}")
+        RecoveryError::IoError { message: e.to_string() }
     })?;
 
     let data: Value = serde_json::from_str(&contents).map_err(|e| {
         log::error!("Failed to parse recovery JSON: {e}");
-        format!("Failed to parse data: {e}")
+        RecoveryError::ParseError { message: e.to_string() }
     })?;
 
     log::info!("Successfully loaded emergency data");
@@ -276,23 +319,24 @@ async fn load_emergency_data(app: AppHandle, filename: String) -> Result<Value, 
 
 #[tauri::command]
 #[specta::specta]
-async fn cleanup_old_recovery_files(app: AppHandle) -> Result<u32, String> {
+async fn cleanup_old_recovery_files(app: AppHandle) -> Result<u32, RecoveryError> {
     log::info!("Cleaning up old recovery files");
 
-    let recovery_dir = get_recovery_dir(&app)?;
+    let recovery_dir =
+        get_recovery_dir(&app).map_err(|e| RecoveryError::IoError { message: e })?;
     let mut removed_count = 0;
 
     // Calculate cutoff time (7 days ago)
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .map_err(|e| format!("Failed to get current time: {e}"))?
+        .map_err(|e| RecoveryError::IoError { message: e.to_string() })?
         .as_secs();
     let seven_days_ago = now - (7 * 24 * 60 * 60);
 
     // Read directory and check each file
     let entries = std::fs::read_dir(&recovery_dir).map_err(|e| {
         log::error!("Failed to read recovery directory: {e}");
-        format!("Failed to read directory: {e}")
+        RecoveryError::IoError { message: e.to_string() }
     })?;
 
     for entry in entries {
@@ -439,7 +483,6 @@ pub fn run() {
         )
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_persisted_scope::init())
-        .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_opener::init())

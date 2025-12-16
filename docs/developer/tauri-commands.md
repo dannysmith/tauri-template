@@ -50,6 +50,50 @@ if (result.status === 'error') {
 toast.success('Saved!')
 ```
 
+### unwrapResult Helper
+
+For cases where you want errors to propagate (throw) rather than handle them inline, use the `unwrapResult` helper:
+
+```typescript
+import { commands, unwrapResult } from '@/lib/tauri-bindings'
+
+// Throws on error, returns data on success
+const preferences = unwrapResult(await commands.loadPreferences())
+```
+
+**When to use each pattern:**
+
+| Pattern | Use When |
+| --- | --- |
+| `unwrapResult` | TanStack Query functions, errors should propagate to a boundary |
+| Manual `if/else` | Event handlers, need explicit error handling (toasts, UI state) |
+
+**TanStack Query example** (preferred pattern for data fetching):
+
+```typescript
+import { useQuery } from '@tanstack/react-query'
+import { commands, unwrapResult } from '@/lib/tauri-bindings'
+
+const { data, error } = useQuery({
+  queryKey: ['preferences'],
+  queryFn: async () => unwrapResult(await commands.loadPreferences()),
+})
+// TanStack Query handles the thrown error automatically
+```
+
+**Event handler example** (explicit error handling):
+
+```typescript
+const handleSave = async () => {
+  const result = await commands.savePreferences(preferences)
+  if (result.status === 'error') {
+    toast.error('Failed to save', { description: result.error })
+    return
+  }
+  toast.success('Preferences saved!')
+}
+```
+
 ## Adding New Commands
 
 ### 1. Define the Rust command

@@ -1,5 +1,21 @@
 import { logger } from '@/lib/logger'
-import { commands, type JsonValue } from '@/lib/tauri-bindings'
+import { commands, type JsonValue, type RecoveryError } from '@/lib/tauri-bindings'
+
+/** Convert RecoveryError to a human-readable message */
+function formatRecoveryError(error: RecoveryError): string {
+  switch (error.type) {
+    case 'FileNotFound':
+      return 'File not found'
+    case 'ValidationError':
+      return `Validation error: ${error.message}`
+    case 'DataTooLarge':
+      return `Data too large (max ${error.max_bytes} bytes)`
+    case 'IoError':
+      return `IO error: ${error.message}`
+    case 'ParseError':
+      return `Parse error: ${error.message}`
+  }
+}
 
 /**
  * Simple data recovery pattern for saving important data to disk
@@ -31,19 +47,20 @@ export interface RecoveryOptions {
  */
 export async function saveEmergencyData(
   filename: string,
-  data: unknown,
+  data: JsonValue,
   options: RecoveryOptions = {}
 ): Promise<void> {
   logger.debug('Saving emergency data', { filename, dataType: typeof data })
 
-  const result = await commands.saveEmergencyData(filename, data as JsonValue)
+  const result = await commands.saveEmergencyData(filename, data)
 
   if (result.status === 'error') {
+    const message = formatRecoveryError(result.error)
     logger.error('Failed to save emergency data', {
       filename,
       error: result.error,
     })
-    throw new Error(result.error)
+    throw new Error(message)
   }
 
   if (!options.silent) {
@@ -74,16 +91,18 @@ export async function loadEmergencyData<T = unknown>(
   const result = await commands.loadEmergencyData(filename)
 
   if (result.status === 'error') {
-    if (result.error.includes('File not found')) {
+    // FileNotFound is an expected case - return null instead of throwing
+    if (result.error.type === 'FileNotFound') {
       logger.debug('Recovery file not found', { filename })
       return null
     }
 
+    const message = formatRecoveryError(result.error)
     logger.error('Failed to load emergency data', {
       filename,
       error: result.error,
     })
-    throw new Error(result.error)
+    throw new Error(message)
   }
 
   logger.info('Emergency data loaded successfully', { filename })
@@ -108,10 +127,11 @@ export async function cleanupOldFiles(): Promise<number> {
   const result = await commands.cleanupOldRecoveryFiles()
 
   if (result.status === 'error') {
+    const message = formatRecoveryError(result.error)
     logger.error('Failed to cleanup old recovery files', {
       error: result.error,
     })
-    throw new Error(result.error)
+    throw new Error(message)
   }
 
   const removedCount = result.data
@@ -142,7 +162,7 @@ export async function cleanupOldFiles(): Promise<number> {
  * ```
  */
 export async function saveCrashState(
-  state: unknown,
+  state: JsonValue,
   crashInfo?: { error?: string; stack?: string; componentStack?: string }
 ): Promise<void> {
   const timestamp = Date.now()
