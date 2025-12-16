@@ -1,5 +1,9 @@
 import { logger } from '@/lib/logger'
-import { commands, type JsonValue, type RecoveryError } from '@/lib/tauri-bindings'
+import {
+  commands,
+  type JsonValue,
+  type RecoveryError,
+} from '@/lib/tauri-bindings'
 
 /** Convert RecoveryError to a human-readable message */
 function formatRecoveryError(error: RecoveryError): string {

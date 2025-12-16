@@ -45,12 +45,14 @@ Add a globally-accessible quick entry panel - a small floating window triggered 
 ### Window Strategy
 
 **All Platforms:** Create standard Tauri window with:
+
 - `always_on_top: true`
 - `skip_taskbar: true`
 - `decorations: false`
 - `visible: false` (start hidden)
 
 **macOS Enhancement:** Convert to NSPanel using `tauri-nspanel` for:
+
 - Proper overlay on fullscreen apps
 - Native panel focus behavior
 - Click-outside-to-dismiss (native)
@@ -77,6 +79,7 @@ Use `tauri-plugin-global-shortcut` (official plugin). Register shortcut on app s
 ### Cross-Window Communication
 
 Use Tauri events for flexibility:
+
 1. Quick pane submits text via `emit('quick-pane-submit', { text })`
 2. Main window listens with `listen('quick-pane-submit', handler)`
 3. Handler can do anything: update Zustand, call TanStack mutation, invoke Tauri command, etc.
@@ -92,6 +95,7 @@ This pattern doesn't constrain the action type - the template demonstrates Zusta
 **Goal:** Establish the multi-window architecture with a visible quick pane.
 
 **Tasks:**
+
 - [ ] Create `quick-pane.html` in project root (alongside `index.html`)
 - [ ] Create `src/quick-pane-main.tsx` - React entry point for quick pane
 - [ ] Create `src/components/quick-pane/QuickPaneApp.tsx` - the pane UI
@@ -133,6 +137,7 @@ This pattern doesn't constrain the action type - the template demonstrates Zusta
 **Goal:** Text submitted in quick pane updates main window.
 
 **Tasks:**
+
 - [ ] Define Tauri event: `quick-pane-submit` with payload `{ text: string }`
 - [ ] Quick pane: emit event on form submit, then hide window
 - [ ] Add `lastQuickPaneEntry: string | null` to existing `ui-store.ts`
@@ -149,6 +154,7 @@ This pattern doesn't constrain the action type - the template demonstrates Zusta
 **Goal:** Toggle quick pane with global keyboard shortcut.
 
 **Tasks:**
+
 - [ ] Add `tauri-plugin-global-shortcut` dependency
 - [ ] Configure permissions in capabilities
 - [ ] Register default shortcut (`CommandOrControl+Shift+Period`) on app startup
@@ -168,6 +174,7 @@ This pattern doesn't constrain the action type - the template demonstrates Zusta
 **Goal:** Native panel behavior on macOS for fullscreen app overlay.
 
 **Tasks:**
+
 - [ ] Add `tauri-nspanel` dependency (macOS only via cfg)
 - [ ] After creating quick pane window, convert to NSPanel on macOS
 - [ ] Configure panel level for proper floating behavior (above fullscreen apps)
@@ -186,6 +193,7 @@ This pattern doesn't constrain the action type - the template demonstrates Zusta
 **Goal:** Users can customize the global shortcut in settings.
 
 **Tasks:**
+
 - [ ] Add `quickPaneShortcut: string` field to `AppPreferences` type (Rust + TS)
 - [ ] Create `ShortcutPicker` component for settings:
   - Displays current shortcut (formatted nicely)
@@ -207,6 +215,7 @@ This pattern doesn't constrain the action type - the template demonstrates Zusta
 **Goal:** Production-ready with documentation.
 
 **Tasks:**
+
 - [ ] Position quick pane on monitor with mouse cursor (use `cursor_position()` API)
 - [ ] Clear input field after successful submit
 - [ ] Add developer documentation to `docs/developer/quick-pane.md`:
@@ -289,12 +298,12 @@ type QuickPaneSubmitEvent = {
 
 ### Platform Behavior Summary
 
-| Platform | Global Shortcut | Panel Behavior | Dismiss |
-|----------|-----------------|----------------|---------|
-| macOS | Full support | Native NSPanel (overlays fullscreen) | Click-outside + Escape + blur |
-| Windows | Full support | Always-on-top window | Escape + blur |
-| Linux X11 | Full support | Always-on-top window | Escape + blur |
-| Linux Wayland | **Not supported** | - | - |
+| Platform      | Global Shortcut   | Panel Behavior                       | Dismiss                       |
+| ------------- | ----------------- | ------------------------------------ | ----------------------------- |
+| macOS         | Full support      | Native NSPanel (overlays fullscreen) | Click-outside + Escape + blur |
+| Windows       | Full support      | Always-on-top window                 | Escape + blur                 |
+| Linux X11     | Full support      | Always-on-top window                 | Escape + blur                 |
+| Linux Wayland | **Not supported** | -                                    | -                             |
 
 ### Resources
 

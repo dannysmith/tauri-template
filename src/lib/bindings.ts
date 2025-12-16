@@ -58,6 +58,40 @@ async cleanupOldRecoveryFiles() : Promise<Result<number, RecoveryError>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+/**
+ * Shows the quick pane window, creating it if it doesn't exist.
+ * The window is a small floating panel for quick text entry.
+ */
+async showQuickPane() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("show_quick_pane") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Hides the quick pane window.
+ */
+async hideQuickPane() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("hide_quick_pane") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Toggles the quick pane window visibility.
+ */
+async toggleQuickPane() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("toggle_quick_pane") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 

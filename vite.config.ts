@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import path from 'path'
+import path, { resolve } from 'path'
 
 const host = process.env.TAURI_DEV_HOST
 
@@ -22,6 +22,12 @@ export default defineConfig(async () => ({
   },
   build: {
     chunkSizeWarningLimit: 600, // Prevent warnings for template's bundled components
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        'quick-pane': resolve(__dirname, 'quick-pane.html'),
+      },
+    },
   },
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

@@ -63,9 +63,9 @@ const preferences = unwrapResult(await commands.loadPreferences())
 
 **When to use each pattern:**
 
-| Pattern | Use When |
-| --- | --- |
-| `unwrapResult` | TanStack Query functions, errors should propagate to a boundary |
+| Pattern          | Use When                                                        |
+| ---------------- | --------------------------------------------------------------- |
+| `unwrapResult`   | TanStack Query functions, errors should propagate to a boundary |
 | Manual `if/else` | Event handlers, need explicit error handling (toasts, UI state) |
 
 **TanStack Query example** (preferred pattern for data fetching):

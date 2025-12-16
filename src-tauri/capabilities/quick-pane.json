@@ -1,0 +1,15 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "quick-pane-capability",
+  "description": "Capability for the quick pane floating window",
+  "windows": ["quick-pane"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-set-focus",
+    "core:window:allow-is-visible",
+    "core:event:default",
+    "core:event:allow-emit"
+  ]
+}

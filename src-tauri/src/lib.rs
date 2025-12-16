@@ -8,7 +8,8 @@ use specta::Type;
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder};
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::webview::WebviewWindowBuilder;
+use tauri::{AppHandle, Emitter, Manager, WebviewUrl};
 
 /// Error types for recovery operations (typed for frontend matching)
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
@@ -249,21 +250,23 @@ async fn save_emergency_data(
     validate_filename(&filename).map_err(|e| RecoveryError::ValidationError { message: e })?;
 
     // Validate data size (10MB limit)
-    let data_str = serde_json::to_string(&data)
-        .map_err(|e| RecoveryError::ParseError { message: e.to_string() })?;
+    let data_str = serde_json::to_string(&data).map_err(|e| RecoveryError::ParseError {
+        message: e.to_string(),
+    })?;
     if data_str.len() > MAX_RECOVERY_DATA_BYTES {
         return Err(RecoveryError::DataTooLarge {
             max_bytes: MAX_RECOVERY_DATA_BYTES as u32,
         });
     }
 
-    let recovery_dir =
-        get_recovery_dir(&app).map_err(|e| RecoveryError::IoError { message: e })?;
+    let recovery_dir = get_recovery_dir(&app).map_err(|e| RecoveryError::IoError { message: e })?;
     let file_path = recovery_dir.join(format!("{filename}.json"));
 
     let json_content = serde_json::to_string_pretty(&data).map_err(|e| {
         log::error!("Failed to serialize emergency data: {e}");
-        RecoveryError::ParseError { message: e.to_string() }
+        RecoveryError::ParseError {
+            message: e.to_string(),
+        }
     })?;
 
     // Write to a temporary file first, then rename (atomic operation)
@@ -271,12 +274,16 @@ async fn save_emergency_data(
 
     std::fs::write(&temp_path, json_content).map_err(|e| {
         log::error!("Failed to write emergency data file: {e}");
-        RecoveryError::IoError { message: e.to_string() }
+        RecoveryError::IoError {
+            message: e.to_string(),
+        }
     })?;
 
     std::fs::rename(&temp_path, &file_path).map_err(|e| {
         log::error!("Failed to finalize emergency data file: {e}");
-        RecoveryError::IoError { message: e.to_string() }
+        RecoveryError::IoError {
+            message: e.to_string(),
+        }
     })?;
 
     log::info!("Successfully saved emergency data to {file_path:?}");
@@ -285,17 +292,13 @@ async fn save_emergency_data(
 
 #[tauri::command]
 #[specta::specta]
-async fn load_emergency_data(
-    app: AppHandle,
-    filename: String,
-) -> Result<Value, RecoveryError> {
+async fn load_emergency_data(app: AppHandle, filename: String) -> Result<Value, RecoveryError> {
     log::info!("Loading emergency data from file: {filename}");
 
     // Validate filename with proper security checks
     validate_filename(&filename).map_err(|e| RecoveryError::ValidationError { message: e })?;
 
-    let recovery_dir =
-        get_recovery_dir(&app).map_err(|e| RecoveryError::IoError { message: e })?;
+    let recovery_dir = get_recovery_dir(&app).map_err(|e| RecoveryError::IoError { message: e })?;
     let file_path = recovery_dir.join(format!("{filename}.json"));
 
     if !file_path.exists() {
@@ -305,12 +308,16 @@ async fn load_emergency_data(
 
     let contents = std::fs::read_to_string(&file_path).map_err(|e| {
         log::error!("Failed to read recovery file: {e}");
-        RecoveryError::IoError { message: e.to_string() }
+        RecoveryError::IoError {
+            message: e.to_string(),
+        }
     })?;
 
     let data: Value = serde_json::from_str(&contents).map_err(|e| {
         log::error!("Failed to parse recovery JSON: {e}");
-        RecoveryError::ParseError { message: e.to_string() }
+        RecoveryError::ParseError {
+            message: e.to_string(),
+        }
     })?;
 
     log::info!("Successfully loaded emergency data");
@@ -322,21 +329,24 @@ async fn load_emergency_data(
 async fn cleanup_old_recovery_files(app: AppHandle) -> Result<u32, RecoveryError> {
     log::info!("Cleaning up old recovery files");
 
-    let recovery_dir =
-        get_recovery_dir(&app).map_err(|e| RecoveryError::IoError { message: e })?;
+    let recovery_dir = get_recovery_dir(&app).map_err(|e| RecoveryError::IoError { message: e })?;
     let mut removed_count = 0;
 
     // Calculate cutoff time (7 days ago)
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .map_err(|e| RecoveryError::IoError { message: e.to_string() })?
+        .map_err(|e| RecoveryError::IoError {
+            message: e.to_string(),
+        })?
         .as_secs();
     let seven_days_ago = now - (7 * 24 * 60 * 60);
 
     // Read directory and check each file
     let entries = std::fs::read_dir(&recovery_dir).map_err(|e| {
         log::error!("Failed to read recovery directory: {e}");
-        RecoveryError::IoError { message: e.to_string() }
+        RecoveryError::IoError {
+            message: e.to_string(),
+        }
     })?;
 
     for entry in entries {
@@ -396,6 +406,104 @@ async fn cleanup_old_recovery_files(app: AppHandle) -> Result<u32, RecoveryError
 
     log::info!("Cleanup complete. Removed {removed_count} old recovery files");
     Ok(removed_count)
+}
+
+// Quick Pane Window Management
+const QUICK_PANE_LABEL: &str = "quick-pane";
+
+/// Shows the quick pane window, creating it if it doesn't exist.
+/// The window is a small floating panel for quick text entry.
+#[tauri::command]
+#[specta::specta]
+async fn show_quick_pane(app: AppHandle) -> Result<(), String> {
+    log::info!("Showing quick pane window");
+
+    // Check if window already exists
+    if let Some(window) = app.get_webview_window(QUICK_PANE_LABEL) {
+        // Window exists, just show and focus it
+        window
+            .show()
+            .map_err(|e| format!("Failed to show window: {e}"))?;
+        window
+            .set_focus()
+            .map_err(|e| format!("Failed to focus window: {e}"))?;
+        log::debug!("Quick pane window shown (already existed)");
+        return Ok(());
+    }
+
+    // Create new window
+    let window = WebviewWindowBuilder::new(
+        &app,
+        QUICK_PANE_LABEL,
+        WebviewUrl::App("quick-pane.html".into()),
+    )
+    .title("Quick Entry")
+    .inner_size(400.0, 60.0)
+    .always_on_top(true)
+    .skip_taskbar(true)
+    .decorations(false)
+    .visible(true)
+    .resizable(false)
+    .center()
+    .build()
+    .map_err(|e| format!("Failed to create quick pane window: {e}"))?;
+
+    window
+        .set_focus()
+        .map_err(|e| format!("Failed to focus window: {e}"))?;
+
+    log::info!("Quick pane window created successfully");
+    Ok(())
+}
+
+/// Hides the quick pane window.
+#[tauri::command]
+#[specta::specta]
+async fn hide_quick_pane(app: AppHandle) -> Result<(), String> {
+    log::info!("Hiding quick pane window");
+
+    if let Some(window) = app.get_webview_window(QUICK_PANE_LABEL) {
+        window
+            .hide()
+            .map_err(|e| format!("Failed to hide window: {e}"))?;
+        log::debug!("Quick pane window hidden");
+    } else {
+        log::debug!("Quick pane window not found (already hidden or not created)");
+    }
+
+    Ok(())
+}
+
+/// Toggles the quick pane window visibility.
+#[tauri::command]
+#[specta::specta]
+async fn toggle_quick_pane(app: AppHandle) -> Result<(), String> {
+    log::info!("Toggling quick pane window");
+
+    if let Some(window) = app.get_webview_window(QUICK_PANE_LABEL) {
+        let is_visible = window
+            .is_visible()
+            .map_err(|e| format!("Failed to check visibility: {e}"))?;
+        if is_visible {
+            window
+                .hide()
+                .map_err(|e| format!("Failed to hide window: {e}"))?;
+            log::debug!("Quick pane window hidden");
+        } else {
+            window
+                .show()
+                .map_err(|e| format!("Failed to show window: {e}"))?;
+            window
+                .set_focus()
+                .map_err(|e| format!("Failed to focus window: {e}"))?;
+            log::debug!("Quick pane window shown");
+        }
+    } else {
+        // Window doesn't exist, create and show it
+        show_quick_pane(app).await?;
+    }
+
+    Ok(())
 }
 
 // Create the native menu system

@@ -9,6 +9,9 @@ pub fn generate_bindings() -> Builder<tauri::Wry> {
         crate::save_emergency_data,
         crate::load_emergency_data,
         crate::cleanup_old_recovery_files,
+        crate::show_quick_pane,
+        crate::hide_quick_pane,
+        crate::toggle_quick_pane,
     ])
 }
 
