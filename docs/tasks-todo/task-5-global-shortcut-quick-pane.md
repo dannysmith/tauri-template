@@ -2,9 +2,11 @@
 
 ## Session Notes
 
-**Phases 1-3 completed. Phase 4 in progress.** Remaining: Phase 4 (finish dismiss behavior), Phase 5 (Configurable Shortcut), Phase 6 (Polish & Docs).
+**Phases 1-4 completed.** Remaining: Phase 5 (Configurable Shortcut), Phase 6 (Polish & Docs).
 
-**Current state:** Quick pane appears over fullscreen apps and accepts keyboard input. Two issues remain: (1) space-switching when dismissing, (2) Escape key boop sound. See Phase 4 section for detailed learnings and next steps.
+**Current state:** Quick pane fully functional - appears over fullscreen apps, accepts keyboard input, dismisses correctly without space-switching, returns focus to previous app. Visual styling is basic (semi-transparent CSS, no native frosted glass blur due to window-vibrancy conflict with tauri-nspanel).
+
+**Code review needed:** Phase 4 required adding objc2 dependencies and manual previous-app tracking via NSWorkspace/NSRunningApplication. This feels like overkill - Handy's implementation didn't need this. Investigate whether there's a simpler tauri-nspanel configuration that avoids the space-switching issue without manual app tracking.
 
 ### Implementation Notes
 
@@ -165,7 +167,7 @@ This pattern doesn't constrain the action type - the template demonstrates Zusta
 
 ---
 
-### Phase 4: macOS NSPanel Enhancement (In Progress)
+### Phase 4: macOS NSPanel Enhancement (Complete)
 
 **Goal:** Native panel behavior on macOS for fullscreen app overlay.
 
@@ -176,9 +178,9 @@ This pattern doesn't constrain the action type - the template demonstrates Zusta
 - [x] Configure panel level for proper floating behavior (above fullscreen apps)
 - [x] Panel creation on main thread (critical - see learnings below)
 - [x] Fullscreen overlay working (panel visible over fullscreen apps)
-- [ ] **REMAINING:** Fix space-switching on submit/dismiss (see issues below)
-- [ ] **REMAINING:** Fix Escape key "boop" sound
-- [ ] Test click-outside-to-dismiss behavior
+- [x] Fix space-switching on submit/dismiss (see solution below)
+- [x] Fix Escape key "boop" sound (added `e.preventDefault()`)
+- [x] Click-outside-to-dismiss working (blur handler)
 
 **Current Implementation:**
 
@@ -242,23 +244,57 @@ PanelBuilder::<_, QuickPanePanel>::new(app, QUICK_PANE_LABEL)
    - `window.show()`, `window.hide()`, `window.set_focus()` work
    - No need to convert back to panel for show/hide operations
 
-**Remaining Issues to Investigate:**
+6. **Tauri commands: sync vs async determines thread**
+   - `async fn` commands run on tokio thread pool (NOT main thread)
+   - `fn` (sync) commands run on main thread
+   - Any Cocoa/AppKit API calls MUST be on main thread or they crash
+   - Made `show_quick_pane`, `dismiss_quick_pane`, `toggle_quick_pane` all sync
 
-1. **Space-switching on submit/dismiss:** When user presses Enter or Escape, macOS switches to the space containing the main app window. Theory: Despite `nonactivating_panel()`, something is still activating the app when the panel hides.
+7. **Space-switching fix: Track and reactivate previous app**
+   - **Root cause:** When hiding the panel while it has focus, macOS activates the next window in the app (our main window), causing space switch
+   - **Why blur worked but Enter/Escape didn't:** Blur = focus already transferred elsewhere before hide. Enter/Escape = panel still has focus when we hide.
+   - **Solution:** Added objc2 dependencies to manually track and reactivate the previous app:
+     - `objc2`, `objc2-app-kit`, `objc2-foundation` in Cargo.toml (macOS only)
+     - Static `PREVIOUS_APP_PID: AtomicI32` to store the previous app's process ID
+     - On show: Capture frontmost app via `NSWorkspace.sharedWorkspace().frontmostApplication()`
+     - On dismiss: Reactivate via `NSRunningApplication.runningApplicationWithProcessIdentifier(pid).activateWithOptions()`
+   - **Note:** This feels like it shouldn't be necessary if tauri-nspanel was configured correctly. Handy didn't need this. Worth investigating if there's a simpler solution.
 
-2. **Escape key "boop" sound:** The system alert sound plays when Escape is pressed. This usually means macOS blocked an action. Could be:
-   - Frontend event handling issue (not preventing default?)
-   - Some interaction with the app activation
+8. **Escape key "boop" sound fix**
+   - Add `e.preventDefault()` in the keydown handler before calling dismiss
+   - Without it, the Escape event propagates to the system which plays alert sound
 
-3. **Possible next steps:**
-   - Check if the frontend `hide_quick_pane` call is triggering app activation
-   - Look at how focus is being transferred when panel hides
-   - Consider if we need to manually track and restore the previously active app
-   - Check Handy's implementation for how they handle dismiss behavior
+9. **window-vibrancy conflicts with tauri-nspanel**
+   - Both try to create `NSVisualEffectViewTagged` class, causing crash
+   - Cannot use window-vibrancy for frosted glass effect with tauri-nspanel
+   - Current visual: Semi-transparent CSS background, but no true desktop blur
+
+**Dependencies Added This Session:**
+
+```toml
+# macOS-only in Cargo.toml
+objc2 = "0.6"
+objc2-app-kit = { version = "0.3", features = ["NSRunningApplication", "NSWorkspace"] }
+objc2-foundation = "0.3"
+```
+
+**Key Code Additions:**
+
+1. `PREVIOUS_APP_PID` static for tracking previous app
+2. `show_quick_pane` - captures frontmost app before showing (sync, not async)
+3. `dismiss_quick_pane` - hides panel then reactivates previous app (sync, not async)
+4. `toggle_quick_pane` - does both capture and reactivate appropriately (sync, not async)
+5. Global shortcut handler calls `toggle_quick_pane` directly (not via async spawn)
+
+**Questions for Review:**
+
+1. Why did Handy not need the previous-app-tracking code? Is there a panel config we're missing?
+2. Is there a way to use tauri-nspanel's Panel methods directly for dismiss that doesn't cause space switch?
+3. The `nonactivating_panel()` style mask should prevent app activation - why isn't it working on dismiss?
 
 **Reference Implementation:** https://github.com/cjpais/Handy/pull/361
 
-**Testable State:** Panel appears over fullscreen apps correctly. Keyboard input works. Remaining: fix dismiss behavior.
+**Testable State:** Panel appears over fullscreen apps, keyboard works, dismiss returns to previous app correctly, no boop sound on Escape. Visual styling is basic (no frosted glass blur).
 
 ---
 

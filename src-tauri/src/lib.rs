@@ -18,13 +18,6 @@ use tauri_nspanel::{
     tauri_panel, CollectionBehavior, ManagerExt, PanelBuilder, PanelLevel, StyleMask,
 };
 
-// macOS-only: For tracking and reactivating previous app when dismissing quick pane
-#[cfg(target_os = "macos")]
-use std::sync::atomic::{AtomicI32, Ordering};
-
-#[cfg(target_os = "macos")]
-static PREVIOUS_APP_PID: AtomicI32 = AtomicI32::new(-1);
-
 // Define custom panel class for quick pane (macOS only)
 #[cfg(target_os = "macos")]
 tauri_panel! {
@@ -517,39 +510,35 @@ fn init_quick_pane_standard(app: &AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-/// Shows the quick pane window.
-/// On macOS, captures the frontmost app before showing so we can reactivate it on dismiss.
-/// Must be sync (not async) to run on main thread for Cocoa API calls.
+/// Shows the quick pane window and makes it the key window (for keyboard input).
 #[tauri::command]
 #[specta::specta]
 fn show_quick_pane(app: AppHandle) -> Result<(), String> {
     log::info!("Showing quick pane window");
 
-    // macOS: Capture the frontmost app before we show our panel
     #[cfg(target_os = "macos")]
     {
-        use objc2_app_kit::NSWorkspace;
-
-        let workspace = unsafe { NSWorkspace::sharedWorkspace() };
-        if let Some(frontmost) = unsafe { workspace.frontmostApplication() } {
-            let pid = unsafe { frontmost.processIdentifier() };
-            PREVIOUS_APP_PID.store(pid, Ordering::SeqCst);
-            log::debug!("Captured previous app PID: {pid}");
-        }
+        let panel = app
+            .get_webview_panel(QUICK_PANE_LABEL)
+            .map_err(|e| format!("Quick pane panel not found: {e:?}"))?;
+        panel.show_and_make_key();
+        log::debug!("Quick pane panel shown (macOS)");
     }
 
-    let window = app.get_webview_window(QUICK_PANE_LABEL).ok_or_else(|| {
-        "Quick pane window not found - was init_quick_pane called at startup?".to_string()
-    })?;
+    #[cfg(not(target_os = "macos"))]
+    {
+        let window = app.get_webview_window(QUICK_PANE_LABEL).ok_or_else(|| {
+            "Quick pane window not found - was init_quick_pane called at startup?".to_string()
+        })?;
+        window
+            .show()
+            .map_err(|e| format!("Failed to show window: {e}"))?;
+        window
+            .set_focus()
+            .map_err(|e| format!("Failed to focus window: {e}"))?;
+        log::debug!("Quick pane window shown");
+    }
 
-    window
-        .show()
-        .map_err(|e| format!("Failed to show window: {e}"))?;
-    window
-        .set_focus()
-        .map_err(|e| format!("Failed to focus window: {e}"))?;
-
-    log::debug!("Quick pane window shown");
     Ok(())
 }
 
@@ -571,42 +560,39 @@ async fn hide_quick_pane(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-/// Dismisses the quick pane and reactivates the previously active app.
-/// On macOS, reactivates the app that was frontmost before we showed the panel.
-/// Must be sync (not async) to run on main thread for Cocoa API calls.
-/// On other platforms, falls back to standard hide().
+/// Dismisses the quick pane window.
+/// On macOS, resigns key window status before hiding to avoid activating main window.
 #[tauri::command]
 #[specta::specta]
 fn dismiss_quick_pane(app: AppHandle) -> Result<(), String> {
-    log::info!("Dismissing quick pane window");
-
-    // Hide the panel first
-    if let Some(window) = app.get_webview_window(QUICK_PANE_LABEL) {
-        window
-            .hide()
-            .map_err(|e| format!("Failed to hide window: {e}"))?;
-        log::debug!("Quick pane window hidden");
-    } else {
-        log::debug!("Quick pane window not found");
-    }
-
-    // macOS: Reactivate the previously frontmost app
     #[cfg(target_os = "macos")]
     {
-        use objc2_app_kit::{NSApplicationActivationOptions, NSRunningApplication};
-
-        let pid = PREVIOUS_APP_PID.swap(-1, Ordering::SeqCst);
-        if pid > 0 {
-            if let Some(running_app) =
-                unsafe { NSRunningApplication::runningApplicationWithProcessIdentifier(pid) }
-            {
-                let activated = unsafe {
-                    running_app.activateWithOptions(NSApplicationActivationOptions::empty())
-                };
-                log::debug!("Reactivated previous app (PID: {pid}): {activated}");
-            } else {
-                log::debug!("Previous app (PID: {pid}) no longer running");
+        if let Ok(panel) = app.get_webview_panel(QUICK_PANE_LABEL) {
+            // Guard: resign_key_window triggers blur event which calls dismiss again
+            if !panel.is_visible() {
+                return Ok(());
             }
+            log::info!("Dismissing quick pane window");
+            // Resign key window BEFORE hiding to prevent macOS from
+            // activating our main window (which would cause space switching)
+            panel.resign_key_window();
+            panel.hide();
+            log::debug!("Quick pane panel dismissed (macOS)");
+        }
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        if let Some(window) = app.get_webview_window(QUICK_PANE_LABEL) {
+            let is_visible = window.is_visible().unwrap_or(false);
+            if !is_visible {
+                return Ok(());
+            }
+            log::info!("Dismissing quick pane window");
+            window
+                .hide()
+                .map_err(|e| format!("Failed to hide window: {e}"))?;
+            log::debug!("Quick pane window hidden");
         }
     }
 
@@ -614,66 +600,52 @@ fn dismiss_quick_pane(app: AppHandle) -> Result<(), String> {
 }
 
 /// Toggles the quick pane window visibility.
-/// On macOS, captures/reactivates the previous app appropriately.
-/// Must be sync (not async) to run on main thread for Cocoa API calls.
 #[tauri::command]
 #[specta::specta]
 fn toggle_quick_pane(app: AppHandle) -> Result<(), String> {
     log::info!("Toggling quick pane window");
 
-    let window = app.get_webview_window(QUICK_PANE_LABEL).ok_or_else(|| {
-        "Quick pane window not found - was init_quick_pane called at startup?".to_string()
-    })?;
+    #[cfg(target_os = "macos")]
+    {
+        let panel = app
+            .get_webview_panel(QUICK_PANE_LABEL)
+            .map_err(|e| format!("Quick pane panel not found: {e:?}"))?;
 
-    let is_visible = window
-        .is_visible()
-        .map_err(|e| format!("Failed to check visibility: {e}"))?;
-
-    if is_visible {
-        // Hiding: use dismiss logic which reactivates previous app
-        window
-            .hide()
-            .map_err(|e| format!("Failed to hide window: {e}"))?;
-        log::debug!("Quick pane window hidden");
-
-        // macOS: Reactivate the previously frontmost app
-        #[cfg(target_os = "macos")]
-        {
-            use objc2_app_kit::{NSApplicationActivationOptions, NSRunningApplication};
-
-            let pid = PREVIOUS_APP_PID.swap(-1, Ordering::SeqCst);
-            if pid > 0 {
-                if let Some(running_app) =
-                    unsafe { NSRunningApplication::runningApplicationWithProcessIdentifier(pid) }
-                {
-                    let activated = unsafe {
-                        running_app.activateWithOptions(NSApplicationActivationOptions::empty())
-                    };
-                    log::debug!("Reactivated previous app (PID: {pid}): {activated}");
-                }
-            }
+        if panel.is_visible() {
+            // Resign key window before hiding to prevent space switching
+            panel.resign_key_window();
+            panel.hide();
+            log::debug!("Quick pane panel hidden (macOS)");
+        } else {
+            panel.show_and_make_key();
+            log::debug!("Quick pane panel shown (macOS)");
         }
-    } else {
-        // Showing: capture previous app first
-        #[cfg(target_os = "macos")]
-        {
-            use objc2_app_kit::NSWorkspace;
+    }
 
-            let workspace = unsafe { NSWorkspace::sharedWorkspace() };
-            if let Some(frontmost) = unsafe { workspace.frontmostApplication() } {
-                let pid = unsafe { frontmost.processIdentifier() };
-                PREVIOUS_APP_PID.store(pid, Ordering::SeqCst);
-                log::debug!("Captured previous app PID: {pid}");
-            }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let window = app.get_webview_window(QUICK_PANE_LABEL).ok_or_else(|| {
+            "Quick pane window not found - was init_quick_pane called at startup?".to_string()
+        })?;
+
+        let is_visible = window
+            .is_visible()
+            .map_err(|e| format!("Failed to check visibility: {e}"))?;
+
+        if is_visible {
+            window
+                .hide()
+                .map_err(|e| format!("Failed to hide window: {e}"))?;
+            log::debug!("Quick pane window hidden");
+        } else {
+            window
+                .show()
+                .map_err(|e| format!("Failed to show window: {e}"))?;
+            window
+                .set_focus()
+                .map_err(|e| format!("Failed to focus window: {e}"))?;
+            log::debug!("Quick pane window shown");
         }
-
-        window
-            .show()
-            .map_err(|e| format!("Failed to show window: {e}"))?;
-        window
-            .set_focus()
-            .map_err(|e| format!("Failed to focus window: {e}"))?;
-        log::debug!("Quick pane window shown");
     }
 
     Ok(())

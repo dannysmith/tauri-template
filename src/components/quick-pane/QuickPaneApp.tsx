@@ -58,7 +58,8 @@ export default function QuickPaneApp() {
           inputRef.current?.focus()
         } else {
           // Hide window when it loses focus (dismiss on blur)
-          await currentWindow.hide()
+          // Use dismiss command for consistent behavior (no animation)
+          await commands.dismissQuickPane()
         }
       }
     )

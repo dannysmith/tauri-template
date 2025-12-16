@@ -60,9 +60,7 @@ async cleanupOldRecoveryFiles() : Promise<Result<number, RecoveryError>> {
 }
 },
 /**
- * Shows the quick pane window.
- * On macOS, captures the frontmost app before showing so we can reactivate it on dismiss.
- * Must be sync (not async) to run on main thread for Cocoa API calls.
+ * Shows the quick pane window and makes it the key window (for keyboard input).
  */
 async showQuickPane() : Promise<Result<null, string>> {
     try {
@@ -84,10 +82,8 @@ async hideQuickPane() : Promise<Result<null, string>> {
 }
 },
 /**
- * Dismisses the quick pane and reactivates the previously active app.
- * On macOS, reactivates the app that was frontmost before we showed the panel.
- * Must be sync (not async) to run on main thread for Cocoa API calls.
- * On other platforms, falls back to standard hide().
+ * Dismisses the quick pane window.
+ * On macOS, resigns key window status before hiding to avoid activating main window.
  */
 async dismissQuickPane() : Promise<Result<null, string>> {
     try {
@@ -99,8 +95,6 @@ async dismissQuickPane() : Promise<Result<null, string>> {
 },
 /**
  * Toggles the quick pane window visibility.
- * On macOS, captures/reactivates the previous app appropriately.
- * Must be sync (not async) to run on main thread for Cocoa API calls.
  */
 async toggleQuickPane() : Promise<Result<null, string>> {
     try {
