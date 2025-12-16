@@ -889,9 +889,6 @@ pub fn run() {
         app_builder = app_builder.plugin(tauri_plugin_updater::Builder::new().build());
     }
 
-    // Store plugin - simple key-value persistence for ad-hoc data
-    app_builder = app_builder.plugin(tauri_plugin_store::Builder::new().build());
-
     app_builder = app_builder
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_notification::init())

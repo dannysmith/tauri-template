@@ -1,21 +1,21 @@
 # Data Persistence
 
-Patterns for saving and loading data to disk, including preferences, simple key-value storage, emergency data recovery, and cleanup strategies.
+Patterns for saving and loading data to disk, including preferences, emergency data recovery, and cleanup strategies.
 
 ## Choosing a Storage Method
 
-| Need                   | Solution                   | When to Use                                                       |
-| ---------------------- | -------------------------- | ----------------------------------------------------------------- |
-| **Preferences System** | Rust + TanStack Query      | Strongly-typed settings with validation (theme, shortcuts)        |
-| **Store Plugin**       | `@tauri-apps/plugin-store` | Simple key-value data without validation (recent files, UI state) |
-| **Recovery System**    | Custom Rust commands       | Emergency/crash recovery data                                     |
+| Need                   | Solution              | When to Use                                                |
+| ---------------------- | --------------------- | ---------------------------------------------------------- |
+| **Preferences System** | Rust + TanStack Query | Strongly-typed settings with validation (theme, shortcuts) |
+| **Recovery System**    | Custom Rust commands  | Emergency/crash recovery data                              |
 
 ```
 Need to persist data?
-├─ Strongly typed with Rust validation? → Use Preferences
-├─ Simple key-value pairs? → Use Store Plugin
+├─ App settings or user data? → Use Preferences (Rust struct + TanStack Query)
 └─ Emergency/crash recovery? → Use Recovery System
 ```
+
+All persisted data goes through Rust for type safety, validation, and security. Use TanStack Query on the frontend to handle loading states, caching, and cache invalidation.
 
 See also: [Tauri Plugins](./tauri-plugins.md) for plugin configuration details.
 
@@ -195,51 +195,6 @@ export function useUpdatePreferences() {
     },
   })
 }
-```
-
-## Store Plugin (Simple Key-Value)
-
-For data that doesn't need Rust validation or strong typing, use the Store plugin.
-
-### When to Use Store
-
-- Recent files list
-- UI state that should persist (collapsed panels, scroll position)
-- Feature flags
-- Cached API responses
-- User preferences that don't need validation
-
-### Usage
-
-```typescript
-import { getStoreValue, setStoreValue, deleteStoreValue } from '@/lib/store'
-
-// Save data (auto-saves with 100ms debounce)
-await setStoreValue('recentFiles', ['/path/to/file.txt', '/another/file.md'])
-
-// Load with default fallback
-const files = await getStoreValue<string[]>('recentFiles', [])
-
-// Delete a key
-await deleteStoreValue('temporaryData')
-```
-
-### Store vs Preferences
-
-| Aspect             | Store Plugin       | Preferences System          |
-| ------------------ | ------------------ | --------------------------- |
-| **Type Safety**    | Runtime only       | Compile-time (Rust structs) |
-| **Validation**     | None               | Rust-side validation        |
-| **Boilerplate**    | Minimal            | More setup required         |
-| **TanStack Query** | Manual integration | Built-in hooks              |
-| **Use Case**       | Ad-hoc data        | App settings                |
-
-### File Location
-
-Store data is saved to:
-
-```
-~/Library/Application Support/com.myapp.app/app-data.json  (macOS)
 ```
 
 ## Emergency Data Recovery

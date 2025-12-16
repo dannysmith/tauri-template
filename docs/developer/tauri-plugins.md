@@ -10,7 +10,6 @@ Guide to all Tauri plugins installed in this template, plus built-in features an
 | ------------------- | --------------------------------------- | --------------------------------- |
 | **single-instance** | Prevents multiple app instances         | None (Rust-only)                  |
 | **window-state**    | Saves/restores window position and size | `@tauri-apps/plugin-window-state` |
-| **store**           | Simple key-value persistence            | `@tauri-apps/plugin-store`        |
 
 ### File System & Storage
 
@@ -70,36 +69,9 @@ Automatically saves and restores window position, size, and state (maximized, et
 
 - Window state is saved when the app closes
 - State is restored when the app opens
-- Only applies to windows listed in capabilities (main window only, not quick-pane)
+- Only applies to windows listed in capabilities (main window only, not quick-panes)
 
 **No frontend code needed** - works automatically.
-
-### Store Plugin
-
-Simple key-value storage for ad-hoc data. See [Data Persistence](./data-persistence.md) for when to use Store vs Preferences.
-
-**Frontend Usage** (`src/lib/store.ts`):
-
-```typescript
-import { getStoreValue, setStoreValue } from '@/lib/store'
-
-// Save data (auto-saves with 100ms debounce)
-await setStoreValue('recentFiles', ['/path/to/file.txt'])
-
-// Load data with default
-const files = await getStoreValue<string[]>('recentFiles', [])
-```
-
-**Rust Usage**:
-
-```rust
-use tauri_plugin_store::StoreExt;
-use serde_json::json;
-
-let store = app.store("app-data.json")?;
-store.set("key", json!("value"));
-let value = store.get("key");
-```
 
 ### Context Menus
 
@@ -246,13 +218,11 @@ The order plugins are registered matters:
 1. **single-instance** - Must be first
 2. **window-state** - Before other windowing plugins
 3. **updater** - Desktop only
-4. **store** - Any position after single-instance
-5. All other plugins in any order
+4. All other plugins in any order
 
 ## References
 
 - [Tauri v2 Plugin Documentation](https://v2.tauri.app/plugin/)
 - [Official Plugins Repository](https://github.com/tauri-apps/plugins-workspace)
-- [Store Plugin](https://v2.tauri.app/plugin/store/)
 - [Window State Plugin](https://v2.tauri.app/plugin/window-state/)
 - [Single Instance Plugin](https://v2.tauri.app/plugin/single-instance/)

@@ -24,7 +24,6 @@
     "notification:default",
     "process:default",
     "os:default",
-    "global-shortcut:default",
-    "store:default"
+    "global-shortcut:default"
   ]
 }
