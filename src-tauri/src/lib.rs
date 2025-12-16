@@ -471,6 +471,7 @@ fn init_quick_pane_macos(app: &AppHandle) -> Result<(), String> {
         .works_when_modal(true)
         .with_window(|w| {
             w.decorations(false)
+                .transparent(true)
                 .skip_taskbar(true)
                 .resizable(false)
                 .center()

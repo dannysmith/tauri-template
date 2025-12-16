@@ -2,7 +2,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Quick pane needs transparent background for backdrop-blur to work */
+/* Quick pane needs transparent background for rounded corners to show */
 html,
 body,
 #root {
@@ -13,6 +13,7 @@ body,
   min-width: 100vw;
   overflow: hidden;
 }
+
 
 body {
   font-family: -apple-system, 'Segoe UI', 'Roboto', sans-serif;
