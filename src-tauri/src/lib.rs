@@ -602,6 +602,36 @@ pub fn run() {
                 app.package_info().name
             );
 
+            // Set up global shortcut for quick pane
+            #[cfg(desktop)]
+            {
+                use tauri_plugin_global_shortcut::{Builder, Code, Modifiers, ShortcutState};
+
+                let app_handle = app.handle().clone();
+                app.handle().plugin(
+                    Builder::new()
+                        .with_shortcut("CommandOrControl+Shift+.")?
+                        .with_handler(move |_app, shortcut, event| {
+                            if event.state == ShortcutState::Pressed
+                                && (shortcut
+                                    .matches(Modifiers::CONTROL | Modifiers::SHIFT, Code::Period)
+                                    || shortcut
+                                        .matches(Modifiers::SUPER | Modifiers::SHIFT, Code::Period))
+                            {
+                                log::info!("Quick pane shortcut triggered");
+                                let handle = app_handle.clone();
+                                tauri::async_runtime::spawn(async move {
+                                    if let Err(e) = toggle_quick_pane(handle).await {
+                                        log::error!("Failed to toggle quick pane: {e}");
+                                    }
+                                });
+                            }
+                        })
+                        .build(),
+                )?;
+                log::info!("Global shortcut registered: Cmd/Ctrl+Shift+.");
+            }
+
             // Set up native menu system
             if let Err(e) = create_app_menu(app) {
                 log::error!("Failed to create app menu: {e}");

@@ -34,7 +34,7 @@ export default function QuickPaneApp() {
     }
   }, [])
 
-  // Focus input when window becomes visible
+  // Focus input when window becomes visible, hide on blur
   useEffect(() => {
     const focusInput = () => {
       inputRef.current?.focus()
@@ -43,13 +43,18 @@ export default function QuickPaneApp() {
     // Focus on mount
     focusInput()
 
-    // Also focus when window gains focus
+    // Handle focus changes - focus input when gaining focus, hide when losing
     const currentWindow = getCurrentWindow()
-    const unlisten = currentWindow.onFocusChanged(({ payload: focused }) => {
-      if (focused) {
-        focusInput()
+    const unlisten = currentWindow.onFocusChanged(
+      async ({ payload: focused }) => {
+        if (focused) {
+          focusInput()
+        } else {
+          // Hide window when it loses focus (dismiss on blur)
+          await currentWindow.hide()
+        }
       }
-    })
+    )
 
     return () => {
       unlisten.then(fn => fn())

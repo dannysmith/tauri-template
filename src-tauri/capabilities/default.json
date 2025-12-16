@@ -23,6 +23,7 @@
     "log:default",
     "notification:default",
     "process:default",
-    "os:default"
+    "os:default",
+    "global-shortcut:default"
   ]
 }
