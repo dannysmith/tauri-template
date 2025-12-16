@@ -14,7 +14,16 @@ use tauri::{AppHandle, Emitter, Manager, WebviewUrl};
 
 // macOS-only: NSPanel for native panel behavior
 #[cfg(target_os = "macos")]
-use tauri_nspanel::{tauri_panel, CollectionBehavior, PanelBuilder, PanelLevel, StyleMask};
+use tauri_nspanel::{
+    tauri_panel, CollectionBehavior, ManagerExt, PanelBuilder, PanelLevel, StyleMask,
+};
+
+// macOS-only: For tracking and reactivating previous app when dismissing quick pane
+#[cfg(target_os = "macos")]
+use std::sync::atomic::{AtomicI32, Ordering};
+
+#[cfg(target_os = "macos")]
+static PREVIOUS_APP_PID: AtomicI32 = AtomicI32::new(-1);
 
 // Define custom panel class for quick pane (macOS only)
 #[cfg(target_os = "macos")]
@@ -509,10 +518,25 @@ fn init_quick_pane_standard(app: &AppHandle) -> Result<(), String> {
 }
 
 /// Shows the quick pane window.
+/// On macOS, captures the frontmost app before showing so we can reactivate it on dismiss.
+/// Must be sync (not async) to run on main thread for Cocoa API calls.
 #[tauri::command]
 #[specta::specta]
-async fn show_quick_pane(app: AppHandle) -> Result<(), String> {
+fn show_quick_pane(app: AppHandle) -> Result<(), String> {
     log::info!("Showing quick pane window");
+
+    // macOS: Capture the frontmost app before we show our panel
+    #[cfg(target_os = "macos")]
+    {
+        use objc2_app_kit::NSWorkspace;
+
+        let workspace = unsafe { NSWorkspace::sharedWorkspace() };
+        if let Some(frontmost) = unsafe { workspace.frontmostApplication() } {
+            let pid = unsafe { frontmost.processIdentifier() };
+            PREVIOUS_APP_PID.store(pid, Ordering::SeqCst);
+            log::debug!("Captured previous app PID: {pid}");
+        }
+    }
 
     let window = app.get_webview_window(QUICK_PANE_LABEL).ok_or_else(|| {
         "Quick pane window not found - was init_quick_pane called at startup?".to_string()
@@ -547,10 +571,54 @@ async fn hide_quick_pane(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-/// Toggles the quick pane window visibility.
+/// Dismisses the quick pane and reactivates the previously active app.
+/// On macOS, reactivates the app that was frontmost before we showed the panel.
+/// Must be sync (not async) to run on main thread for Cocoa API calls.
+/// On other platforms, falls back to standard hide().
 #[tauri::command]
 #[specta::specta]
-async fn toggle_quick_pane(app: AppHandle) -> Result<(), String> {
+fn dismiss_quick_pane(app: AppHandle) -> Result<(), String> {
+    log::info!("Dismissing quick pane window");
+
+    // Hide the panel first
+    if let Some(window) = app.get_webview_window(QUICK_PANE_LABEL) {
+        window
+            .hide()
+            .map_err(|e| format!("Failed to hide window: {e}"))?;
+        log::debug!("Quick pane window hidden");
+    } else {
+        log::debug!("Quick pane window not found");
+    }
+
+    // macOS: Reactivate the previously frontmost app
+    #[cfg(target_os = "macos")]
+    {
+        use objc2_app_kit::{NSApplicationActivationOptions, NSRunningApplication};
+
+        let pid = PREVIOUS_APP_PID.swap(-1, Ordering::SeqCst);
+        if pid > 0 {
+            if let Some(running_app) =
+                unsafe { NSRunningApplication::runningApplicationWithProcessIdentifier(pid) }
+            {
+                let activated = unsafe {
+                    running_app.activateWithOptions(NSApplicationActivationOptions::empty())
+                };
+                log::debug!("Reactivated previous app (PID: {pid}): {activated}");
+            } else {
+                log::debug!("Previous app (PID: {pid}) no longer running");
+            }
+        }
+    }
+
+    Ok(())
+}
+
+/// Toggles the quick pane window visibility.
+/// On macOS, captures/reactivates the previous app appropriately.
+/// Must be sync (not async) to run on main thread for Cocoa API calls.
+#[tauri::command]
+#[specta::specta]
+fn toggle_quick_pane(app: AppHandle) -> Result<(), String> {
     log::info!("Toggling quick pane window");
 
     let window = app.get_webview_window(QUICK_PANE_LABEL).ok_or_else(|| {
@@ -562,11 +630,43 @@ async fn toggle_quick_pane(app: AppHandle) -> Result<(), String> {
         .map_err(|e| format!("Failed to check visibility: {e}"))?;
 
     if is_visible {
+        // Hiding: use dismiss logic which reactivates previous app
         window
             .hide()
             .map_err(|e| format!("Failed to hide window: {e}"))?;
         log::debug!("Quick pane window hidden");
+
+        // macOS: Reactivate the previously frontmost app
+        #[cfg(target_os = "macos")]
+        {
+            use objc2_app_kit::{NSApplicationActivationOptions, NSRunningApplication};
+
+            let pid = PREVIOUS_APP_PID.swap(-1, Ordering::SeqCst);
+            if pid > 0 {
+                if let Some(running_app) =
+                    unsafe { NSRunningApplication::runningApplicationWithProcessIdentifier(pid) }
+                {
+                    let activated = unsafe {
+                        running_app.activateWithOptions(NSApplicationActivationOptions::empty())
+                    };
+                    log::debug!("Reactivated previous app (PID: {pid}): {activated}");
+                }
+            }
+        }
     } else {
+        // Showing: capture previous app first
+        #[cfg(target_os = "macos")]
+        {
+            use objc2_app_kit::NSWorkspace;
+
+            let workspace = unsafe { NSWorkspace::sharedWorkspace() };
+            if let Some(frontmost) = unsafe { workspace.frontmostApplication() } {
+                let pid = unsafe { frontmost.processIdentifier() };
+                PREVIOUS_APP_PID.store(pid, Ordering::SeqCst);
+                log::debug!("Captured previous app PID: {pid}");
+            }
+        }
+
         window
             .show()
             .map_err(|e| format!("Failed to show window: {e}"))?;
@@ -701,12 +801,10 @@ pub fn run() {
                                         .matches(Modifiers::SUPER | Modifiers::SHIFT, Code::Period))
                             {
                                 log::info!("Quick pane shortcut triggered");
-                                let handle = app_handle.clone();
-                                tauri::async_runtime::spawn(async move {
-                                    if let Err(e) = toggle_quick_pane(handle).await {
-                                        log::error!("Failed to toggle quick pane: {e}");
-                                    }
-                                });
+                                // Call directly - handler runs on main thread, toggle_quick_pane is sync
+                                if let Err(e) = toggle_quick_pane(app_handle.clone()) {
+                                    log::error!("Failed to toggle quick pane: {e}");
+                                }
                             }
                         })
                         .build(),

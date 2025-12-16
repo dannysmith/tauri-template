@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { emit, listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
+import { commands } from '@/lib/bindings'
 
 /**
  * QuickPaneApp - A minimal floating window for quick text entry.
@@ -71,8 +72,8 @@ export default function QuickPaneApp() {
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        const currentWindow = getCurrentWindow()
-        await currentWindow.hide()
+        e.preventDefault() // Prevent system "boop" sound
+        await commands.dismissQuickPane()
       }
     }
 
@@ -83,15 +84,14 @@ export default function QuickPaneApp() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const currentWindow = getCurrentWindow()
-
     if (text.trim()) {
       // Emit the event for main window to handle
       await emit('quick-pane-submit', { text: text.trim() })
       setText('')
     }
 
-    await currentWindow.hide()
+    // Use dismiss command to avoid space switching on macOS
+    await commands.dismissQuickPane()
   }
 
   return (

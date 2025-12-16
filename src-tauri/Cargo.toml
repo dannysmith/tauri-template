@@ -45,6 +45,10 @@ tauri-plugin-updater = "2"
 # macOS-only: NSPanel for native panel behavior (fullscreen overlay, click-outside dismiss)
 [target.'cfg(target_os = "macos")'.dependencies]
 tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2.1" }
+# For tracking/reactivating previous app when dismissing quick pane
+objc2 = "0.6"
+objc2-app-kit = { version = "0.3", features = ["NSRunningApplication", "NSWorkspace"] }
+objc2-foundation = "0.3"
 
 # Optimize for smaller binary size in release builds
 [profile.release]

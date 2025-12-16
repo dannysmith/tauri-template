@@ -217,6 +217,7 @@ PanelBuilder::<_, QuickPanePanel>::new(app, QUICK_PANE_LABEL)
    - Reference: Handy PR #361 uses same pattern - creates overlay at startup, hidden
 
 2. **Plugin initialization pattern:**
+
    ```rust
    let mut app_builder = tauri::Builder::default().plugin(...);
 
@@ -291,14 +292,12 @@ PanelBuilder::<_, QuickPanePanel>::new(app, QUICK_PANE_LABEL)
 
 - [ ] Position quick pane on monitor with mouse cursor (use `cursor_position()` API)
 - [ ] Clear input field after successful submit
-- [ ] Add developer documentation to `docs/developer/quick-pane.md`:
+- [ ] Add developer documentation to `docs/developer/quick-panes.md`:
   - How to customize pane content
   - How to wire to different actions (Zustand, TanStack, API)
   - Multi-window architecture explanation
   - Platform-specific notes
 - [ ] Update `docs/developer/architecture-guide.md` with cross-window patterns
-- [ ] Add note about Wayland limitations
-- [ ] Test on Windows and Linux X11 if possible
 
 **Testable State:** Feature complete, documented, ready for template users.
 

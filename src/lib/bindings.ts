@@ -61,6 +61,8 @@ async cleanupOldRecoveryFiles() : Promise<Result<number, RecoveryError>> {
 },
 /**
  * Shows the quick pane window.
+ * On macOS, captures the frontmost app before showing so we can reactivate it on dismiss.
+ * Must be sync (not async) to run on main thread for Cocoa API calls.
  */
 async showQuickPane() : Promise<Result<null, string>> {
     try {
@@ -82,7 +84,23 @@ async hideQuickPane() : Promise<Result<null, string>> {
 }
 },
 /**
+ * Dismisses the quick pane and reactivates the previously active app.
+ * On macOS, reactivates the app that was frontmost before we showed the panel.
+ * Must be sync (not async) to run on main thread for Cocoa API calls.
+ * On other platforms, falls back to standard hide().
+ */
+async dismissQuickPane() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("dismiss_quick_pane") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * Toggles the quick pane window visibility.
+ * On macOS, captures/reactivates the previous app appropriately.
+ * Must be sync (not async) to run on main thread for Cocoa API calls.
  */
 async toggleQuickPane() : Promise<Result<null, string>> {
     try {
