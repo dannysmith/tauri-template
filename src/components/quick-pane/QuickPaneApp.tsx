@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { emit } from '@tauri-apps/api/event'
+import { emit, listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { Input } from '@/components/ui/input'
 
 /**
  * QuickPaneApp - A minimal floating window for quick text entry.
@@ -12,43 +11,50 @@ import { Input } from '@/components/ui/input'
  * - Theme synced with main window via localStorage
  * - Hides window on submit or Escape
  */
+// Apply theme from localStorage to document
+function applyTheme() {
+  const theme = localStorage.getItem('ui-theme') || 'system'
+  const root = document.documentElement
+
+  root.classList.remove('light', 'dark')
+
+  if (theme === 'system') {
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
+      .matches
+      ? 'dark'
+      : 'light'
+    root.classList.add(systemTheme)
+  } else {
+    root.classList.add(theme)
+  }
+}
+
 export default function QuickPaneApp() {
   const [text, setText] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Apply theme from localStorage (synced with main window)
+  // Apply theme on mount and listen for theme changes from main window
   useEffect(() => {
-    const theme = localStorage.getItem('ui-theme') || 'system'
-    const root = document.documentElement
+    applyTheme()
 
-    root.classList.remove('light', 'dark')
+    const unlisten = listen('theme-changed', () => {
+      applyTheme()
+    })
 
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
-        .matches
-        ? 'dark'
-        : 'light'
-      root.classList.add(systemTheme)
-    } else {
-      root.classList.add(theme)
+    return () => {
+      unlisten.then(fn => fn())
     }
   }, [])
 
   // Focus input when window becomes visible, hide on blur
   useEffect(() => {
-    const focusInput = () => {
-      inputRef.current?.focus()
-    }
-
-    // Focus on mount
-    focusInput()
-
-    // Handle focus changes - focus input when gaining focus, hide when losing
     const currentWindow = getCurrentWindow()
     const unlisten = currentWindow.onFocusChanged(
       async ({ payload: focused }) => {
         if (focused) {
-          focusInput()
+          // Re-apply theme in case it changed while hidden
+          applyTheme()
+          inputRef.current?.focus()
         } else {
           // Hide window when it loses focus (dismiss on blur)
           await currentWindow.hide()
@@ -89,21 +95,22 @@ export default function QuickPaneApp() {
   }
 
   return (
-    <div className="bg-background flex h-screen w-screen items-center justify-center p-3">
-      <form onSubmit={handleSubmit} className="w-full">
-        <Input
-          ref={inputRef}
-          type="text"
-          value={text}
-          onChange={e => setText(e.target.value)}
-          placeholder="Enter text..."
-          className="bg-background h-11 w-full text-base"
-          autoComplete="off"
-          autoCorrect="off"
-          autoCapitalize="off"
-          spellCheck={false}
-        />
-      </form>
-    </div>
+    <form
+      onSubmit={handleSubmit}
+      className="flex h-screen w-screen items-center rounded-xl bg-white/90 px-5 backdrop-blur-xl dark:bg-zinc-900/90"
+    >
+      <input
+        ref={inputRef}
+        type="text"
+        value={text}
+        onChange={e => setText(e.target.value)}
+        placeholder="Enter text..."
+        className="w-full bg-transparent text-lg text-zinc-900 placeholder-zinc-400 outline-none dark:text-white dark:placeholder-zinc-500"
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck={false}
+      />
+    </form>
   )
 }

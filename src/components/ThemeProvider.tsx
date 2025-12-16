@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useState, useRef } from 'react'
+import { emit } from '@tauri-apps/api/event'
 import { ThemeProviderContext, type Theme } from '@/lib/theme-context'
 import { usePreferences } from '@/services/preferences'
 
@@ -53,9 +54,11 @@ export function ThemeProvider({
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme)
-      setTheme(theme)
+    setTheme: (newTheme: Theme) => {
+      localStorage.setItem(storageKey, newTheme)
+      setTheme(newTheme)
+      // Notify other windows (e.g., quick pane) of theme change
+      emit('theme-changed', { theme: newTheme })
     },
   }
 

@@ -438,10 +438,11 @@ async fn show_quick_pane(app: AppHandle) -> Result<(), String> {
         WebviewUrl::App("quick-pane.html".into()),
     )
     .title("Quick Entry")
-    .inner_size(400.0, 60.0)
+    .inner_size(500.0, 72.0)
     .always_on_top(true)
     .skip_taskbar(true)
     .decorations(false)
+    .transparent(true)
     .visible(true)
     .resizable(false)
     .center()

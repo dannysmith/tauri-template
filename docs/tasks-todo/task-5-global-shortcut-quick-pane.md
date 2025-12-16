@@ -1,5 +1,19 @@
 # Global Shortcut and Quick Pane System
 
+## Session Notes
+
+**Phases 1-3 completed.** Remaining: Phase 4 (NSPanel), Phase 5 (Configurable Shortcut), Phase 6 (Polish & Docs).
+
+### Implementation Notes
+
+- **Shortcut handler gotcha:** When matching shortcuts in the handler, watch operator precedence. The condition must be `Pressed && (matchA || matchB)` not `Pressed && matchA || matchB` - the latter fires on both press AND release for the second match.
+- **Theme sync between windows:** Quick pane is a separate JS context, so it can't share React state. We emit a `theme-changed` Tauri event from ThemeProvider when theme changes, and quick pane listens for it. This prevents flash of wrong theme when re-showing the window.
+- **Window reuse pattern:** Quick pane window is created once, then shown/hidden. Much faster than recreating each time. Theme is re-synced on focus gain.
+- **Styling:** Used transparent window + CSS `backdrop-blur-xl` + `bg-white/90` / `bg-zinc-900/90` for frosted glass effect that respects theme. Window is 500x72.
+- **Test button:** Left a temporary "Show Quick Pane (Test)" button in MainWindowContent.tsx - remove after Phase 6.
+
+---
+
 ## Overview
 
 Add a globally-accessible quick entry panel - a small floating window triggered via global keyboard shortcut even when the main application is not focused. This demonstrates a common pattern for quick entry, command palettes, and similar quick-access features.
@@ -90,82 +104,62 @@ This pattern doesn't constrain the action type - the template demonstrates Zusta
 
 ## Implementation Plan
 
-### Phase 1: Multi-Window Setup
+### Phase 1: Multi-Window Setup ✓
 
 **Goal:** Establish the multi-window architecture with a visible quick pane.
 
 **Tasks:**
 
-- [ ] Create `quick-pane.html` in project root (alongside `index.html`)
-- [ ] Create `src/quick-pane-main.tsx` - React entry point for quick pane
-- [ ] Create `src/components/quick-pane/QuickPaneApp.tsx` - the pane UI
+- [x] Create `quick-pane.html` in project root (alongside `index.html`)
+- [x] Create `src/quick-pane-main.tsx` - React entry point for quick pane
+- [x] Create `src/components/quick-pane/QuickPaneApp.tsx` - the pane UI
   - Single text input with placeholder "Enter text..."
   - Submit on Enter key
   - Style to match app theme (dark/light)
-  - Include ThemeProvider for consistent styling
-- [ ] Update `vite.config.ts` with rollupOptions.input for both HTML files:
-  ```typescript
-  build: {
-    rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'index.html'),
-        'quick-pane': resolve(__dirname, 'quick-pane.html'),
-      },
-    },
-  }
-  ```
-- [ ] Create Rust command to create/show/hide quick pane window:
-  ```rust
-  WebviewWindowBuilder::new(&app, "quick-pane", WebviewUrl::App("quick-pane.html".into()))
-      .title("Quick Entry")
-      .inner_size(400.0, 80.0)
-      .always_on_top(true)
-      .skip_taskbar(true)
-      .decorations(false)
-      .visible(false)
-      .build()?;
-  ```
-- [ ] Add capability permissions for window creation
-- [ ] Test: Can create and show quick pane window, styled correctly
+  - ~~Include ThemeProvider for consistent styling~~ (used simpler `applyTheme()` function + event listener)
+- [x] Update `vite.config.ts` with rollupOptions.input for both HTML files
+- [x] Create Rust commands: `show_quick_pane`, `hide_quick_pane`, `toggle_quick_pane`
+- [x] Add capability permissions for window creation (`capabilities/quick-pane.json`)
+- [x] Test: Can create and show quick pane window, styled correctly
 
 **Testable State:** Quick pane window can be shown via Rust command, displays input field, styled correctly.
 
 ---
 
-### Phase 2: Cross-Window Communication
+### Phase 2: Cross-Window Communication ✓
 
 **Goal:** Text submitted in quick pane updates main window.
 
 **Tasks:**
 
-- [ ] Define Tauri event: `quick-pane-submit` with payload `{ text: string }`
-- [ ] Quick pane: emit event on form submit, then hide window
-- [ ] Add `lastQuickPaneEntry: string | null` to existing `ui-store.ts`
-- [ ] Main window: listen for `quick-pane-submit` event in `useMainWindowEventListeners.ts`, update store
-- [ ] Update `MainWindowContent.tsx` to display last entry from store
-- [ ] Test: Submit text in quick pane, main window updates to show it
+- [x] Define Tauri event: `quick-pane-submit` with payload `{ text: string }`
+- [x] Quick pane: emit event on form submit, then hide window
+- [x] Add `lastQuickPaneEntry: string | null` to existing `ui-store.ts`
+- [x] Main window: listen for `quick-pane-submit` event in `useMainWindowEventListeners.ts`, update store
+- [x] Update `MainWindowContent.tsx` to display last entry from store
+- [x] Test: Submit text in quick pane, main window updates to show it
 
 **Testable State:** Full round-trip working - submit in pane, see update in main window.
 
 ---
 
-### Phase 3: Global Shortcut
+### Phase 3: Global Shortcut ✓
 
 **Goal:** Toggle quick pane with global keyboard shortcut.
 
 **Tasks:**
 
-- [ ] Add `tauri-plugin-global-shortcut` dependency
-- [ ] Configure permissions in capabilities
-- [ ] Register default shortcut (`CommandOrControl+Shift+Period`) on app startup
-- [ ] Shortcut handler: toggle quick pane visibility
-- [ ] Handle focus: when showing, focus the input field
-- [ ] Handle dismiss: Escape key hides pane
-- [ ] Handle dismiss: Focus loss (blur event) hides pane
-- [ ] **Error handling:** If shortcut registration fails, show error toast with message
-- [ ] Test: App in background, press shortcut, pane appears, Escape/blur dismisses
+- [x] Add `tauri-plugin-global-shortcut` dependency
+- [x] Configure permissions in capabilities
+- [x] Register default shortcut (`CommandOrControl+Shift+Period`) on app startup
+- [x] Shortcut handler: toggle quick pane visibility
+- [x] Handle focus: when showing, focus the input field
+- [x] Handle dismiss: Escape key hides pane
+- [x] Handle dismiss: Focus loss (blur event) hides pane
+- [ ] **Error handling:** If shortcut registration fails, show error toast with message (deferred - not yet implemented)
+- [x] Test: App in background, press shortcut, pane appears, Escape/blur dismisses
 
-**Testable State:** Global shortcut works from any app, pane shows/hides correctly, registration errors shown to user.
+**Testable State:** Global shortcut works from any app, pane shows/hides correctly.
 
 ---
 
