@@ -147,6 +147,22 @@ fn get_preferences_path(app: &AppHandle) -> Result<PathBuf, String> {
     Ok(app_data_dir.join("preferences.json"))
 }
 
+/// Load the saved quick pane shortcut from preferences, returning None on any failure.
+/// Used at startup before the full preferences system is available.
+fn load_quick_pane_shortcut(app: &AppHandle) -> Option<String> {
+    let path = get_preferences_path(app).ok()?;
+    if !path.exists() {
+        return None;
+    }
+    let contents = std::fs::read_to_string(&path)
+        .inspect_err(|e| log::warn!("Failed to read preferences: {e}"))
+        .ok()?;
+    let prefs: AppPreferences = serde_json::from_str(&contents)
+        .inspect_err(|e| log::warn!("Failed to parse preferences: {e}"))
+        .ok()?;
+    prefs.quick_pane_shortcut
+}
+
 #[tauri::command]
 #[specta::specta]
 async fn load_preferences(app: AppHandle) -> Result<AppPreferences, String> {
@@ -257,7 +273,7 @@ fn get_recovery_dir(app: &AppHandle) -> Result<PathBuf, String> {
     Ok(recovery_dir)
 }
 
-const MAX_RECOVERY_DATA_BYTES: usize = 10_485_760; // 10MB
+const MAX_RECOVERY_DATA_BYTES: u32 = 10_485_760; // 10MB
 
 #[tauri::command]
 #[specta::specta]
@@ -275,9 +291,9 @@ async fn save_emergency_data(
     let data_str = serde_json::to_string(&data).map_err(|e| RecoveryError::ParseError {
         message: e.to_string(),
     })?;
-    if data_str.len() > MAX_RECOVERY_DATA_BYTES {
+    if data_str.len() > MAX_RECOVERY_DATA_BYTES as usize {
         return Err(RecoveryError::DataTooLarge {
-            max_bytes: MAX_RECOVERY_DATA_BYTES as u32,
+            max_bytes: MAX_RECOVERY_DATA_BYTES,
         });
     }
 
@@ -746,7 +762,10 @@ fn update_quick_pane_shortcut(app: AppHandle, shortcut: Option<String>) -> Resul
 
         log::info!("Updating quick pane shortcut to: {new_shortcut}");
 
-        // Unregister all shortcuts first (we only have one registered)
+        // Unregister all shortcuts first
+        // WARNING: This removes ALL registered shortcuts. Currently we only register one
+        // (quick pane), but if more shortcuts are added in the future, this approach will
+        // need to change to track and unregister specific shortcuts instead.
         if let Err(e) = global_shortcut.unregister_all() {
             log::warn!("Failed to unregister old shortcuts: {e}");
             // Continue anyway - the old shortcut may not have been registered
@@ -884,26 +903,7 @@ pub fn run() {
             );
 
             // Load saved preferences to get configured shortcut
-            let saved_shortcut = {
-                let prefs_path = get_preferences_path(app.handle());
-                match prefs_path {
-                    Ok(path) if path.exists() => match std::fs::read_to_string(&path) {
-                        Ok(contents) => match serde_json::from_str::<AppPreferences>(&contents) {
-                            Ok(prefs) => prefs.quick_pane_shortcut,
-                            Err(e) => {
-                                log::warn!("Failed to parse preferences: {e}");
-                                None
-                            }
-                        },
-                        Err(e) => {
-                            log::warn!("Failed to read preferences: {e}");
-                            None
-                        }
-                    },
-                    _ => None,
-                }
-            };
-
+            let saved_shortcut = load_quick_pane_shortcut(app.handle());
             let shortcut_to_register = saved_shortcut
                 .as_deref()
                 .unwrap_or(DEFAULT_QUICK_PANE_SHORTCUT);

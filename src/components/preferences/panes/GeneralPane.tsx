@@ -61,7 +61,10 @@ export const GeneralPane: React.FC = () => {
   const handleShortcutChange = async (newShortcut: string | null) => {
     if (!preferences) return
 
-    logger.info('Updating quick pane shortcut', { newShortcut })
+    // Capture old shortcut for rollback if save fails
+    const oldShortcut = preferences.quick_pane_shortcut
+
+    logger.info('Updating quick pane shortcut', { oldShortcut, newShortcut })
 
     // First, try to register the new shortcut
     const result = await commands.updateQuickPaneShortcut(newShortcut)
@@ -74,11 +77,35 @@ export const GeneralPane: React.FC = () => {
       return
     }
 
-    // If registration succeeded, save the preference
-    savePreferences.mutate({
-      ...preferences,
-      quick_pane_shortcut: newShortcut,
-    })
+    // If registration succeeded, try to save the preference
+    try {
+      await savePreferences.mutateAsync({
+        ...preferences,
+        quick_pane_shortcut: newShortcut,
+      })
+    } catch {
+      // Save failed - roll back the backend registration
+      logger.warn('Save failed, rolling back shortcut registration', {
+        oldShortcut,
+        newShortcut,
+      })
+
+      const rollbackResult = await commands.updateQuickPaneShortcut(oldShortcut)
+
+      if (rollbackResult.status === 'error') {
+        logger.error('Rollback failed - backend and preferences are out of sync', {
+          error: rollbackResult.error,
+          attemptedShortcut: newShortcut,
+          originalShortcut: oldShortcut,
+        })
+        toast.error('Failed to restore previous shortcut', {
+          description:
+            'The shortcut may be out of sync. Please restart the app or try again.',
+        })
+      } else {
+        logger.info('Successfully rolled back shortcut registration')
+      }
+    }
   }
 
   return (

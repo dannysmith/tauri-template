@@ -1,7 +1,16 @@
 import { useState, useEffect, useRef } from 'react'
 import { emit, listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { commands } from '@/lib/bindings'
+import { commands } from '@/lib/tauri-bindings'
+import { logger } from '@/lib/logger'
+
+/** Dismiss the quick pane window, logging any errors */
+async function dismissQuickPane() {
+  const result = await commands.dismissQuickPane()
+  if (result.status === 'error') {
+    logger.error('Failed to dismiss quick pane', { error: result.error })
+  }
+}
 
 /**
  * QuickPaneApp - A minimal floating window for quick text entry.
@@ -59,7 +68,7 @@ export default function QuickPaneApp() {
         } else {
           // Hide window when it loses focus (dismiss on blur)
           // Use dismiss command for consistent behavior (no animation)
-          await commands.dismissQuickPane()
+          await dismissQuickPane()
         }
       }
     )
@@ -74,7 +83,7 @@ export default function QuickPaneApp() {
     const handleKeyDown = async (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault() // Prevent system "boop" sound
-        await commands.dismissQuickPane()
+        await dismissQuickPane()
       }
     }
 
@@ -92,7 +101,7 @@ export default function QuickPaneApp() {
     }
 
     // Use dismiss command to avoid space switching on macOS
-    await commands.dismissQuickPane()
+    await dismissQuickPane()
   }
 
   return (
