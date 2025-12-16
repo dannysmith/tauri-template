@@ -8,28 +8,28 @@ Add commonly-needed Tauri v2 plugins with idiomatic patterns and comprehensive d
 
 ### Current Plugins (Already Installed)
 
-| Plugin | Purpose | Status |
-|--------|---------|--------|
-| opener | Open files/URLs with system default apps | ✅ Working |
-| clipboard-manager | Clipboard read/write | ✅ Working |
-| dialog | Native open/save/message dialogs | ✅ Working |
-| fs | File system access | ✅ Working |
-| log | Configurable logging | ✅ Working |
-| notification | System notifications | ✅ Working |
-| persisted-scope | Persistent file access permissions | ✅ Working |
-| process | Exit/restart app | ✅ Working |
-| os | OS info | ✅ Working |
-| global-shortcut | System-wide keyboard shortcuts | ✅ Working |
-| updater | In-app updates (desktop) | ✅ Working |
-| tauri-nspanel | macOS native panels (custom) | ✅ Working |
+| Plugin            | Purpose                                  | Status     |
+| ----------------- | ---------------------------------------- | ---------- |
+| opener            | Open files/URLs with system default apps | ✅ Working |
+| clipboard-manager | Clipboard read/write                     | ✅ Working |
+| dialog            | Native open/save/message dialogs         | ✅ Working |
+| fs                | File system access                       | ✅ Working |
+| log               | Configurable logging                     | ✅ Working |
+| notification      | System notifications                     | ✅ Working |
+| persisted-scope   | Persistent file access permissions       | ✅ Working |
+| process           | Exit/restart app                         | ✅ Working |
+| os                | OS info                                  | ✅ Working |
+| global-shortcut   | System-wide keyboard shortcuts           | ✅ Working |
+| updater           | In-app updates (desktop)                 | ✅ Working |
+| tauri-nspanel     | macOS native panels (custom)             | ✅ Working |
 
 ### Plugins to Add
 
-| Plugin | Priority | Rationale |
-|--------|----------|-----------|
-| **window-state** | Essential | Users expect windows to reopen where they left them |
-| **single-instance** | Essential | Prevent multiple app instances - standard desktop UX |
-| **store** | High | Simple key-value storage for ad-hoc data (complements existing preferences) |
+| Plugin              | Priority  | Rationale                                                                   |
+| ------------------- | --------- | --------------------------------------------------------------------------- |
+| **window-state**    | Essential | Users expect windows to reopen where they left them                         |
+| **single-instance** | Essential | Prevent multiple app instances - standard desktop UX                        |
+| **store**           | High      | Simple key-value storage for ad-hoc data (complements existing preferences) |
 
 ### Built-in Features (No Plugin Needed)
 
@@ -38,25 +38,27 @@ Add commonly-needed Tauri v2 plugins with idiomatic patterns and comprehensive d
 
 ### Plugins NOT Adding (Documented Only)
 
-| Plugin | When to Add |
-|--------|-------------|
-| shell | Apps needing to spawn child processes |
-| http | API calls bypassing CORS |
-| autostart | Utility apps that launch at startup |
-| deep-link | Custom URL schemes (myapp://) |
-| sql | Local SQLite database |
-| positioner | Tray apps, floating windows |
+| Plugin     | When to Add                           |
+| ---------- | ------------------------------------- |
+| shell      | Apps needing to spawn child processes |
+| http       | API calls bypassing CORS              |
+| autostart  | Utility apps that launch at startup   |
+| deep-link  | Custom URL schemes (myapp://)         |
+| sql        | Local SQLite database                 |
+| positioner | Tray apps, floating windows           |
 
 ## Architecture Decision: Store Plugin vs Custom Preferences
 
 **Decision: Keep both, use for different purposes**
 
 ### Current Preferences System (Keep)
+
 - **Purpose**: Strongly-typed app settings
 - **Why keep**: Already well-implemented with atomic writes, type-safe via tauri-specta, integrated with TanStack Query, supports Rust-side validation
 - **Use for**: Theme, keyboard shortcuts, any setting that benefits from type safety
 
 ### Store Plugin (Add)
+
 - **Purpose**: Simple key-value storage for ad-hoc data
 - **Why add**: Less boilerplate for simple data, lazy loading, auto-save with debounce, battle-tested official solution
 - **Use for**: Recent files, window preferences, feature flags, cached API responses, user preferences that don't need validation
@@ -79,11 +81,13 @@ Need to persist data?
 **IMPORTANT**: Must be registered FIRST in the builder chain, before other plugins.
 
 **Installation:**
+
 ```bash
 npm run tauri add single-instance
 ```
 
 **Rust setup (lib.rs) - Add at TOP of plugin chain:**
+
 ```rust
 pub fn run() {
     let builder = bindings::generate_bindings();
@@ -115,6 +119,7 @@ pub fn run() {
 ```
 
 **Files to modify:**
+
 - `src-tauri/Cargo.toml` - Add dependency
 - `src-tauri/src/lib.rs` - Restructure plugin registration order
 
@@ -125,11 +130,13 @@ pub fn run() {
 Automatically save/restore window position and size.
 
 **Installation:**
+
 ```bash
 npm run tauri add window-state
 ```
 
 **Rust setup (lib.rs) - Add in builder chain:**
+
 ```rust
 use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 
@@ -139,6 +146,7 @@ app_builder = app_builder
 ```
 
 **IMPORTANT**: Exclude quick-pane from state restoration in setup:
+
 ```rust
 .setup(|app| {
     // ... existing setup code ...
@@ -154,6 +162,7 @@ app_builder = app_builder
 ```
 
 **Update capabilities (default.json):**
+
 ```json
 {
   "permissions": [
@@ -164,6 +173,7 @@ app_builder = app_builder
 ```
 
 **Files to modify:**
+
 - `src-tauri/Cargo.toml`
 - `src-tauri/src/lib.rs`
 - `src-tauri/capabilities/default.json`
@@ -175,11 +185,13 @@ app_builder = app_builder
 Add simple key-value storage for ad-hoc data, accessible from both Rust and frontend.
 
 **Installation:**
+
 ```bash
 npm run tauri add store
 ```
 
 **Rust setup (lib.rs):**
+
 ```rust
 use tauri_plugin_store::StoreExt;
 
@@ -189,6 +201,7 @@ app_builder = app_builder
 ```
 
 **Example Rust usage (in setup or commands):**
+
 ```rust
 use serde_json::json;
 
@@ -208,6 +221,7 @@ store.save()?;
 ```
 
 **Update capabilities (default.json):**
+
 ```json
 {
   "permissions": [
@@ -218,9 +232,10 @@ store.save()?;
 ```
 
 **Frontend utility (new file):**
-```typescript
+
+````typescript
 // src/lib/store.ts
-import { load, Store } from '@tauri-apps/plugin-store';
+import { load, Store } from '@tauri-apps/plugin-store'
 
 /**
  * App store for simple key-value persistence.
@@ -247,7 +262,7 @@ import { load, Store } from '@tauri-apps/plugin-store';
  * ```
  */
 
-let storeInstance: Store | null = null;
+let storeInstance: Store | null = null
 
 /**
  * Get the app store instance.
@@ -256,18 +271,21 @@ let storeInstance: Store | null = null;
  */
 export async function getStore(): Promise<Store> {
   if (!storeInstance) {
-    storeInstance = await load('app-data.json', { autoSave: true });
+    storeInstance = await load('app-data.json', { autoSave: true })
   }
-  return storeInstance;
+  return storeInstance
 }
 
 /**
  * Get a value from the store with a default fallback.
  */
-export async function getStoreValue<T>(key: string, defaultValue: T): Promise<T> {
-  const store = await getStore();
-  const value = await store.get<T>(key);
-  return value ?? defaultValue;
+export async function getStoreValue<T>(
+  key: string,
+  defaultValue: T
+): Promise<T> {
+  const store = await getStore()
+  const value = await store.get<T>(key)
+  return value ?? defaultValue
 }
 
 /**
@@ -275,8 +293,8 @@ export async function getStoreValue<T>(key: string, defaultValue: T): Promise<T>
  * Auto-saves after 100ms debounce - no manual save needed.
  */
 export async function setStoreValue<T>(key: string, value: T): Promise<void> {
-  const store = await getStore();
-  await store.set(key, value);
+  const store = await getStore()
+  await store.set(key, value)
   // Note: Don't call save() - autoSave handles it with debouncing
 }
 
@@ -284,20 +302,21 @@ export async function setStoreValue<T>(key: string, value: T): Promise<void> {
  * Delete a key from the store.
  */
 export async function deleteStoreValue(key: string): Promise<void> {
-  const store = await getStore();
-  await store.delete(key);
+  const store = await getStore()
+  await store.delete(key)
 }
 
 /**
  * Check if a key exists in the store.
  */
 export async function hasStoreValue(key: string): Promise<boolean> {
-  const store = await getStore();
-  return store.has(key);
+  const store = await getStore()
+  return store.has(key)
 }
-```
+````
 
 **Files to create/modify:**
+
 - `src-tauri/Cargo.toml`
 - `src-tauri/src/lib.rs`
 - `src-tauri/capabilities/default.json`
@@ -309,9 +328,10 @@ export async function hasStoreValue(key: string): Promise<boolean> {
 Create a utility for easy native context menus (built-in Tauri feature, no plugin needed).
 
 **Frontend utility (new file):**
-```typescript
+
+````typescript
 // src/lib/context-menu.ts
-import { Menu, MenuItem, PredefinedMenuItem } from '@tauri-apps/api/menu';
+import { Menu, MenuItem, PredefinedMenuItem } from '@tauri-apps/api/menu'
 
 /**
  * Context menu utilities for native right-click menus.
@@ -331,27 +351,29 @@ import { Menu, MenuItem, PredefinedMenuItem } from '@tauri-apps/api/menu';
  */
 
 export interface ContextMenuItem {
-  id: string;
-  label: string;
-  accelerator?: string;
-  disabled?: boolean;
-  action?: () => void;
+  id: string
+  label: string
+  accelerator?: string
+  disabled?: boolean
+  action?: () => void
 }
 
 export interface ContextMenuSeparator {
-  type: 'separator';
+  type: 'separator'
 }
 
-export type ContextMenuEntry = ContextMenuItem | ContextMenuSeparator;
+export type ContextMenuEntry = ContextMenuItem | ContextMenuSeparator
 
 /**
  * Show a custom context menu at the current cursor position.
  */
-export async function showContextMenu(items: ContextMenuEntry[]): Promise<void> {
+export async function showContextMenu(
+  items: ContextMenuEntry[]
+): Promise<void> {
   const menuItems = await Promise.all(
-    items.map(async (item) => {
+    items.map(async item => {
       if ('type' in item && item.type === 'separator') {
-        return PredefinedMenuItem.new({ item: 'Separator' });
+        return PredefinedMenuItem.new({ item: 'Separator' })
       }
       return MenuItem.new({
         id: item.id,
@@ -359,12 +381,12 @@ export async function showContextMenu(items: ContextMenuEntry[]): Promise<void> 
         accelerator: item.accelerator,
         enabled: !item.disabled,
         action: item.action,
-      });
+      })
     })
-  );
+  )
 
-  const menu = await Menu.new({ items: menuItems });
-  await menu.popup();
+  const menu = await Menu.new({ items: menuItems })
+  await menu.popup()
 }
 
 /**
@@ -380,8 +402,8 @@ export async function showEditContextMenu(): Promise<void> {
       await PredefinedMenuItem.new({ item: 'Separator' }),
       await PredefinedMenuItem.new({ item: 'SelectAll' }),
     ],
-  });
-  await menu.popup();
+  })
+  await menu.popup()
 }
 
 /**
@@ -400,12 +422,13 @@ export async function showTextInputContextMenu(): Promise<void> {
       await PredefinedMenuItem.new({ item: 'Separator' }),
       await PredefinedMenuItem.new({ item: 'SelectAll' }),
     ],
-  });
-  await menu.popup();
+  })
+  await menu.popup()
 }
-```
+````
 
 **Files to create:**
+
 - `src/lib/context-menu.ts` (new)
 
 ### Phase 5: Tests
@@ -413,37 +436,39 @@ export async function showTextInputContextMenu(): Promise<void> {
 Add tests for the new utilities.
 
 **Store utility tests (new file):**
+
 ```typescript
 // src/lib/store.test.ts
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock the Tauri store plugin
 vi.mock('@tauri-apps/plugin-store', () => ({
   load: vi.fn(),
   Store: vi.fn(),
-}));
+}))
 
 describe('store utilities', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-  });
+    vi.clearAllMocks()
+  })
 
   it('should be importable', async () => {
     // Basic smoke test - actual functionality requires Tauri runtime
-    const module = await import('./store');
-    expect(module.getStore).toBeDefined();
-    expect(module.getStoreValue).toBeDefined();
-    expect(module.setStoreValue).toBeDefined();
-    expect(module.deleteStoreValue).toBeDefined();
-    expect(module.hasStoreValue).toBeDefined();
-  });
-});
+    const module = await import('./store')
+    expect(module.getStore).toBeDefined()
+    expect(module.getStoreValue).toBeDefined()
+    expect(module.setStoreValue).toBeDefined()
+    expect(module.deleteStoreValue).toBeDefined()
+    expect(module.hasStoreValue).toBeDefined()
+  })
+})
 ```
 
 **Context menu utility tests (new file):**
+
 ```typescript
 // src/lib/context-menu.test.ts
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock the Tauri menu API
 vi.mock('@tauri-apps/api/menu', () => ({
@@ -458,35 +483,38 @@ vi.mock('@tauri-apps/api/menu', () => ({
   PredefinedMenuItem: {
     new: vi.fn().mockResolvedValue({}),
   },
-}));
+}))
 
 describe('context-menu utilities', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-  });
+    vi.clearAllMocks()
+  })
 
   it('should be importable', async () => {
-    const module = await import('./context-menu');
-    expect(module.showContextMenu).toBeDefined();
-    expect(module.showEditContextMenu).toBeDefined();
-    expect(module.showTextInputContextMenu).toBeDefined();
-  });
-});
+    const module = await import('./context-menu')
+    expect(module.showContextMenu).toBeDefined()
+    expect(module.showEditContextMenu).toBeDefined()
+    expect(module.showTextInputContextMenu).toBeDefined()
+  })
+})
 ```
 
 **Files to create:**
+
 - `src/lib/store.test.ts` (new)
 - `src/lib/context-menu.test.ts` (new)
 
 ### Phase 6: Documentation
 
 Create `docs/developer/tauri-plugins.md` documenting:
+
 - All currently installed plugins with usage patterns
 - Built-in features (context menus, system tray)
 - Decision guide for choosing between storage options
 - Links to official docs
 
 **Files to create/modify:**
+
 - `docs/developer/tauri-plugins.md` (new)
 - `docs/developer/data-persistence.md` (add Store plugin section and cross-reference)
 
@@ -505,11 +533,13 @@ Create `docs/developer/tauri-plugins.md` documenting:
 ## Tasks Checklist
 
 ### Phase 1: Single Instance Plugin
+
 - [ ] Add `tauri-plugin-single-instance` to Cargo.toml (desktop only)
 - [ ] Restructure lib.rs to register single-instance FIRST in builder chain
 - [ ] Test: Try opening second instance, first should focus
 
 ### Phase 2: Window State Plugin
+
 - [ ] Add `tauri-plugin-window-state` to Cargo.toml (desktop only)
 - [ ] Add plugin to builder chain (after single-instance)
 - [ ] Add `window-state:default` to capabilities
@@ -517,6 +547,7 @@ Create `docs/developer/tauri-plugins.md` documenting:
 - [ ] Test: Close app at specific position, reopen - should restore
 
 ### Phase 3: Store Plugin
+
 - [ ] Run `npm run tauri add store`
 - [ ] Add `store:default` to capabilities
 - [ ] Add StoreExt usage example in Rust (optional, for reference)
@@ -524,20 +555,24 @@ Create `docs/developer/tauri-plugins.md` documenting:
 - [ ] Test: Save and retrieve values
 
 ### Phase 4: Context Menu Utility
+
 - [ ] Create `src/lib/context-menu.ts`
 - [ ] Test: Right-click shows native menu
 
 ### Phase 5: Tests
+
 - [ ] Create `src/lib/store.test.ts`
 - [ ] Create `src/lib/context-menu.test.ts`
 - [ ] Run `npm run test:run` - all tests pass
 
 ### Phase 6: Documentation
+
 - [ ] Create `docs/developer/tauri-plugins.md`
 - [ ] Update `docs/developer/data-persistence.md` with Store section
 - [ ] Ensure cross-references are correct
 
 ### Phase 7: Final Verification
+
 - [ ] Run `npm run check:all`
 - [ ] Manual testing of all new functionality
 - [ ] Review documentation accuracy

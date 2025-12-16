@@ -93,11 +93,14 @@ export const GeneralPane: React.FC = () => {
       const rollbackResult = await commands.updateQuickPaneShortcut(oldShortcut)
 
       if (rollbackResult.status === 'error') {
-        logger.error('Rollback failed - backend and preferences are out of sync', {
-          error: rollbackResult.error,
-          attemptedShortcut: newShortcut,
-          originalShortcut: oldShortcut,
-        })
+        logger.error(
+          'Rollback failed - backend and preferences are out of sync',
+          {
+            error: rollbackResult.error,
+            attemptedShortcut: newShortcut,
+            originalShortcut: oldShortcut,
+          }
+        )
         toast.error('Failed to restore previous shortcut', {
           description:
             'The shortcut may be out of sync. Please restart the app or try again.',

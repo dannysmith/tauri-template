@@ -89,12 +89,12 @@ onFocusChanged(({ payload: focused }) => {
 
 ## Platform Behavior
 
-| Platform      | Panel Type      | Fullscreen Overlay | Dismiss Behavior            |
-| ------------- | --------------- | ------------------ | --------------------------- |
-| macOS         | NSPanel         | Yes                | Click-outside, Escape, blur |
-| Windows       | Always-on-top   | No                 | Escape, blur                |
-| Linux X11     | Always-on-top   | No                 | Escape, blur                |
-| Linux Wayland | Not supported   | -                  | -                           |
+| Platform      | Panel Type    | Fullscreen Overlay | Dismiss Behavior            |
+| ------------- | ------------- | ------------------ | --------------------------- |
+| macOS         | NSPanel       | Yes                | Click-outside, Escape, blur |
+| Windows       | Always-on-top | No                 | Escape, blur                |
+| Linux X11     | Always-on-top | No                 | Escape, blur                |
+| Linux Wayland | Not supported | -                  | -                           |
 
 ### macOS NSPanel
 
@@ -190,7 +190,7 @@ listen('quick-pane-submit', ({ payload }) => {
 listen('quick-pane-submit', async ({ payload }) => {
   await fetch('/api/tasks', {
     method: 'POST',
-    body: JSON.stringify({ title: payload.text })
+    body: JSON.stringify({ title: payload.text }),
   })
 })
 
@@ -238,7 +238,7 @@ Prevent the system alert sound on Escape by calling `preventDefault()`:
 ```typescript
 const handleKeyDown = async (e: KeyboardEvent) => {
   if (e.key === 'Escape') {
-    e.preventDefault()  // Prevents "boop" sound
+    e.preventDefault() // Prevents "boop" sound
     await commands.dismissQuickPane()
   }
 }

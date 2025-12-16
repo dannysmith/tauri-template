@@ -536,7 +536,9 @@ const QUICK_PANE_HEIGHT: f64 = 72.0;
 
 /// Calculates the position to center a window on the monitor containing the cursor.
 /// Falls back to primary monitor if cursor monitor cannot be determined.
-fn get_centered_position_on_cursor_monitor(app: &AppHandle) -> Option<tauri::PhysicalPosition<i32>> {
+fn get_centered_position_on_cursor_monitor(
+    app: &AppHandle,
+) -> Option<tauri::PhysicalPosition<i32>> {
     // Get cursor position
     let cursor_pos = match app.cursor_position() {
         Ok(pos) => pos,
@@ -856,8 +858,41 @@ pub fn run() {
     bindings::export_ts_bindings();
 
     // Build with common plugins
-    let mut app_builder = tauri::Builder::default()
-        .plugin(tauri_plugin_updater::Builder::new().build())
+    let mut app_builder = tauri::Builder::default();
+
+    // Single instance plugin must be registered FIRST
+    // When user tries to open a second instance, focus the existing window instead
+    #[cfg(desktop)]
+    {
+        app_builder = app_builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.set_focus();
+                let _ = window.unminimize();
+            }
+        }));
+    }
+
+    // Window state plugin - saves/restores window position and size
+    // Note: Only applies to windows listed in capabilities (main window only, not quick-pane)
+    #[cfg(desktop)]
+    {
+        app_builder = app_builder.plugin(
+            tauri_plugin_window_state::Builder::new()
+                .with_state_flags(tauri_plugin_window_state::StateFlags::all())
+                .build(),
+        );
+    }
+
+    // Updater plugin for in-app updates
+    #[cfg(desktop)]
+    {
+        app_builder = app_builder.plugin(tauri_plugin_updater::Builder::new().build());
+    }
+
+    // Store plugin - simple key-value persistence for ad-hoc data
+    app_builder = app_builder.plugin(tauri_plugin_store::Builder::new().build());
+
+    app_builder = app_builder
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(
