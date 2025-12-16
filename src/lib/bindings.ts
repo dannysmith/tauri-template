@@ -71,17 +71,6 @@ async showQuickPane() : Promise<Result<null, string>> {
 }
 },
 /**
- * Hides the quick pane window.
- */
-async hideQuickPane() : Promise<Result<null, string>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("hide_quick_pane") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
-/**
  * Dismisses the quick pane window.
  * On macOS, resigns key window status before hiding to avoid activating main window.
  */

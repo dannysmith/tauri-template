@@ -542,24 +542,6 @@ fn show_quick_pane(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-/// Hides the quick pane window.
-#[tauri::command]
-#[specta::specta]
-async fn hide_quick_pane(app: AppHandle) -> Result<(), String> {
-    log::info!("Hiding quick pane window");
-
-    if let Some(window) = app.get_webview_window(QUICK_PANE_LABEL) {
-        window
-            .hide()
-            .map_err(|e| format!("Failed to hide window: {e}"))?;
-        log::debug!("Quick pane window hidden");
-    } else {
-        log::debug!("Quick pane window not found (already hidden or not created)");
-    }
-
-    Ok(())
-}
-
 /// Dismisses the quick pane window.
 /// On macOS, resigns key window status before hiding to avoid activating main window.
 #[tauri::command]
