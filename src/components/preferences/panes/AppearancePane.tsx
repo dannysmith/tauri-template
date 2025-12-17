@@ -15,13 +15,8 @@ import { availableLanguages } from '@/i18n'
 // Language display names (native names)
 const languageNames: Record<string, string> = {
   en: 'English',
-  es: 'Español',
-  de: 'Deutsch',
   fr: 'Français',
   ar: 'العربية',
-  he: 'עברית',
-  ja: '日本語',
-  zh: '中文',
 }
 
 export function AppearancePane() {
