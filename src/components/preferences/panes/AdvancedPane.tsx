@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
@@ -38,6 +39,7 @@ const SettingsSection: React.FC<{
 )
 
 export const AdvancedPane: React.FC = () => {
+  const { t } = useTranslation()
   // Example local state - these are NOT persisted to disk
   // To add persistent preferences:
   // 1. Add the field to AppPreferences in both Rust and TypeScript
@@ -47,10 +49,10 @@ export const AdvancedPane: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <SettingsSection title="Example Advanced Settings">
+      <SettingsSection title={t('preferences.advanced.title')}>
         <SettingsField
-          label="Example Advanced Toggle"
-          description="This is an example advanced toggle setting (not persisted)"
+          label={t('preferences.advanced.toggle')}
+          description={t('preferences.advanced.toggleDescription')}
         >
           <div className="flex items-center space-x-2">
             <Switch
@@ -59,23 +61,31 @@ export const AdvancedPane: React.FC = () => {
               onCheckedChange={setExampleAdvancedToggle}
             />
             <Label htmlFor="example-advanced-toggle" className="text-sm">
-              {exampleAdvancedToggle ? 'Enabled' : 'Disabled'}
+              {exampleAdvancedToggle
+                ? t('common.enabled')
+                : t('common.disabled')}
             </Label>
           </div>
         </SettingsField>
 
         <SettingsField
-          label="Example Dropdown Setting"
-          description="This is an example dropdown/select setting (not persisted)"
+          label={t('preferences.advanced.dropdown')}
+          description={t('preferences.advanced.dropdownDescription')}
         >
           <Select value={exampleDropdown} onValueChange={setExampleDropdown}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="option1">Example Option 1</SelectItem>
-              <SelectItem value="option2">Example Option 2</SelectItem>
-              <SelectItem value="option3">Example Option 3</SelectItem>
+              <SelectItem value="option1">
+                {t('preferences.advanced.option1')}
+              </SelectItem>
+              <SelectItem value="option2">
+                {t('preferences.advanced.option2')}
+              </SelectItem>
+              <SelectItem value="option3">
+                {t('preferences.advanced.option3')}
+              </SelectItem>
             </SelectContent>
           </Select>
         </SettingsField>

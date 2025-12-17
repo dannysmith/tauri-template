@@ -130,7 +130,12 @@ export type AppPreferences = { theme: string;
  * Global shortcut for quick pane (e.g., "CommandOrControl+Shift+.")
  * If None, uses the default shortcut
  */
-quick_pane_shortcut: string | null }
+quick_pane_shortcut: string | null; 
+/**
+ * User's preferred language (e.g., "en", "es", "de")
+ * If None, uses system locale detection
+ */
+language: string | null }
 export type JsonValue = null | boolean | number | string | JsonValue[] | Partial<{ [key in string]: JsonValue }>
 /**
  * Error types for recovery operations (typed for frontend matching)

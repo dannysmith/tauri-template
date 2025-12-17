@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import {
@@ -10,6 +11,7 @@ import {
 } from '@/components/ui/select'
 import { useTheme } from '@/hooks/use-theme'
 import { usePreferences, useSavePreferences } from '@/services/preferences'
+import { availableLanguages } from '@/i18n'
 
 const SettingsField: React.FC<{
   label: string
@@ -38,7 +40,20 @@ const SettingsSection: React.FC<{
   </div>
 )
 
+// Language display names (native names)
+const languageNames: Record<string, string> = {
+  en: 'English',
+  es: 'Español',
+  de: 'Deutsch',
+  fr: 'Français',
+  ar: 'العربية',
+  he: 'עברית',
+  ja: '日本語',
+  zh: '中文',
+}
+
 export const AppearancePane: React.FC = () => {
+  const { t, i18n } = useTranslation()
   const { theme, setTheme } = useTheme()
   const { data: preferences } = usePreferences()
   const savePreferences = useSavePreferences()
@@ -53,12 +68,56 @@ export const AppearancePane: React.FC = () => {
     }
   }
 
+  const handleLanguageChange = async (value: string) => {
+    const language = value === 'system' ? null : value
+
+    // Change the language immediately for instant UI feedback
+    if (language) {
+      await i18n.changeLanguage(language)
+    }
+
+    // Persist the language preference to disk
+    if (preferences) {
+      savePreferences.mutate({ ...preferences, language })
+    }
+  }
+
+  // Determine the current language value for the select
+  const currentLanguageValue = preferences?.language ?? 'system'
+
   return (
     <div className="space-y-6">
-      <SettingsSection title="Theme">
+      <SettingsSection title={t('preferences.appearance.language')}>
         <SettingsField
-          label="Color Theme"
-          description="Choose your preferred color theme"
+          label={t('preferences.appearance.language')}
+          description={t('preferences.appearance.colorThemeDescription')}
+        >
+          <Select
+            value={currentLanguageValue}
+            onValueChange={handleLanguageChange}
+            disabled={savePreferences.isPending}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="system">
+                {t('preferences.appearance.language.system')}
+              </SelectItem>
+              {availableLanguages.map(lang => (
+                <SelectItem key={lang} value={lang}>
+                  {languageNames[lang] ?? lang}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </SettingsField>
+      </SettingsSection>
+
+      <SettingsSection title={t('preferences.appearance.theme')}>
+        <SettingsField
+          label={t('preferences.appearance.colorTheme')}
+          description={t('preferences.appearance.colorThemeDescription')}
         >
           <Select
             value={theme}
@@ -66,12 +125,20 @@ export const AppearancePane: React.FC = () => {
             disabled={savePreferences.isPending}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select theme" />
+              <SelectValue
+                placeholder={t('preferences.appearance.selectTheme')}
+              />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="light">Light</SelectItem>
-              <SelectItem value="dark">Dark</SelectItem>
-              <SelectItem value="system">System</SelectItem>
+              <SelectItem value="light">
+                {t('preferences.appearance.theme.light')}
+              </SelectItem>
+              <SelectItem value="dark">
+                {t('preferences.appearance.theme.dark')}
+              </SelectItem>
+              <SelectItem value="system">
+                {t('preferences.appearance.theme.system')}
+              </SelectItem>
             </SelectContent>
           </Select>
         </SettingsField>

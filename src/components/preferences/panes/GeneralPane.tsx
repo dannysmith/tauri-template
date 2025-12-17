@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Label } from '@/components/ui/label'
@@ -38,6 +39,7 @@ const SettingsSection: React.FC<{
 )
 
 export const GeneralPane: React.FC = () => {
+  const { t } = useTranslation()
   // Example local state - these are NOT persisted to disk
   // To add persistent preferences:
   // 1. Add the field to AppPreferences in both Rust and TypeScript
@@ -71,7 +73,7 @@ export const GeneralPane: React.FC = () => {
 
     if (result.status === 'error') {
       logger.error('Failed to register shortcut', { error: result.error })
-      toast.error('Failed to register shortcut', {
+      toast.error(t('toast.error.shortcutFailed'), {
         description: result.error,
       })
       return
@@ -101,9 +103,8 @@ export const GeneralPane: React.FC = () => {
             originalShortcut: oldShortcut,
           }
         )
-        toast.error('Failed to restore previous shortcut', {
-          description:
-            'The shortcut may be out of sync. Please restart the app or try again.',
+        toast.error(t('toast.error.shortcutRestoreFailed'), {
+          description: t('toast.error.shortcutRestoreDescription'),
         })
       } else {
         logger.info('Successfully rolled back shortcut registration')
@@ -113,10 +114,10 @@ export const GeneralPane: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <SettingsSection title="Keyboard Shortcuts">
+      <SettingsSection title={t('preferences.general.keyboardShortcuts')}>
         <SettingsField
-          label="Quick Pane Shortcut"
-          description="Global keyboard shortcut to toggle the quick pane from any application"
+          label={t('preferences.general.quickPaneShortcut')}
+          description={t('preferences.general.quickPaneShortcutDescription')}
         >
           <ShortcutPicker
             value={preferences?.quick_pane_shortcut ?? null}
@@ -127,21 +128,21 @@ export const GeneralPane: React.FC = () => {
         </SettingsField>
       </SettingsSection>
 
-      <SettingsSection title="Example Settings">
+      <SettingsSection title={t('preferences.general.exampleSettings')}>
         <SettingsField
-          label="Example Text Setting"
-          description="This is an example text input setting (not persisted)"
+          label={t('preferences.general.exampleText')}
+          description={t('preferences.general.exampleTextDescription')}
         >
           <Input
             value={exampleText}
             onChange={e => setExampleText(e.target.value)}
-            placeholder="Enter example text"
+            placeholder={t('preferences.general.exampleTextPlaceholder')}
           />
         </SettingsField>
 
         <SettingsField
-          label="Example Toggle Setting"
-          description="This is an example switch/toggle setting (not persisted)"
+          label={t('preferences.general.exampleToggle')}
+          description={t('preferences.general.exampleToggleDescription')}
         >
           <div className="flex items-center space-x-2">
             <Switch
@@ -150,7 +151,7 @@ export const GeneralPane: React.FC = () => {
               onCheckedChange={setExampleToggle}
             />
             <Label htmlFor="example-toggle" className="text-sm">
-              {exampleToggle ? 'Enabled' : 'Disabled'}
+              {exampleToggle ? t('common.enabled') : t('common.disabled')}
             </Label>
           </div>
         </SettingsField>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { usePlatform, type AppPlatform } from '@/hooks/use-platform'
 import { MacOSWindowControls } from './MacOSWindowControls'
@@ -29,11 +30,9 @@ interface TitleBarProps {
  *
  * Use `forcePlatform` prop in development to test other platform layouts.
  */
-export function TitleBar({
-  className,
-  title = 'Tauri App',
-  forcePlatform,
-}: TitleBarProps) {
+export function TitleBar({ className, title, forcePlatform }: TitleBarProps) {
+  const { t } = useTranslation()
+  const displayTitle = title ?? t('titlebar.default')
   const detectedPlatform = usePlatform()
 
   // In development, allow forcing a platform for testing
@@ -42,7 +41,7 @@ export function TitleBar({
 
   // Linux uses native decorations, so render just the toolbar
   if (platform === 'linux') {
-    return <LinuxTitleBar className={className} title={title} />
+    return <LinuxTitleBar className={className} title={displayTitle} />
   }
 
   // Windows: controls on the right
@@ -61,7 +60,7 @@ export function TitleBar({
         </div>
 
         {/* Center - Title */}
-        <TitleBarTitle title={title} />
+        <TitleBarTitle title={displayTitle} />
 
         {/* Right side - Actions + Window Controls */}
         <div className="flex items-center">
@@ -88,7 +87,7 @@ export function TitleBar({
       </div>
 
       {/* Center - Title */}
-      <TitleBarTitle title={title} />
+      <TitleBarTitle title={displayTitle} />
 
       {/* Right side - Actions */}
       <div className="flex items-center pr-2">

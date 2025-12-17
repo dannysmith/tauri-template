@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useUIStore } from '@/store/ui-store'
 import { useCommandContext } from '@/hooks/use-command-context'
 import { getAllCommands, executeCommand } from '@/lib/commands'
@@ -13,6 +14,7 @@ import {
 } from '@/components/ui/command'
 
 export function CommandPalette() {
+  const { t } = useTranslation()
   const commandPaletteOpen = useUIStore(state => state.commandPaletteOpen)
   const setCommandPaletteOpen = useUIStore(state => state.setCommandPaletteOpen)
   const commandContext = useCommandContext()
@@ -65,20 +67,30 @@ export function CommandPalette() {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [commandPaletteOpen, setCommandPaletteOpen])
 
+  // Helper function to get readable group labels
+  const getGroupLabel = (groupName: string): string => {
+    const key = `commands.group.${groupName}`
+    const translated = t(key)
+    // If translation exists, use it; otherwise capitalize the group name
+    return translated !== key
+      ? translated
+      : groupName.charAt(0).toUpperCase() + groupName.slice(1)
+  }
+
   return (
     <CommandDialog
       open={commandPaletteOpen}
       onOpenChange={handleOpenChange}
-      title="Command Palette"
-      description="Type a command or search..."
+      title={t('commandPalette.title')}
+      description={t('commandPalette.placeholder')}
     >
       <CommandInput
-        placeholder="Type a command or search..."
+        placeholder={t('commandPalette.placeholder')}
         value={search}
         onValueChange={setSearch}
       />
       <CommandList>
-        <CommandEmpty>No results found.</CommandEmpty>
+        <CommandEmpty>{t('commandPalette.noResults')}</CommandEmpty>
 
         {Object.entries(commandGroups).map(([groupName, groupCommands]) => (
           <CommandGroup key={groupName} heading={getGroupLabel(groupName)}>
@@ -105,24 +117,6 @@ export function CommandPalette() {
       </CommandList>
     </CommandDialog>
   )
-}
-
-// Helper function to get readable group labels
-function getGroupLabel(groupName: string): string {
-  switch (groupName) {
-    case 'navigation':
-      return 'Navigation'
-    case 'settings':
-      return 'Settings'
-    case 'window':
-      return 'Window'
-    case 'notification':
-      return 'Notifications'
-    case 'other':
-      return 'Other'
-    default:
-      return groupName.charAt(0).toUpperCase() + groupName.slice(1)
-  }
 }
 
 export default CommandPalette

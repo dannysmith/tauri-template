@@ -81,6 +81,7 @@ Each major system has focused documentation:
 - **[Releases](./releases.md)** - Automated release process
 - **[Auto-Updates](./auto-updates.md)** - Update system integration
 - **[Cross-Platform](./cross-platform.md)** - Platform detection and OS-specific patterns
+- **[Internationalization](./i18n-patterns.md)** - Translation system and RTL support
 
 ### Component Hierarchy
 
@@ -99,6 +100,7 @@ MainWindow (Top-level orchestrator)
 ### File Organization
 
 ```
+locales/                  # Translation JSON files (en.json, ar.json, etc.)
 src/
 ├── components/
 │   ├── layout/          # Layout components (MainWindow, sidebars)
@@ -106,8 +108,10 @@ src/
 │   ├── preferences/     # Preferences dialog system
 │   └── ui/              # Shadcn UI components
 ├── hooks/               # Custom React hooks
+├── i18n/                # Internationalization config
 ├── lib/
-│   └── commands/        # Command system implementation
+│   ├── commands/        # Command system implementation
+│   └── menu.ts          # Native menu builder with i18n
 ├── services/            # TanStack Query + Tauri integration
 ├── store/               # Zustand stores
 └── types/               # Shared TypeScript types

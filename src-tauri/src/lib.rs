@@ -7,10 +7,10 @@ use serde_json::Value;
 use specta::Type;
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
-use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder};
+// Menu imports removed - menus are now built from JavaScript for i18n support
 #[cfg(not(target_os = "macos"))]
 use tauri::webview::WebviewWindowBuilder;
-use tauri::{AppHandle, Emitter, Manager, WebviewUrl};
+use tauri::{AppHandle, Manager, WebviewUrl};
 
 // macOS-only: NSPanel for native panel behavior
 #[cfg(target_os = "macos")]
@@ -120,6 +120,9 @@ pub struct AppPreferences {
     /// Global shortcut for quick pane (e.g., "CommandOrControl+Shift+.")
     /// If None, uses the default shortcut
     pub quick_pane_shortcut: Option<String>,
+    /// User's preferred language (e.g., "en", "es", "de")
+    /// If None, uses system locale detection
+    pub language: Option<String>,
 }
 
 /// Default shortcut for the quick pane
@@ -130,6 +133,7 @@ impl Default for AppPreferences {
         Self {
             theme: "system".to_string(),
             quick_pane_shortcut: None, // None means use default
+            language: None,            // None means use system locale
         }
     }
 }
@@ -799,55 +803,8 @@ fn update_quick_pane_shortcut(app: AppHandle, shortcut: Option<String>) -> Resul
     Ok(())
 }
 
-// Create the native menu system
-fn create_app_menu(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-    log::info!("Setting up native menu system");
-
-    // Build the main application submenu
-    let app_submenu = SubmenuBuilder::new(app, "Tauri Template")
-        .item(&MenuItemBuilder::with_id("about", "About Tauri Template").build(app)?)
-        .separator()
-        .item(&MenuItemBuilder::with_id("check-updates", "Check for Updates...").build(app)?)
-        .separator()
-        .item(
-            &MenuItemBuilder::with_id("preferences", "Preferences...")
-                .accelerator("CmdOrCtrl+,")
-                .build(app)?,
-        )
-        .separator()
-        .item(&PredefinedMenuItem::hide(app, Some("Hide Tauri Template"))?)
-        .item(&PredefinedMenuItem::hide_others(app, None)?)
-        .item(&PredefinedMenuItem::show_all(app, None)?)
-        .separator()
-        .item(&PredefinedMenuItem::quit(app, Some("Quit Tauri Template"))?)
-        .build()?;
-
-    // Build the View submenu
-    let view_submenu = SubmenuBuilder::new(app, "View")
-        .item(
-            &MenuItemBuilder::with_id("toggle-left-sidebar", "Toggle Left Sidebar")
-                .accelerator("CmdOrCtrl+1")
-                .build(app)?,
-        )
-        .item(
-            &MenuItemBuilder::with_id("toggle-right-sidebar", "Toggle Right Sidebar")
-                .accelerator("CmdOrCtrl+2")
-                .build(app)?,
-        )
-        .build()?;
-
-    // Build the main menu with submenus
-    let menu = MenuBuilder::new(app)
-        .item(&app_submenu)
-        .item(&view_submenu)
-        .build()?;
-
-    // Set the menu for the app
-    app.set_menu(menu)?;
-
-    log::info!("Native menu system initialized successfully");
-    Ok(())
-}
+// NOTE: Application menu is now built from JavaScript for i18n support
+// See src/lib/menu.ts for the menu implementation
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -976,70 +933,8 @@ pub fn run() {
                 // Non-fatal: app can still run without quick pane
             }
 
-            // Set up native menu system
-            if let Err(e) = create_app_menu(app) {
-                log::error!("Failed to create app menu: {e}");
-                return Err(e);
-            }
-
-            // Set up menu event handlers
-            app.on_menu_event(move |app, event| {
-                log::debug!("Menu event received: {:?}", event.id());
-
-                match event.id().as_ref() {
-                    "about" => {
-                        log::info!("About menu item clicked");
-                        // Emit event to React for handling
-                        match app.emit("menu-about", ()) {
-                            Ok(_) => log::debug!("Successfully emitted menu-about event"),
-                            Err(e) => log::error!("Failed to emit menu-about event: {e}"),
-                        }
-                    }
-                    "check-updates" => {
-                        log::info!("Check for Updates menu item clicked");
-                        // Emit event to React for handling
-                        match app.emit("menu-check-updates", ()) {
-                            Ok(_) => log::debug!("Successfully emitted menu-check-updates event"),
-                            Err(e) => log::error!("Failed to emit menu-check-updates event: {e}"),
-                        }
-                    }
-                    "preferences" => {
-                        log::info!("Preferences menu item clicked");
-                        // Emit event to React for handling
-                        match app.emit("menu-preferences", ()) {
-                            Ok(_) => log::debug!("Successfully emitted menu-preferences event"),
-                            Err(e) => log::error!("Failed to emit menu-preferences event: {e}"),
-                        }
-                    }
-                    "toggle-left-sidebar" => {
-                        log::info!("Toggle Left Sidebar menu item clicked");
-                        // Emit event to React for handling
-                        match app.emit("menu-toggle-left-sidebar", ()) {
-                            Ok(_) => {
-                                log::debug!("Successfully emitted menu-toggle-left-sidebar event")
-                            }
-                            Err(e) => {
-                                log::error!("Failed to emit menu-toggle-left-sidebar event: {e}")
-                            }
-                        }
-                    }
-                    "toggle-right-sidebar" => {
-                        log::info!("Toggle Right Sidebar menu item clicked");
-                        // Emit event to React for handling
-                        match app.emit("menu-toggle-right-sidebar", ()) {
-                            Ok(_) => {
-                                log::debug!("Successfully emitted menu-toggle-right-sidebar event")
-                            }
-                            Err(e) => {
-                                log::error!("Failed to emit menu-toggle-right-sidebar event: {e}")
-                            }
-                        }
-                    }
-                    _ => {
-                        log::debug!("Unhandled menu event: {:?}", event.id());
-                    }
-                }
-            });
+            // NOTE: Application menu is built from JavaScript for i18n support
+            // See src/lib/menu.ts for the menu implementation
 
             // Example of different log levels
             log::trace!("This is a trace message (most verbose)");
