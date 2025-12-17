@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import type { TFunction } from 'i18next'
 import type { CommandContext, AppCommand } from './types'
 
 const mockUIStore = {
@@ -22,6 +23,23 @@ const createMockContext = (): CommandContext => ({
   showToast: vi.fn(),
 })
 
+// Mock translation function for testing
+const mockT = ((key: string): string => {
+  const translations: Record<string, string> = {
+    'commands.showLeftSidebar.label': 'Show Left Sidebar',
+    'commands.showLeftSidebar.description': 'Show the left sidebar',
+    'commands.hideLeftSidebar.label': 'Hide Left Sidebar',
+    'commands.hideLeftSidebar.description': 'Hide the left sidebar',
+    'commands.showRightSidebar.label': 'Show Right Sidebar',
+    'commands.showRightSidebar.description': 'Show the right sidebar',
+    'commands.hideRightSidebar.label': 'Hide Right Sidebar',
+    'commands.hideRightSidebar.description': 'Hide the right sidebar',
+    'commands.openPreferences.label': 'Open Preferences',
+    'commands.openPreferences.description': 'Open the application preferences',
+  }
+  return translations[key] || key
+}) as TFunction
+
 describe('Simplified Command System', () => {
   let mockContext: CommandContext
 
@@ -39,7 +57,7 @@ describe('Simplified Command System', () => {
         cmd => cmd.id === 'show-left-sidebar' || cmd.id === 'hide-left-sidebar'
       )
       expect(sidebarCommand).toBeDefined()
-      expect(sidebarCommand?.label).toContain('Left Sidebar')
+      expect(sidebarCommand?.labelKey).toContain('Sidebar')
     })
 
     it('filters commands by availability', () => {
@@ -61,14 +79,17 @@ describe('Simplified Command System', () => {
       expect(hideSidebarCommand).toBeUndefined()
     })
 
-    it('filters commands by search term', () => {
-      const searchResults = getAllCommands(mockContext, 'sidebar')
+    it('filters commands by search term using translations', () => {
+      const searchResults = getAllCommands(mockContext, 'sidebar', mockT)
 
       expect(searchResults.length).toBeGreaterThan(0)
       searchResults.forEach(cmd => {
+        const label = mockT(cmd.labelKey).toLowerCase()
+        const description = cmd.descriptionKey
+          ? mockT(cmd.descriptionKey).toLowerCase()
+          : ''
         const matchesSearch =
-          cmd.label.toLowerCase().includes('sidebar') ||
-          cmd.description?.toLowerCase().includes('sidebar')
+          label.includes('sidebar') || description.includes('sidebar')
 
         expect(matchesSearch).toBe(true)
       })
@@ -111,7 +132,7 @@ describe('Simplified Command System', () => {
     it('handles command execution errors', async () => {
       const errorCommand: AppCommand = {
         id: 'error-command',
-        label: 'Error Command',
+        labelKey: 'commands.error.label',
         execute: () => {
           throw new Error('Test error')
         },

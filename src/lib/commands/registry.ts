@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next'
 import type { AppCommand, CommandContext } from './types'
 
 const commandRegistry = new Map<string, AppCommand>()
@@ -8,19 +9,22 @@ export function registerCommands(commands: AppCommand[]): void {
 
 export function getAllCommands(
   context: CommandContext,
-  searchValue = ''
+  searchValue = '',
+  t?: TFunction
 ): AppCommand[] {
   const allCommands = Array.from(commandRegistry.values()).filter(
     command => !command.isAvailable || command.isAvailable(context)
   )
 
-  if (searchValue.trim()) {
+  if (searchValue.trim() && t) {
     const search = searchValue.toLowerCase()
-    return allCommands.filter(
-      cmd =>
-        cmd.label.toLowerCase().includes(search) ||
-        cmd.description?.toLowerCase().includes(search)
-    )
+    return allCommands.filter(cmd => {
+      const label = t(cmd.labelKey).toLowerCase()
+      const description = cmd.descriptionKey
+        ? t(cmd.descriptionKey).toLowerCase()
+        : ''
+      return label.includes(search) || description.includes(search)
+    })
   }
 
   return allCommands

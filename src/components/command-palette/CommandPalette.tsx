@@ -21,7 +21,7 @@ export function CommandPalette() {
   const [search, setSearch] = useState('')
 
   // Get all available commands grouped by category
-  const commands = getAllCommands(commandContext, search)
+  const commands = getAllCommands(commandContext, search, t)
   const commandGroups = commands.reduce(
     (groups, command) => {
       const group = command.group || 'other'
@@ -101,10 +101,10 @@ export function CommandPalette() {
                 onSelect={() => handleCommandSelect(command.id)}
               >
                 {command.icon && <command.icon className="mr-2 h-4 w-4" />}
-                <span>{command.label}</span>
-                {command.description && (
+                <span>{t(command.labelKey)}</span>
+                {command.descriptionKey && (
                   <span className="ml-auto text-xs text-muted-foreground">
-                    {command.description}
+                    {t(command.descriptionKey)}
                   </span>
                 )}
                 {command.shortcut && (
@@ -118,3 +118,5 @@ export function CommandPalette() {
     </CommandDialog>
   )
 }
+
+export default CommandPalette

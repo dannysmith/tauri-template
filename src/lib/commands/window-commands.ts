@@ -4,8 +4,8 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 export const windowCommands: AppCommand[] = [
   {
     id: 'window-close',
-    label: 'Close Window',
-    description: 'Close the current window',
+    labelKey: 'commands.windowClose.label',
+    descriptionKey: 'commands.windowClose.description',
     shortcut: '⌘+W',
 
     execute: async context => {
@@ -21,8 +21,8 @@ export const windowCommands: AppCommand[] = [
 
   {
     id: 'window-minimize',
-    label: 'Minimize Window',
-    description: 'Minimize the current window',
+    labelKey: 'commands.windowMinimize.label',
+    descriptionKey: 'commands.windowMinimize.description',
     shortcut: '⌘+M',
 
     execute: async context => {
@@ -38,8 +38,8 @@ export const windowCommands: AppCommand[] = [
 
   {
     id: 'window-toggle-maximize',
-    label: 'Toggle Maximize',
-    description: 'Toggle window maximize state',
+    labelKey: 'commands.windowToggleMaximize.label',
+    descriptionKey: 'commands.windowToggleMaximize.description',
 
     execute: async context => {
       try {
@@ -54,8 +54,8 @@ export const windowCommands: AppCommand[] = [
 
   {
     id: 'window-fullscreen',
-    label: 'Enter Fullscreen',
-    description: 'Enter fullscreen mode',
+    labelKey: 'commands.windowFullscreen.label',
+    descriptionKey: 'commands.windowFullscreen.description',
     shortcut: 'F11',
 
     execute: async context => {
@@ -71,8 +71,8 @@ export const windowCommands: AppCommand[] = [
 
   {
     id: 'window-exit-fullscreen',
-    label: 'Exit Fullscreen',
-    description: 'Exit fullscreen mode',
+    labelKey: 'commands.windowExitFullscreen.label',
+    descriptionKey: 'commands.windowExitFullscreen.description',
     shortcut: 'Escape',
 
     execute: async context => {

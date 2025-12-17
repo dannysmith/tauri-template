@@ -382,22 +382,21 @@ coverage: {
 
 ### Phase 2: High Priority
 
-- [ ] Extract quick pane positioning helper (CODE-2)
-- [ ] Refactor toggle_quick_pane (CODE-3)
-- [ ] Enable CSP (SEC-1)
-- [ ] Add coverage thresholds (TEST-2)
-- [ ] Fix vitest path alias (CONFIG-1)
+- [x] Extract quick pane positioning helper (CODE-2)
+- [x] Refactor toggle_quick_pane (CODE-3)
+- [x] Enable CSP (SEC-1)
+- [x] Add coverage thresholds (TEST-2)
+- [x] Fix vitest path alias (CONFIG-1)
 
 ### Phase 3: Medium Priority
 
-- [ ] Internationalize command system (I18N-1)
-- [ ] Add tests for critical hooks (TEST-1)
-- [ ] Split useMainWindowEventListeners (PERF-2)
+- [x] Internationalize command system (I18N-1)
+- [x] Add tests for critical hooks (TEST-1)
+- [x] Split useMainWindowEventListeners (PERF-2)
 
 ### Phase 4: Polish
 
 - [ ] Address remaining low priority items
-- [ ] Review and document unused exports
 - [ ] Add missing test coverage
 
 ---

@@ -5,8 +5,8 @@ import type { AppCommand } from './types'
 export const navigationCommands: AppCommand[] = [
   {
     id: 'show-left-sidebar',
-    label: 'Show Left Sidebar',
-    description: 'Show the left sidebar',
+    labelKey: 'commands.showLeftSidebar.label',
+    descriptionKey: 'commands.showLeftSidebar.description',
     icon: Sidebar,
     group: 'navigation',
     shortcut: '⌘+1',
@@ -21,8 +21,8 @@ export const navigationCommands: AppCommand[] = [
 
   {
     id: 'hide-left-sidebar',
-    label: 'Hide Left Sidebar',
-    description: 'Hide the left sidebar',
+    labelKey: 'commands.hideLeftSidebar.label',
+    descriptionKey: 'commands.hideLeftSidebar.description',
     icon: Sidebar,
     group: 'navigation',
     shortcut: '⌘+1',
@@ -37,8 +37,8 @@ export const navigationCommands: AppCommand[] = [
 
   {
     id: 'show-right-sidebar',
-    label: 'Show Right Sidebar',
-    description: 'Show the right sidebar',
+    labelKey: 'commands.showRightSidebar.label',
+    descriptionKey: 'commands.showRightSidebar.description',
     icon: PanelRight,
     group: 'navigation',
     shortcut: '⌘+2',
@@ -53,8 +53,8 @@ export const navigationCommands: AppCommand[] = [
 
   {
     id: 'hide-right-sidebar',
-    label: 'Hide Right Sidebar',
-    description: 'Hide the right sidebar',
+    labelKey: 'commands.hideRightSidebar.label',
+    descriptionKey: 'commands.hideRightSidebar.description',
     icon: PanelRight,
     group: 'navigation',
     shortcut: '⌘+2',
@@ -69,8 +69,8 @@ export const navigationCommands: AppCommand[] = [
 
   {
     id: 'open-preferences',
-    label: 'Open Preferences',
-    description: 'Open the application preferences',
+    labelKey: 'commands.openPreferences.label',
+    descriptionKey: 'commands.openPreferences.description',
     icon: Settings,
     group: 'settings',
     shortcut: '⌘+,',
