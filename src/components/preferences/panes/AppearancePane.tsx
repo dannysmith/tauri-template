@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { locale } from '@tauri-apps/plugin-os'
+import { toast } from 'sonner'
 import {
   Select,
   SelectContent,
@@ -11,6 +12,7 @@ import { useTheme } from '@/hooks/use-theme'
 import { SettingsField, SettingsSection } from '../shared/SettingsComponents'
 import { usePreferences, useSavePreferences } from '@/services/preferences'
 import { availableLanguages } from '@/i18n'
+import { logger } from '@/lib/logger'
 
 // Language display names (native names)
 const languageNames: Record<string, string> = {
@@ -38,15 +40,23 @@ export function AppearancePane() {
   const handleLanguageChange = async (value: string) => {
     const language = value === 'system' ? null : value
 
-    // Change the language immediately for instant UI feedback
-    if (language) {
-      await i18n.changeLanguage(language)
-    } else {
-      // System language selected - detect and apply system locale
-      const systemLocale = await locale()
-      const langCode = systemLocale?.split('-')[0]?.toLowerCase() ?? 'en'
-      const targetLang = availableLanguages.includes(langCode) ? langCode : 'en'
-      await i18n.changeLanguage(targetLang)
+    try {
+      // Change the language immediately for instant UI feedback
+      if (language) {
+        await i18n.changeLanguage(language)
+      } else {
+        // System language selected - detect and apply system locale
+        const systemLocale = await locale()
+        const langCode = systemLocale?.split('-')[0]?.toLowerCase() ?? 'en'
+        const targetLang = availableLanguages.includes(langCode)
+          ? langCode
+          : 'en'
+        await i18n.changeLanguage(targetLang)
+      }
+    } catch (error) {
+      logger.error('Failed to change language', { error })
+      toast.error(t('toast.error.generic'))
+      return
     }
 
     // Persist the language preference to disk

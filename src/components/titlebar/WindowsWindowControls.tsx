@@ -27,19 +27,33 @@ export function WindowsWindowControls() {
 
     // Subscribe to resize events to keep state in sync
     // (handles maximize/unmaximize via title bar double-click, etc.)
-    let isMounted = true
-    const unsubscribe = appWindow.onResized(async () => {
-      try {
-        const maximized = await appWindow.isMaximized()
-        if (isMounted) setIsMaximized(maximized)
-      } catch {
-        // Ignore errors during cleanup
-      }
-    })
+    let aborted = false
+    let resolvedUnsub: (() => void) | null = null
+
+    appWindow
+      .onResized(async () => {
+        try {
+          const maximized = await appWindow.isMaximized()
+          if (!aborted) setIsMaximized(maximized)
+        } catch {
+          // Ignore errors during cleanup
+        }
+      })
+      .then(unsub => {
+        // If already aborted, unsubscribe immediately
+        if (aborted) {
+          unsub()
+        } else {
+          resolvedUnsub = unsub
+        }
+      })
 
     return () => {
-      isMounted = false
-      unsubscribe.then(unsub => unsub())
+      aborted = true
+      // If unsubscribe has resolved, call it; otherwise it will be called in the then handler
+      if (resolvedUnsub) {
+        resolvedUnsub()
+      }
     }
   }, [])
 
