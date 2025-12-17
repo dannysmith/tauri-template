@@ -23,12 +23,12 @@ fn validate_filename(filename: &str) -> Result<(), String> {
         .map_err(|e| format!("Regex compilation error: {e}"))?;
 ```
 
-**Fix:** Use `once_cell::sync::Lazy` to compile once:
+**Fix:** Use `std::sync::LazyLock` (stable since Rust 1.80) to compile once:
 
 ```rust
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
 
-static FILENAME_PATTERN: Lazy<Regex> = Lazy::new(|| {
+static FILENAME_PATTERN: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9]+)?$")
         .expect("Failed to compile filename regex pattern")
 });
@@ -91,17 +91,12 @@ fn position_quick_pane_on_cursor_monitor(app: &AppHandle) {
 
 **Issue:** 58-line function duplicates logic from `show_quick_pane` and `dismiss_quick_pane`.
 
-**Fix:** Refactor to reuse existing functions:
+**Fix:** After extracting the positioning helper (CODE-2), refactor to reduce duplication. Note: Simple delegation to show/dismiss won't work directly because:
+- `is_quick_pane_visible()` doesn't exist yet (needs to be added)
+- `dismiss_quick_pane()` has early-return visibility guards
+- macOS toggle calls `resign_key_window()` directly on the panel
 
-```rust
-fn toggle_quick_pane(app: AppHandle) -> Result<(), String> {
-    if is_quick_pane_visible(&app)? {
-        dismiss_quick_pane(app)
-    } else {
-        show_quick_pane(app)
-    }
-}
-```
+A proper fix requires either modifying show/dismiss to be composable, or extracting the common platform-specific show/hide logic into internal helpers.
 
 ---
 
@@ -163,19 +158,6 @@ description: 'Show the left sidebar',
 ```json
 "csp": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' tauri:"
 ```
-
----
-
-### SEC-3: localStorage Used for Cross-Window Theme Sync
-
-**Locations:**
-
-- `src/components/ThemeProvider.tsx:19-20, 60`
-- `src/components/quick-pane/QuickPaneApp.tsx:26`
-
-**Issue:** Uses localStorage instead of the documented event-driven bridge pattern.
-
-**Fix:** Use `emit/listen` pattern for theme sync between windows.
 
 ---
 
@@ -410,13 +392,12 @@ coverage: {
 11. Internationalize command system (I18N-1)
 12. Add tests for critical hooks (TEST-1)
 13. Split useMainWindowEventListeners (PERF-2)
-14. Refactor theme sync to use events (SEC-3)
 
 ### Phase 4: Polish
 
-15. Address remaining low priority items
-16. Review and document unused exports
-17. Add missing test coverage
+14. Address remaining low priority items
+15. Review and document unused exports
+16. Add missing test coverage
 
 ---
 
