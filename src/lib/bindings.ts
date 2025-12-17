@@ -11,8 +11,13 @@ export const commands = {
 /**
  * Simple greeting command for demonstration purposes.
  */
-async greet(name: string) : Promise<string> {
-    return await TAURI_INVOKE("greet", { name });
+async greet(name: string) : Promise<Result<string, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("greet", { name }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 },
 /**
  * Loads user preferences from disk.

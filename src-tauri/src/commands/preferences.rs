@@ -40,15 +40,15 @@ pub fn load_quick_pane_shortcut(app: &AppHandle) -> Option<String> {
 /// Simple greeting command for demonstration purposes.
 #[tauri::command]
 #[specta::specta]
-pub fn greet(name: &str) -> String {
+pub fn greet(name: &str) -> Result<String, String> {
     // Input validation
-    if let Err(e) = validate_string_input(name, 100, "Name") {
+    validate_string_input(name, 100, "Name").map_err(|e| {
         log::warn!("Invalid greet input: {e}");
-        return format!("Error: {e}");
-    }
+        e
+    })?;
 
     log::info!("Greeting user: {name}");
-    format!("Hello, {name}! You've been greeted from Rust!")
+    Ok(format!("Hello, {name}! You've been greeted from Rust!"))
 }
 
 /// Loads user preferences from disk.

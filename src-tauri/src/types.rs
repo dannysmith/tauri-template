@@ -90,7 +90,7 @@ pub fn validate_filename(filename: &str) -> Result<(), String> {
         return Err("Filename cannot be empty".to_string());
     }
 
-    if filename.len() > 100 {
+    if filename.chars().count() > 100 {
         return Err("Filename too long (max 100 characters)".to_string());
     }
 
@@ -104,9 +104,10 @@ pub fn validate_filename(filename: &str) -> Result<(), String> {
     Ok(())
 }
 
-/// Validates string input length.
+/// Validates string input length (by character count, not bytes).
 pub fn validate_string_input(input: &str, max_len: usize, field_name: &str) -> Result<(), String> {
-    if input.len() > max_len {
+    let char_count = input.chars().count();
+    if char_count > max_len {
         return Err(format!("{field_name} too long (max {max_len} characters)"));
     }
     Ok(())
