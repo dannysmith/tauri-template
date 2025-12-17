@@ -38,6 +38,7 @@ describe('context-menu utilities', () => {
       { id: 'test', label: 'Test Item', action },
       { type: 'separator' },
       { id: 'disabled', label: 'Disabled', disabled: true },
+      { id: 'shortcut', label: 'With Shortcut', accelerator: 'CmdOrCtrl+K' },
     ])
 
     // Should create MenuItem for regular items
@@ -60,6 +61,15 @@ describe('context-menu utilities', () => {
       text: 'Disabled',
       accelerator: undefined,
       enabled: false,
+      action: undefined,
+    })
+
+    // Should pass accelerator through
+    expect(mockMenuItemNew).toHaveBeenCalledWith({
+      id: 'shortcut',
+      text: 'With Shortcut',
+      accelerator: 'CmdOrCtrl+K',
+      enabled: true,
       action: undefined,
     })
 

@@ -1,5 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { locale } from '@tauri-apps/plugin-os'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import {
@@ -74,6 +75,12 @@ export const AppearancePane: React.FC = () => {
     // Change the language immediately for instant UI feedback
     if (language) {
       await i18n.changeLanguage(language)
+    } else {
+      // System language selected - detect and apply system locale
+      const systemLocale = await locale()
+      const langCode = systemLocale?.split('-')[0]?.toLowerCase() ?? 'en'
+      const targetLang = availableLanguages.includes(langCode) ? langCode : 'en'
+      await i18n.changeLanguage(targetLang)
     }
 
     // Persist the language preference to disk
@@ -90,7 +97,7 @@ export const AppearancePane: React.FC = () => {
       <SettingsSection title={t('preferences.appearance.language')}>
         <SettingsField
           label={t('preferences.appearance.language')}
-          description={t('preferences.appearance.colorThemeDescription')}
+          description={t('preferences.appearance.languageDescription')}
         >
           <Select
             value={currentLanguageValue}

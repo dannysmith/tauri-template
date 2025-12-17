@@ -36,6 +36,7 @@
   "preferences.appearance.theme.system": "النظام",
   "preferences.appearance.selectTheme": "اختر السمة",
   "preferences.appearance.language": "اللغة",
+  "preferences.appearance.languageDescription": "اختر لغة العرض المفضلة لديك",
   "preferences.appearance.language.system": "افتراضي النظام",
 
   "preferences.advanced.title": "إعدادات متقدمة",

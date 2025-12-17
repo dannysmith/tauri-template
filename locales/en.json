@@ -36,6 +36,7 @@
   "preferences.appearance.theme.system": "System",
   "preferences.appearance.selectTheme": "Select theme",
   "preferences.appearance.language": "Language",
+  "preferences.appearance.languageDescription": "Choose your preferred display language",
   "preferences.appearance.language.system": "System Default",
 
   "preferences.advanced.title": "Example Advanced Settings",
