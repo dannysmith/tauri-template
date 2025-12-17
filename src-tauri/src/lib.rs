@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use specta::Type;
 use std::path::PathBuf;
-use std::sync::LazyLock;
+use std::sync::{LazyLock, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 /// Pre-compiled regex pattern for filename validation.
@@ -15,6 +15,11 @@ static FILENAME_PATTERN: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9]+)?$")
         .expect("Failed to compile filename regex pattern")
 });
+
+/// Tracks the currently registered quick pane shortcut for selective unregistration.
+/// This allows us to unregister only our shortcut without affecting other shortcuts.
+static CURRENT_QUICK_PANE_SHORTCUT: Mutex<Option<String>> = Mutex::new(None);
+
 // Menu imports removed - menus are now built from JavaScript for i18n support
 #[cfg(not(target_os = "macos"))]
 use tauri::webview::WebviewWindowBuilder;
@@ -717,8 +722,58 @@ fn toggle_quick_pane(app: AppHandle) -> Result<(), String> {
     }
 }
 
-/// Updates the global shortcut for the quick pane.
-/// Unregisters the old shortcut and registers the new one.
+/// Registers the quick pane global shortcut, unregistering any previously registered one.
+/// This helper is used by both setup() and update_quick_pane_shortcut() for consistency.
+#[cfg(desktop)]
+fn register_quick_pane_shortcut(app: &AppHandle, shortcut: &str) -> Result<(), String> {
+    use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
+
+    let global_shortcut = app.global_shortcut();
+
+    // Lock the mutex to get the current shortcut and update it atomically
+    let mut current_shortcut = CURRENT_QUICK_PANE_SHORTCUT
+        .lock()
+        .map_err(|e| format!("Failed to lock shortcut mutex: {e}"))?;
+
+    // Unregister the old shortcut if one exists
+    if let Some(old_shortcut_str) = current_shortcut.take() {
+        log::debug!("Unregistering old quick pane shortcut: {old_shortcut_str}");
+        // Parse the old shortcut string into a Shortcut
+        match old_shortcut_str.parse::<Shortcut>() {
+            Ok(old_shortcut) => {
+                if let Err(e) = global_shortcut.unregister(old_shortcut) {
+                    log::warn!("Failed to unregister old shortcut '{old_shortcut_str}': {e}");
+                    // Continue anyway - the old shortcut may have already been unregistered
+                }
+            }
+            Err(e) => {
+                log::warn!("Failed to parse old shortcut '{old_shortcut_str}': {e}");
+                // Continue anyway - if we can't parse it, we can't unregister it
+            }
+        }
+    }
+
+    // Register the new shortcut
+    let app_handle = app.clone();
+    global_shortcut
+        .on_shortcut(shortcut, move |_app, _shortcut, event| {
+            use tauri_plugin_global_shortcut::ShortcutState;
+            if event.state == ShortcutState::Pressed {
+                log::info!("Quick pane shortcut triggered");
+                if let Err(e) = toggle_quick_pane(app_handle.clone()) {
+                    log::error!("Failed to toggle quick pane: {e}");
+                }
+            }
+        })
+        .map_err(|e| format!("Failed to register shortcut '{shortcut}': {e}"))?;
+
+    // Store the new shortcut for future unregistration
+    *current_shortcut = Some(shortcut.to_string());
+    log::debug!("Registered quick pane shortcut: {shortcut}");
+
+    Ok(())
+}
+
 /// Returns the default shortcut constant for frontend use.
 #[tauri::command]
 #[specta::specta]
@@ -733,35 +788,10 @@ fn get_default_quick_pane_shortcut() -> String {
 fn update_quick_pane_shortcut(app: AppHandle, shortcut: Option<String>) -> Result<(), String> {
     #[cfg(desktop)]
     {
-        use tauri_plugin_global_shortcut::GlobalShortcutExt;
-
-        let global_shortcut = app.global_shortcut();
         let new_shortcut = shortcut.as_deref().unwrap_or(DEFAULT_QUICK_PANE_SHORTCUT);
-
         log::info!("Updating quick pane shortcut to: {new_shortcut}");
 
-        // Unregister all shortcuts first
-        // WARNING: This removes ALL registered shortcuts. Currently we only register one
-        // (quick pane), but if more shortcuts are added in the future, this approach will
-        // need to change to track and unregister specific shortcuts instead.
-        if let Err(e) = global_shortcut.unregister_all() {
-            log::warn!("Failed to unregister old shortcuts: {e}");
-            // Continue anyway - the old shortcut may not have been registered
-        }
-
-        // Register the new shortcut
-        let app_handle = app.clone();
-        global_shortcut
-            .on_shortcut(new_shortcut, move |_app, _shortcut, event| {
-                use tauri_plugin_global_shortcut::ShortcutState;
-                if event.state == ShortcutState::Pressed {
-                    log::info!("Quick pane shortcut triggered");
-                    if let Err(e) = toggle_quick_pane(app_handle.clone()) {
-                        log::error!("Failed to toggle quick pane: {e}");
-                    }
-                }
-            })
-            .map_err(|e| format!("Failed to register shortcut '{new_shortcut}': {e}"))?;
+        register_quick_pane_shortcut(&app, new_shortcut)?;
 
         log::info!("Quick pane shortcut updated successfully");
     }
@@ -863,13 +893,6 @@ pub fn run() {
                 app.package_info().name
             );
 
-            // Load saved preferences to get configured shortcut
-            let saved_shortcut = load_quick_pane_shortcut(app.handle());
-            let shortcut_to_register = saved_shortcut
-                .as_deref()
-                .unwrap_or(DEFAULT_QUICK_PANE_SHORTCUT);
-            log::info!("Registering quick pane shortcut: {shortcut_to_register}");
-
             // Set up global shortcut plugin (without any shortcuts - we register them separately)
             #[cfg(desktop)]
             {
@@ -878,25 +901,16 @@ pub fn run() {
                 app.handle().plugin(Builder::new().build())?;
             }
 
-            // Register the quick pane shortcut using the same mechanism as update_quick_pane_shortcut
-            // This ensures unregister_all() works consistently for both startup and runtime changes
+            // Load saved preferences and register the quick pane shortcut
             #[cfg(desktop)]
             {
-                use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
+                let saved_shortcut = load_quick_pane_shortcut(app.handle());
+                let shortcut_to_register = saved_shortcut
+                    .as_deref()
+                    .unwrap_or(DEFAULT_QUICK_PANE_SHORTCUT);
 
-                let app_handle = app.handle().clone();
-                app.global_shortcut().on_shortcut(
-                    shortcut_to_register,
-                    move |_app, _shortcut, event| {
-                        if event.state == ShortcutState::Pressed {
-                            log::info!("Quick pane shortcut triggered");
-                            if let Err(e) = toggle_quick_pane(app_handle.clone()) {
-                                log::error!("Failed to toggle quick pane: {e}");
-                            }
-                        }
-                    },
-                )?;
-                log::info!("Global shortcut registered: {shortcut_to_register}");
+                log::info!("Registering quick pane shortcut: {shortcut_to_register}");
+                register_quick_pane_shortcut(app.handle(), shortcut_to_register)?;
             }
 
             // Create the quick pane window (hidden) - must be done on main thread

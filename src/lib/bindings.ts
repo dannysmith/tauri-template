@@ -94,8 +94,6 @@ async toggleQuickPane() : Promise<Result<null, string>> {
 }
 },
 /**
- * Updates the global shortcut for the quick pane.
- * Unregisters the old shortcut and registers the new one.
  * Returns the default shortcut constant for frontend use.
  */
 async getDefaultQuickPaneShortcut() : Promise<string> {

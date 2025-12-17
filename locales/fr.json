@@ -8,7 +8,7 @@
   "menu.hideOthers": "Masquer les autres",
   "menu.showAll": "Tout afficher",
   "menu.quit": "Quitter {{appName}}",
-  "menu.view": "Présentation",
+  "menu.view": "Affichage",
   "menu.toggleLeftSidebar": "Afficher/Masquer la barre latérale gauche",
   "menu.toggleRightSidebar": "Afficher/Masquer la barre latérale droite",
 
