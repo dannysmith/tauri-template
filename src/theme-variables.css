@@ -1,3 +1,11 @@
+/*
+ * Theme Variables (shadcn/ui compatible)
+ *
+ * To customize the theme, visit https://ui.shadcn.com/themes and use the
+ * theme builder. You can copy and paste the generated CSS blocks directly
+ * into this file, replacing the @theme inline, :root, and .dark sections.
+ */
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

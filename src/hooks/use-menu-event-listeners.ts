@@ -18,7 +18,9 @@ import type { CommandContext } from '@/lib/commands/types'
  */
 export function useMenuEventListeners(commandContext: CommandContext) {
   useEffect(() => {
-    let menuUnlisteners: (() => void)[] = []
+    // Track mounted state and resolved unlisteners to handle race conditions
+    let isMounted = true
+    let resolvedUnlisteners: (() => void)[] | null = null
 
     const setupMenuListeners = async () => {
       logger.debug('Setting up menu event listeners')
@@ -87,19 +89,25 @@ export function useMenuEventListeners(commandContext: CommandContext) {
 
     setupMenuListeners()
       .then(unlisteners => {
-        menuUnlisteners = unlisteners
-        logger.debug('Menu listeners initialized successfully')
+        // If already unmounted, immediately unsubscribe
+        if (!isMounted) {
+          unlisteners.forEach(unlisten => unlisten())
+        } else {
+          resolvedUnlisteners = unlisteners
+          logger.debug('Menu listeners initialized successfully')
+        }
       })
       .catch(error => {
         logger.error('Failed to setup menu listeners:', error)
       })
 
     return () => {
-      menuUnlisteners.forEach(unlisten => {
-        if (unlisten && typeof unlisten === 'function') {
-          unlisten()
-        }
-      })
+      isMounted = false
+      // If unlisteners have resolved, call them; otherwise they will be
+      // cleaned up in the .then() handler when the promise resolves
+      if (resolvedUnlisteners) {
+        resolvedUnlisteners.forEach(unlisten => unlisten())
+      }
     }
   }, [commandContext])
 }

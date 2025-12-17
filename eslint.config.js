@@ -2,6 +2,7 @@ import js from '@eslint/js'
 import tseslint from 'typescript-eslint'
 import reactPlugin from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
+import reactCompiler from 'eslint-plugin-react-compiler'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import prettierConfig from 'eslint-config-prettier'
 
@@ -24,11 +25,13 @@ export default tseslint.config(
     plugins: {
       react: reactPlugin,
       'react-hooks': reactHooks,
+      'react-compiler': reactCompiler,
       'react-refresh': reactRefresh,
     },
     rules: {
       ...reactPlugin.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
+      'react-compiler/react-compiler': 'error',
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
@@ -62,6 +65,8 @@ export default tseslint.config(
     files: ['src/components/ui/**/*.{ts,tsx}', 'src/test/**/*.{ts,tsx}'],
     rules: {
       'react-refresh/only-export-components': 'off',
+      // Disable compiler rule for UI components (from shadcn) and test files
+      'react-compiler/react-compiler': 'off',
     },
   },
   {

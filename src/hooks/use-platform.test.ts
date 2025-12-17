@@ -66,7 +66,6 @@ describe('Platform Detection', () => {
     })
 
     it('falls back to macos when platform() throws', async () => {
-      const { logger } = await import('@/lib/logger')
       vi.mocked(platform).mockImplementation(() => {
         throw new Error('Not in Tauri context')
       })
@@ -74,6 +73,7 @@ describe('Platform Detection', () => {
       const result = getPlatform()
 
       expect(result).toBe('macos')
+      const { logger } = await import('@/lib/logger')
       expect(logger.warn).toHaveBeenCalledWith(
         'Platform detection failed, defaulting to macOS'
       )

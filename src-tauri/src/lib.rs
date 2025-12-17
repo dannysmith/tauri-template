@@ -547,6 +547,24 @@ fn init_quick_pane_standard(app: &AppHandle) -> Result<(), String> {
 const QUICK_PANE_WIDTH: f64 = 500.0;
 const QUICK_PANE_HEIGHT: f64 = 72.0;
 
+/// Gets the monitor containing the given cursor position, falling back to primary monitor.
+fn get_monitor_for_cursor(
+    app: &AppHandle,
+    cursor_pos: tauri::PhysicalPosition<f64>,
+) -> Option<tauri::Monitor> {
+    match app.monitor_from_point(cursor_pos.x, cursor_pos.y) {
+        Ok(Some(m)) => Some(m),
+        Ok(None) => {
+            log::warn!("No monitor found at cursor position, trying primary monitor");
+            app.primary_monitor().ok().flatten()
+        }
+        Err(e) => {
+            log::warn!("Failed to get monitor from point: {e}");
+            app.primary_monitor().ok().flatten()
+        }
+    }
+}
+
 /// Calculates the position to center a window on the monitor containing the cursor.
 /// Falls back to primary monitor if cursor monitor cannot be determined.
 fn get_centered_position_on_cursor_monitor(
@@ -564,23 +582,7 @@ fn get_centered_position_on_cursor_monitor(
     log::debug!("Cursor position: ({}, {})", cursor_pos.x, cursor_pos.y);
 
     // Get the monitor containing the cursor
-    let monitor = match app.monitor_from_point(cursor_pos.x, cursor_pos.y) {
-        Ok(Some(m)) => m,
-        Ok(None) => {
-            log::warn!("No monitor found at cursor position, trying primary monitor");
-            match app.primary_monitor() {
-                Ok(Some(m)) => m,
-                _ => {
-                    log::warn!("Failed to get primary monitor");
-                    return None;
-                }
-            }
-        }
-        Err(e) => {
-            log::warn!("Failed to get monitor from point: {e}");
-            return None;
-        }
-    };
+    let monitor = get_monitor_for_cursor(app, cursor_pos)?;
 
     let monitor_pos = monitor.position();
     let monitor_size = monitor.size();
@@ -696,6 +698,7 @@ fn dismiss_quick_pane(app: AppHandle) -> Result<(), String> {
         if let Some(window) = app.get_webview_window(QUICK_PANE_LABEL) {
             let is_visible = window.is_visible().unwrap_or(false);
             if !is_visible {
+                log::debug!("Quick pane already hidden, skipping");
                 return Ok(());
             }
             log::info!("Dismissing quick pane window");

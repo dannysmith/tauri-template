@@ -1,5 +1,6 @@
 import type { AppCommand } from './types'
 import { getCurrentWindow } from '@tauri-apps/api/window'
+import i18n from '@/i18n/config'
 
 export const windowCommands: AppCommand[] = [
   {
@@ -14,7 +15,10 @@ export const windowCommands: AppCommand[] = [
         await appWindow.close()
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error'
-        context.showToast(`Failed to close window: ${message}`, 'error')
+        context.showToast(
+          i18n.t('toast.error.windowCloseFailed', { message }),
+          'error'
+        )
       }
     },
   },
@@ -31,7 +35,10 @@ export const windowCommands: AppCommand[] = [
         await appWindow.minimize()
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error'
-        context.showToast(`Failed to minimize window: ${message}`, 'error')
+        context.showToast(
+          i18n.t('toast.error.windowMinimizeFailed', { message }),
+          'error'
+        )
       }
     },
   },
@@ -47,7 +54,10 @@ export const windowCommands: AppCommand[] = [
         await appWindow.toggleMaximize()
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error'
-        context.showToast(`Failed to toggle maximize: ${message}`, 'error')
+        context.showToast(
+          i18n.t('toast.error.windowMaximizeFailed', { message }),
+          'error'
+        )
       }
     },
   },
@@ -64,7 +74,10 @@ export const windowCommands: AppCommand[] = [
         await appWindow.setFullscreen(true)
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error'
-        context.showToast(`Failed to enter fullscreen: ${message}`, 'error')
+        context.showToast(
+          i18n.t('toast.error.fullscreenEnterFailed', { message }),
+          'error'
+        )
       }
     },
   },
@@ -81,7 +94,10 @@ export const windowCommands: AppCommand[] = [
         await appWindow.setFullscreen(false)
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error'
-        context.showToast(`Failed to exit fullscreen: ${message}`, 'error')
+        context.showToast(
+          i18n.t('toast.error.fullscreenExitFailed', { message }),
+          'error'
+        )
       }
     },
   },

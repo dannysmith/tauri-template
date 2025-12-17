@@ -94,6 +94,7 @@ export function GeneralPane() {
         >
           <ShortcutPicker
             value={preferences?.quick_pane_shortcut ?? null}
+            // Fallback matches DEFAULT_QUICK_PANE_SHORTCUT in src-tauri/src/lib.rs
             defaultValue={defaultShortcut ?? 'CommandOrControl+Shift+.'}
             onChange={handleShortcutChange}
             disabled={!preferences || savePreferences.isPending}

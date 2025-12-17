@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import type { TFunction } from 'i18next'
 import type { CommandContext, AppCommand } from './types'
 
@@ -48,6 +48,10 @@ describe('Simplified Command System', () => {
     registerCommands(navigationCommands)
   })
 
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   describe('Command Registration', () => {
     it('registers commands correctly', () => {
       const commands = getAllCommands(mockContext)
@@ -57,7 +61,7 @@ describe('Simplified Command System', () => {
         cmd => cmd.id === 'show-left-sidebar' || cmd.id === 'hide-left-sidebar'
       )
       expect(sidebarCommand).toBeDefined()
-      expect(sidebarCommand?.labelKey).toContain('Sidebar')
+      expect(mockT(sidebarCommand?.labelKey ?? '')).toContain('Sidebar')
     })
 
     it('filters commands by availability', () => {

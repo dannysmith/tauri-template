@@ -24,7 +24,7 @@
   "preferences.general.exampleSettings": "Paramètres d'exemple",
   "preferences.general.exampleText": "Paramètre de texte d'exemple",
   "preferences.general.exampleTextDescription": "Ceci est un exemple de paramètre de saisie de texte (non persisté)",
-  "preferences.general.exampleTextPlaceholder": "Entrez un texte d'exemple",
+  "preferences.general.exampleTextPlaceholder": "Saisissez un texte d'exemple",
   "preferences.general.exampleToggle": "Paramètre de bascule d'exemple",
   "preferences.general.exampleToggleDescription": "Ceci est un exemple de paramètre de bascule (non persisté)",
 
@@ -37,7 +37,7 @@
   "preferences.appearance.selectTheme": "Sélectionner un thème",
   "preferences.appearance.language": "Langue",
   "preferences.appearance.languageDescription": "Choisissez votre langue d'affichage préférée",
-  "preferences.appearance.language.system": "Par défaut du système",
+  "preferences.appearance.language.system": "Système",
 
   "preferences.advanced.title": "Paramètres avancés d'exemple",
   "preferences.advanced.toggle": "Bascule avancée d'exemple",
