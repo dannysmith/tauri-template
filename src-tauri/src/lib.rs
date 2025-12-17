@@ -6,7 +6,15 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use specta::Type;
 use std::path::PathBuf;
+use std::sync::LazyLock;
 use std::time::{SystemTime, UNIX_EPOCH};
+
+/// Pre-compiled regex pattern for filename validation.
+/// Only allows alphanumeric characters, dashes, underscores, and a single extension.
+static FILENAME_PATTERN: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9]+)?$")
+        .expect("Failed to compile filename regex pattern")
+});
 // Menu imports removed - menus are now built from JavaScript for i18n support
 #[cfg(not(target_os = "macos"))]
 use tauri::webview::WebviewWindowBuilder;
@@ -62,10 +70,6 @@ impl std::fmt::Display for RecoveryError {
 
 // Validation functions
 fn validate_filename(filename: &str) -> Result<(), String> {
-    // Regex pattern: only alphanumeric, dash, underscore, dot
-    let filename_pattern = Regex::new(r"^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9]+)?$")
-        .map_err(|e| format!("Regex compilation error: {e}"))?;
-
     if filename.is_empty() {
         return Err("Filename cannot be empty".to_string());
     }
@@ -74,7 +78,7 @@ fn validate_filename(filename: &str) -> Result<(), String> {
         return Err("Filename too long (max 100 characters)".to_string());
     }
 
-    if !filename_pattern.is_match(filename) {
+    if !FILENAME_PATTERN.is_match(filename) {
         return Err(
             "Invalid filename: only alphanumeric characters, dashes, underscores, and dots allowed"
                 .to_string(),

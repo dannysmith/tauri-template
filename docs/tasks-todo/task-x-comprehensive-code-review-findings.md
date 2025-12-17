@@ -92,6 +92,7 @@ fn position_quick_pane_on_cursor_monitor(app: &AppHandle) {
 **Issue:** 58-line function duplicates logic from `show_quick_pane` and `dismiss_quick_pane`.
 
 **Fix:** After extracting the positioning helper (CODE-2), refactor to reduce duplication. Note: Simple delegation to show/dismiss won't work directly because:
+
 - `is_quick_pane_visible()` doesn't exist yet (needs to be added)
 - `dismiss_quick_pane()` has early-return visibility guards
 - macOS toggle calls `resign_key_window()` directly on the panel
