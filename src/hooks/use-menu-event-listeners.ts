@@ -25,9 +25,8 @@ export function useMenuEventListeners(commandContext: CommandContext) {
       const unlisteners = await Promise.all([
         listen('menu-about', () => {
           logger.debug('About menu event received')
-          const appVersion = '0.1.0'
           alert(
-            `Tauri Template App\n\nVersion: ${appVersion}\n\nBuilt with Tauri v2 + React + TypeScript`
+            `Tauri Template App\n\nVersion: ${__APP_VERSION__}\n\nBuilt with Tauri v2 + React + TypeScript`
           )
         }),
 

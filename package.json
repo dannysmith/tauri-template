@@ -6,6 +6,9 @@
   "author": "Danny Smith",
   "copyright": "Copyright © 2025 Danny Smith. All rights reserved.",
   "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

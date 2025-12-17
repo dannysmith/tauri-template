@@ -396,8 +396,12 @@ coverage: {
 
 ### Phase 4: Polish
 
-- [ ] Address remaining low priority items
-- [ ] Add missing test coverage
+- [x] Fix CODE-5: Make app version dynamic (use Vite define)
+- [x] Fix TEST-3: Add missing providers to test-utils.tsx
+- [x] Fix CONFIG-4: Add Node.js version specification (engines field)
+- [x] Fix CONFIG-5: Add rust-toolchain.toml
+- [x] Skip CODE-4: Already fixed (panes use plain functions)
+- [x] Skip CODE-6: Current architecture is reasonable (low priority)
 
 ---
 
