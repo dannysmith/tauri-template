@@ -1,44 +1,17 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { ShortcutPicker } from '../ShortcutPicker'
+import { SettingsField, SettingsSection } from '../shared/SettingsComponents'
 import { usePreferences, useSavePreferences } from '@/services/preferences'
 import { commands } from '@/lib/tauri-bindings'
 import { logger } from '@/lib/logger'
 
-const SettingsField: React.FC<{
-  label: string
-  children: React.ReactNode
-  description?: string
-}> = ({ label, children, description }) => (
-  <div className="space-y-2">
-    <Label className="text-sm font-medium text-foreground">{label}</Label>
-    {children}
-    {description && (
-      <p className="text-sm text-muted-foreground">{description}</p>
-    )}
-  </div>
-)
-
-const SettingsSection: React.FC<{
-  title: string
-  children: React.ReactNode
-}> = ({ title, children }) => (
-  <div className="space-y-4">
-    <div>
-      <h3 className="text-lg font-medium text-foreground">{title}</h3>
-      <Separator className="mt-2" />
-    </div>
-    <div className="space-y-4">{children}</div>
-  </div>
-)
-
-export const GeneralPane: React.FC = () => {
+export function GeneralPane() {
   const { t } = useTranslation()
   // Example local state - these are NOT persisted to disk
   // To add persistent preferences:

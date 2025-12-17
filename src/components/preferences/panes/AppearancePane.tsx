@@ -1,8 +1,5 @@
-import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { locale } from '@tauri-apps/plugin-os'
-import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
 import {
   Select,
   SelectContent,
@@ -11,35 +8,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useTheme } from '@/hooks/use-theme'
+import { SettingsField, SettingsSection } from '../shared/SettingsComponents'
 import { usePreferences, useSavePreferences } from '@/services/preferences'
 import { availableLanguages } from '@/i18n'
-
-const SettingsField: React.FC<{
-  label: string
-  children: React.ReactNode
-  description?: string
-}> = ({ label, children, description }) => (
-  <div className="space-y-2">
-    <Label className="text-sm font-medium text-foreground">{label}</Label>
-    {children}
-    {description && (
-      <p className="text-sm text-muted-foreground">{description}</p>
-    )}
-  </div>
-)
-
-const SettingsSection: React.FC<{
-  title: string
-  children: React.ReactNode
-}> = ({ title, children }) => (
-  <div className="space-y-4">
-    <div>
-      <h3 className="text-lg font-medium text-foreground">{title}</h3>
-      <Separator className="mt-2" />
-    </div>
-    <div className="space-y-4">{children}</div>
-  </div>
-)
 
 // Language display names (native names)
 const languageNames: Record<string, string> = {
@@ -53,7 +24,7 @@ const languageNames: Record<string, string> = {
   zh: '中文',
 }
 
-export const AppearancePane: React.FC = () => {
+export function AppearancePane() {
   const { t, i18n } = useTranslation()
   const { theme, setTheme } = useTheme()
   const { data: preferences } = usePreferences()

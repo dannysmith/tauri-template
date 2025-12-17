@@ -1,7 +1,6 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import {
   Select,
@@ -10,35 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { SettingsField, SettingsSection } from '../shared/SettingsComponents'
 
-const SettingsField: React.FC<{
-  label: string
-  children: React.ReactNode
-  description?: string
-}> = ({ label, children, description }) => (
-  <div className="space-y-2">
-    <Label className="text-sm font-medium text-foreground">{label}</Label>
-    {children}
-    {description && (
-      <p className="text-sm text-muted-foreground">{description}</p>
-    )}
-  </div>
-)
-
-const SettingsSection: React.FC<{
-  title: string
-  children: React.ReactNode
-}> = ({ title, children }) => (
-  <div className="space-y-4">
-    <div>
-      <h3 className="text-lg font-medium text-foreground">{title}</h3>
-      <Separator className="mt-2" />
-    </div>
-    <div className="space-y-4">{children}</div>
-  </div>
-)
-
-export const AdvancedPane: React.FC = () => {
+export function AdvancedPane() {
   const { t } = useTranslation()
   // Example local state - these are NOT persisted to disk
   // To add persistent preferences:
