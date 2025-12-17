@@ -374,31 +374,31 @@ coverage: {
 
 ### Phase 1: Critical + Quick Wins
 
-1. Fix regex compilation (PERF-1)
-2. Extract SettingsField/Section components (CODE-1)
-3. Remove duplicate exports (UNUSED-1)
-4. Fix process.env check (SEC-4)
-5. Remove tailwind.config.js references (CONFIG-3)
+- [x] Extract SettingsField/Section components (CODE-1)
+- [x] Fix regex compilation (PERF-1)
+- [x] Remove duplicate exports (UNUSED-1)
+- [x] Fix process.env check (SEC-4)
+- [x] Remove tailwind.config.js references (CONFIG-3)
 
 ### Phase 2: High Priority
 
-6. Extract quick pane positioning helper (CODE-2)
-7. Refactor toggle_quick_pane (CODE-3)
-8. Enable CSP (SEC-1)
-9. Add coverage thresholds (TEST-2)
-10. Fix vitest path alias (CONFIG-1)
+- [ ] Extract quick pane positioning helper (CODE-2)
+- [ ] Refactor toggle_quick_pane (CODE-3)
+- [ ] Enable CSP (SEC-1)
+- [ ] Add coverage thresholds (TEST-2)
+- [ ] Fix vitest path alias (CONFIG-1)
 
 ### Phase 3: Medium Priority
 
-11. Internationalize command system (I18N-1)
-12. Add tests for critical hooks (TEST-1)
-13. Split useMainWindowEventListeners (PERF-2)
+- [ ] Internationalize command system (I18N-1)
+- [ ] Add tests for critical hooks (TEST-1)
+- [ ] Split useMainWindowEventListeners (PERF-2)
 
 ### Phase 4: Polish
 
-14. Address remaining low priority items
-15. Review and document unused exports
-16. Add missing test coverage
+- [ ] Address remaining low priority items
+- [ ] Review and document unused exports
+- [ ] Add missing test coverage
 
 ---
 
