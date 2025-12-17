@@ -99,7 +99,10 @@ export function WindowsWindowControls() {
       <button
         type="button"
         onClick={handleClose}
-        className={cn(buttonClass, 'hover:bg-red-500 hover:text-white')}
+        className={cn(
+          buttonClass,
+          'hover:bg-destructive hover:text-destructive-foreground'
+        )}
         title="Close"
         aria-label="Close window"
       >

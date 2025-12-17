@@ -107,7 +107,7 @@ export default function QuickPaneApp() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex h-screen w-screen items-center rounded-xl bg-white/90 px-5 backdrop-blur-xl dark:bg-zinc-900/90"
+      className="flex h-screen w-screen items-center rounded-xl bg-background/90 px-5 backdrop-blur-xl"
     >
       <input
         ref={inputRef}
@@ -115,7 +115,7 @@ export default function QuickPaneApp() {
         value={text}
         onChange={e => setText(e.target.value)}
         placeholder="Enter text..."
-        className="w-full bg-transparent text-lg text-zinc-900 placeholder-zinc-400 outline-none dark:text-white dark:placeholder-zinc-500"
+        className="w-full bg-transparent text-lg text-foreground placeholder:text-muted-foreground outline-none"
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"

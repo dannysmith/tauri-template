@@ -3,23 +3,19 @@ import { notify } from '@/lib/notifications'
 import type { CommandContext } from '@/lib/commands/types'
 
 /**
- * Command context hook - provides essential actions for commands
+ * Stable singleton context for command execution.
+ * These are imperative actions that read current state when called,
+ * not reactive values - so they don't need to be recreated per render.
+ */
+const commandContext: CommandContext = {
+  openPreferences: () => useUIStore.getState().togglePreferences(),
+  showToast: (message, type = 'info') => notify(message, undefined, { type }),
+}
+
+/**
+ * Command context hook - provides essential actions for commands.
+ * Returns a stable reference to avoid unnecessary re-renders.
  */
 export function useCommandContext(): CommandContext {
-  // Use getState() pattern to avoid render cascades
-  const openPreferences = () => {
-    useUIStore.getState().togglePreferences()
-  }
-
-  const showToast = (
-    message: string,
-    type: 'success' | 'error' | 'info' = 'info'
-  ) => {
-    notify(message, undefined, { type })
-  }
-
-  return {
-    openPreferences,
-    showToast,
-  }
+  return commandContext
 }
