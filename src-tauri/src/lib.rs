@@ -603,20 +603,41 @@ fn get_centered_position_on_cursor_monitor(
     Some(tauri::PhysicalPosition::new(x, y))
 }
 
-/// Shows the quick pane window and makes it the key window (for keyboard input).
-#[tauri::command]
-#[specta::specta]
-fn show_quick_pane(app: AppHandle) -> Result<(), String> {
-    log::info!("Showing quick pane window");
-
-    // Position the window on the monitor containing the cursor
-    if let Some(position) = get_centered_position_on_cursor_monitor(&app) {
+/// Positions the quick pane window centered on the monitor containing the cursor.
+fn position_quick_pane_on_cursor_monitor(app: &AppHandle) {
+    if let Some(position) = get_centered_position_on_cursor_monitor(app) {
         if let Some(window) = app.get_webview_window(QUICK_PANE_LABEL) {
             if let Err(e) = window.set_position(position) {
                 log::warn!("Failed to set window position: {e}");
             }
         }
     }
+}
+
+/// Returns whether the quick pane is currently visible.
+fn is_quick_pane_visible(app: &AppHandle) -> bool {
+    #[cfg(target_os = "macos")]
+    {
+        app.get_webview_panel(QUICK_PANE_LABEL)
+            .map(|panel| panel.is_visible())
+            .unwrap_or(false)
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        app.get_webview_window(QUICK_PANE_LABEL)
+            .and_then(|window| window.is_visible().ok())
+            .unwrap_or(false)
+    }
+}
+
+/// Shows the quick pane window and makes it the key window (for keyboard input).
+#[tauri::command]
+#[specta::specta]
+fn show_quick_pane(app: AppHandle) -> Result<(), String> {
+    log::info!("Showing quick pane window");
+
+    position_quick_pane_on_cursor_monitor(&app);
 
     #[cfg(target_os = "macos")]
     {
@@ -689,64 +710,11 @@ fn dismiss_quick_pane(app: AppHandle) -> Result<(), String> {
 fn toggle_quick_pane(app: AppHandle) -> Result<(), String> {
     log::info!("Toggling quick pane window");
 
-    #[cfg(target_os = "macos")]
-    {
-        let panel = app
-            .get_webview_panel(QUICK_PANE_LABEL)
-            .map_err(|e| format!("Quick pane panel not found: {e:?}"))?;
-
-        if panel.is_visible() {
-            // Resign key window before hiding to prevent space switching
-            panel.resign_key_window();
-            panel.hide();
-            log::debug!("Quick pane panel hidden (macOS)");
-        } else {
-            // Position the window on the monitor containing the cursor before showing
-            if let Some(position) = get_centered_position_on_cursor_monitor(&app) {
-                if let Some(window) = app.get_webview_window(QUICK_PANE_LABEL) {
-                    if let Err(e) = window.set_position(position) {
-                        log::warn!("Failed to set window position: {e}");
-                    }
-                }
-            }
-            panel.show_and_make_key();
-            log::debug!("Quick pane panel shown (macOS)");
-        }
+    if is_quick_pane_visible(&app) {
+        dismiss_quick_pane(app)
+    } else {
+        show_quick_pane(app)
     }
-
-    #[cfg(not(target_os = "macos"))]
-    {
-        let window = app.get_webview_window(QUICK_PANE_LABEL).ok_or_else(|| {
-            "Quick pane window not found - was init_quick_pane called at startup?".to_string()
-        })?;
-
-        let is_visible = window
-            .is_visible()
-            .map_err(|e| format!("Failed to check visibility: {e}"))?;
-
-        if is_visible {
-            window
-                .hide()
-                .map_err(|e| format!("Failed to hide window: {e}"))?;
-            log::debug!("Quick pane window hidden");
-        } else {
-            // Position the window on the monitor containing the cursor before showing
-            if let Some(position) = get_centered_position_on_cursor_monitor(&app) {
-                if let Err(e) = window.set_position(position) {
-                    log::warn!("Failed to set window position: {e}");
-                }
-            }
-            window
-                .show()
-                .map_err(|e| format!("Failed to show window: {e}"))?;
-            window
-                .set_focus()
-                .map_err(|e| format!("Failed to focus window: {e}"))?;
-            log::debug!("Quick pane window shown");
-        }
-    }
-
-    Ok(())
 }
 
 /// Updates the global shortcut for the quick pane.
