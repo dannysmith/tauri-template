@@ -60,16 +60,12 @@ export function useMenuEventListeners(commandContext: CommandContext) {
 
         listen('menu-toggle-left-sidebar', () => {
           logger.debug('Toggle left sidebar menu event received')
-          const { leftSidebarVisible, setLeftSidebarVisible } =
-            useUIStore.getState()
-          setLeftSidebarVisible(!leftSidebarVisible)
+          useUIStore.getState().toggleLeftSidebar()
         }),
 
         listen('menu-toggle-right-sidebar', () => {
           logger.debug('Toggle right sidebar menu event received')
-          const { rightSidebarVisible, setRightSidebarVisible } =
-            useUIStore.getState()
-          setRightSidebarVisible(!rightSidebarVisible)
+          useUIStore.getState().toggleRightSidebar()
         }),
 
         listen<{ text: string }>('quick-pane-submit', event => {

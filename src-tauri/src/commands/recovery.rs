@@ -40,11 +40,16 @@ pub async fn save_emergency_data(
     // Validate filename with proper security checks
     validate_filename(&filename).map_err(|e| RecoveryError::ValidationError { message: e })?;
 
-    // Validate data size (10MB limit)
-    let data_str = serde_json::to_string(&data).map_err(|e| RecoveryError::ParseError {
-        message: e.to_string(),
+    // Serialize to pretty JSON once for both size validation and writing
+    let json_content = serde_json::to_string_pretty(&data).map_err(|e| {
+        log::error!("Failed to serialize emergency data: {e}");
+        RecoveryError::ParseError {
+            message: e.to_string(),
+        }
     })?;
-    if data_str.len() > MAX_RECOVERY_DATA_BYTES as usize {
+
+    // Validate size (10MB limit) on the actual content that will be written
+    if json_content.len() > MAX_RECOVERY_DATA_BYTES as usize {
         return Err(RecoveryError::DataTooLarge {
             max_bytes: MAX_RECOVERY_DATA_BYTES,
         });
@@ -52,13 +57,6 @@ pub async fn save_emergency_data(
 
     let recovery_dir = get_recovery_dir(&app).map_err(|e| RecoveryError::IoError { message: e })?;
     let file_path = recovery_dir.join(format!("{filename}.json"));
-
-    let json_content = serde_json::to_string_pretty(&data).map_err(|e| {
-        log::error!("Failed to serialize emergency data: {e}");
-        RecoveryError::ParseError {
-            message: e.to_string(),
-        }
-    })?;
 
     // Write to a temporary file first, then rename (atomic operation)
     let temp_path = file_path.with_extension("tmp");

@@ -51,7 +51,7 @@ describe('Platform Detection', () => {
     })
 
     it('returns linux for other unix-like platforms', () => {
-      vi.mocked(platform).mockReturnValue('freebsd' as never)
+      vi.mocked(platform).mockReturnValue('freebsd')
       expect(getPlatform()).toBe('linux')
     })
 
