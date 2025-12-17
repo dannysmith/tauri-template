@@ -128,5 +128,3 @@ export function PreferencesDialog() {
     </Dialog>
   )
 }
-
-export default PreferencesDialog

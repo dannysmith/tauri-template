@@ -26,5 +26,3 @@ export function MainWindowContent({
     </div>
   )
 }
-
-export default MainWindowContent

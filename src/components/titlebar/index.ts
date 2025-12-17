@@ -1,6 +1,5 @@
 // Main title bar component
 export { TitleBar } from './TitleBar'
-export type { default as TitleBarDefault } from './TitleBar'
 
 // Shared content components
 export {

@@ -186,5 +186,3 @@ export function MacOSWindowControls({
     </div>
   )
 }
-
-export default MacOSWindowControls

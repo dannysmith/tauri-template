@@ -1,12 +1,6 @@
-export { TitleBar, default as TitleBarDefault } from '../titlebar/TitleBar'
-export { LeftSideBar, default as LeftSideBarDefault } from './LeftSideBar'
-export { RightSideBar, default as RightSideBarDefault } from './RightSideBar'
-export {
-  MainWindowContent,
-  default as MainWindowContentDefault,
-} from './MainWindowContent'
-export { MainWindow, default as MainWindowDefault } from './MainWindow'
-export {
-  MacOSWindowControls,
-  default as MacOSWindowControlsDefault,
-} from '../titlebar/MacOSWindowControls'
+export { TitleBar } from '../titlebar/TitleBar'
+export { LeftSideBar } from './LeftSideBar'
+export { RightSideBar } from './RightSideBar'
+export { MainWindowContent } from './MainWindowContent'
+export { MainWindow } from './MainWindow'
+export { MacOSWindowControls } from '../titlebar/MacOSWindowControls'

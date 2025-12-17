@@ -96,5 +96,3 @@ export function TitleBar({ className, title, forcePlatform }: TitleBarProps) {
     </div>
   )
 }
-
-export default TitleBar

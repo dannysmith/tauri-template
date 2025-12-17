@@ -99,5 +99,3 @@ export function MainWindow() {
     </div>
   )
 }
-
-export default MainWindow

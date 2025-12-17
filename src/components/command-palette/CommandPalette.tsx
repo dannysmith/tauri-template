@@ -118,5 +118,3 @@ export function CommandPalette() {
     </CommandDialog>
   )
 }
-
-export default CommandPalette

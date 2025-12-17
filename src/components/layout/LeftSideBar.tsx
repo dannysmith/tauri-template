@@ -14,5 +14,3 @@ export function LeftSideBar({ children, className }: LeftSideBarProps) {
     </div>
   )
 }
-
-export default LeftSideBar
