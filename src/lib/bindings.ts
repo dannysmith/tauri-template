@@ -8,9 +8,16 @@
 
 
 export const commands = {
+/**
+ * Simple greeting command for demonstration purposes.
+ */
 async greet(name: string) : Promise<string> {
     return await TAURI_INVOKE("greet", { name });
 },
+/**
+ * Loads user preferences from disk.
+ * Returns default preferences if the file doesn't exist.
+ */
 async loadPreferences() : Promise<Result<AppPreferences, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("load_preferences") };
@@ -19,6 +26,10 @@ async loadPreferences() : Promise<Result<AppPreferences, string>> {
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Saves user preferences to disk.
+ * Uses atomic write (temp file + rename) to prevent corruption.
+ */
 async savePreferences(preferences: AppPreferences) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("save_preferences", { preferences }) };
@@ -27,6 +38,10 @@ async savePreferences(preferences: AppPreferences) : Promise<Result<null, string
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Sends a native system notification.
+ * On mobile platforms, returns an error as notifications are not yet supported.
+ */
 async sendNativeNotification(title: string, body: string | null) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("send_native_notification", { title, body }) };
@@ -35,6 +50,10 @@ async sendNativeNotification(title: string, body: string | null) : Promise<Resul
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Saves emergency data to a JSON file for later recovery.
+ * Validates filename and enforces a 10MB size limit.
+ */
 async saveEmergencyData(filename: string, data: JsonValue) : Promise<Result<null, RecoveryError>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("save_emergency_data", { filename, data }) };
@@ -43,6 +62,10 @@ async saveEmergencyData(filename: string, data: JsonValue) : Promise<Result<null
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Loads emergency data from a previously saved JSON file.
+ * Returns FileNotFound if the file doesn't exist.
+ */
 async loadEmergencyData(filename: string) : Promise<Result<JsonValue, RecoveryError>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("load_emergency_data", { filename }) };
@@ -51,6 +74,10 @@ async loadEmergencyData(filename: string) : Promise<Result<JsonValue, RecoveryEr
     else return { status: "error", error: e  as any };
 }
 },
+/**
+ * Removes recovery files older than 7 days.
+ * Returns the count of removed files.
+ */
 async cleanupOldRecoveryFiles() : Promise<Result<number, RecoveryError>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("cleanup_old_recovery_files") };
@@ -123,6 +150,10 @@ async updateQuickPaneShortcut(shortcut: string | null) : Promise<Result<null, st
 
 /** user-defined types **/
 
+/**
+ * Application preferences that persist to disk.
+ * Only contains settings that should be saved between sessions.
+ */
 export type AppPreferences = { theme: string; 
 /**
  * Global shortcut for quick pane (e.g., "CommandOrControl+Shift+.")

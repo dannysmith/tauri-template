@@ -9,11 +9,10 @@ mod commands;
 mod types;
 mod utils;
 
-// Re-export commands and types for bindings.rs access
-pub use commands::*;
-pub use types::*;
-
 use tauri::Manager;
+
+// Re-export only what's needed externally
+pub use types::DEFAULT_QUICK_PANE_SHORTCUT;
 
 /// Application entry point. Sets up all plugins and initializes the app.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
