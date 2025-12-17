@@ -107,7 +107,7 @@ export default function QuickPaneApp() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex h-screen w-screen items-center rounded-xl bg-background/90 px-5 backdrop-blur-xl"
+      className="flex h-screen w-screen items-center rounded-xl border border-border bg-background px-5 shadow-lg"
     >
       <input
         ref={inputRef}
