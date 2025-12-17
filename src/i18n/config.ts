@@ -2,13 +2,12 @@ import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import en from '../../locales/en.json'
 import ar from '../../locales/ar.json'
+import fr from '../../locales/fr.json'
 
 const resources = {
   en: { translation: en },
   ar: { translation: ar },
-  // Add other languages here as they're created
-  // es: { translation: es },
-  // de: { translation: de },
+  fr: { translation: fr },
 }
 
 // RTL language detection
