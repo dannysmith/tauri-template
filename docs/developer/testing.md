@@ -204,9 +204,9 @@ vi.mock('@/lib/tauri-bindings', () => ({
 
 ## Best Practices
 
-| Do | Don't |
-|-----|-------|
-| Mock Tauri commands in setup.ts | Call real Tauri APIs in tests |
-| Use `vi.mocked()` for type-safe mocks | Use untyped mock assertions |
-| Test user-visible behavior | Test implementation details |
-| Use `tempfile` for Rust file tests | Write to real file system |
+| Do                                    | Don't                         |
+| ------------------------------------- | ----------------------------- |
+| Mock Tauri commands in setup.ts       | Call real Tauri APIs in tests |
+| Use `vi.mocked()` for type-safe mocks | Use untyped mock assertions   |
+| Test user-visible behavior            | Test implementation details   |
+| Use `tempfile` for Rust file tests    | Write to real file system     |

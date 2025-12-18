@@ -4,10 +4,10 @@ Patterns for saving and loading data to disk.
 
 ## Choosing a Storage Method
 
-| Need | Solution | When to Use |
-|------|----------|-------------|
-| App preferences | Preferences System | Strongly-typed settings (theme, shortcuts) |
-| Emergency recovery | Recovery System | Crash recovery, backup before risky operations |
+| Need               | Solution           | When to Use                                    |
+| ------------------ | ------------------ | ---------------------------------------------- |
+| App preferences    | Preferences System | Strongly-typed settings (theme, shortcuts)     |
+| Emergency recovery | Recovery System    | Crash recovery, backup before risky operations |
 
 ```
 Need to persist data?
@@ -95,7 +95,9 @@ await commands.saveEmergencyData({
 })
 
 // Load on startup
-const recoveryData = await commands.loadEmergencyData({ filename: 'unsaved-work' })
+const recoveryData = await commands.loadEmergencyData({
+  filename: 'unsaved-work',
+})
 if (recoveryData.status === 'ok' && recoveryData.data) {
   // Show recovery dialog
 }
@@ -123,6 +125,7 @@ impl Default for MyData {
 ### 2. Add Tauri commands
 
 Follow the pattern in `src-tauri/src/commands/preferences.rs`:
+
 - `load_*` command with Default fallback
 - `save_*` command with atomic write
 

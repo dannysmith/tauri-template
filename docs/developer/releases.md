@@ -5,6 +5,7 @@ Release process, version management, and auto-update system.
 ## Overview
 
 The release system provides:
+
 - Automated GitHub Actions workflow for building releases
 - Version management script for updating all version files
 - Auto-updater for seamless user updates
@@ -23,12 +24,14 @@ tauri signer generate -w ~/.tauri/myapp.key
 ### 2. Configure GitHub Repository
 
 Add these secrets (Settings → Secrets and variables → Actions):
+
 - `TAURI_PRIVATE_KEY`: Content of `~/.tauri/myapp.key`
 - `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`: Password you set (if any)
 
 ### 3. Update Configuration
 
 **`src-tauri/tauri.conf.json`:**
+
 ```json
 {
   "plugins": {
@@ -45,6 +48,7 @@ Add these secrets (Settings → Secrets and variables → Actions):
 ```
 
 **Bundle info in `tauri.conf.json`:**
+
 - Update `publisher`, `shortDescription`, `longDescription`
 - Update `productName` and `identifier`
 
@@ -57,12 +61,14 @@ npm run release:prepare v1.0.0
 ```
 
 This will:
+
 1. Check git status is clean
 2. Run all quality checks (`npm run check:all`)
 3. Update versions in `package.json`, `Cargo.toml`, `tauri.conf.json`
 4. Ask if you want to commit and push
 
 Then GitHub Actions will:
+
 1. Build the app for all platforms
 2. Create a draft release
 3. Generate `latest.json` for auto-updates
@@ -84,11 +90,13 @@ git push origin main --tags
 ## Version Strategy
 
 Semantic versioning (`v1.0.0`):
+
 - **Major** (1.x.x): Breaking changes
 - **Minor** (x.1.x): New features, backwards compatible
 - **Patch** (x.x.1): Bug fixes
 
 All three files must have matching versions:
+
 - `package.json` → `"version": "1.0.0"`
 - `src-tauri/Cargo.toml` → `version = "1.0.0"`
 - `src-tauri/tauri.conf.json` → `"version": "1.0.0"`
@@ -142,12 +150,14 @@ useEffect(() => {
 ### Manual Update Check
 
 Users can manually check via:
+
 - **Menu**: App → Check for Updates
 - **Command Palette**: Cmd+K → "Check for Updates"
 
 ## Release Artifacts
 
 Each release creates:
+
 - **macOS**: `.dmg` installer
 - **Windows**: `.msi` installer (when configured)
 - **Linux**: `.deb` and `.AppImage` (when configured)
@@ -156,15 +166,16 @@ Each release creates:
 ## Security
 
 All updates are cryptographically signed:
+
 1. Private key signs releases during build
 2. Public key in config verifies downloads
 3. Invalid signatures are automatically rejected
 
 ## Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| Workflow doesn't trigger | Ensure tag starts with `v` and is pushed |
-| Build fails | Check GitHub secrets, run `npm run check:all` locally |
-| Updates not detected | Verify endpoint URL and public key match |
-| Download fails | Check signatures, file permissions, disk space |
+| Issue                    | Solution                                              |
+| ------------------------ | ----------------------------------------------------- |
+| Workflow doesn't trigger | Ensure tag starts with `v` and is pushed              |
+| Build fails              | Check GitHub secrets, run `npm run check:all` locally |
+| Updates not detected     | Verify endpoint URL and public key match              |
+| Download fails           | Check signatures, file permissions, disk space        |

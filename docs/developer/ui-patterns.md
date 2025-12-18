@@ -361,4 +361,3 @@ This preserves scroll position, form state, and resize dimensions.
 - Override shadcn components in place (copy and modify instead)
 - Add `cursor-pointer` everywhere (only for actual clickable elements)
 - Use viewport-based responsive design (this is a fixed-size desktop app)
-

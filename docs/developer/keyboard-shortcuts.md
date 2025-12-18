@@ -4,12 +4,12 @@ Centralized keyboard shortcut management using native DOM event listeners.
 
 ## Current Shortcuts
 
-| Shortcut | Mac | Windows/Linux | Action |
-|----------|-----|---------------|--------|
-| Open Preferences | Cmd+, | Ctrl+, | Opens settings dialog |
-| Command Palette | Cmd+K | Ctrl+K | Opens command search |
-| Toggle Left Sidebar | Cmd+1 | Ctrl+1 | Show/hide left panel |
-| Toggle Right Sidebar | Cmd+2 | Ctrl+2 | Show/hide right panel |
+| Shortcut             | Mac   | Windows/Linux | Action                |
+| -------------------- | ----- | ------------- | --------------------- |
+| Open Preferences     | Cmd+, | Ctrl+,        | Opens settings dialog |
+| Command Palette      | Cmd+K | Ctrl+K        | Opens command search  |
+| Toggle Left Sidebar  | Cmd+1 | Ctrl+1        | Show/hide left panel  |
+| Toggle Right Sidebar | Cmd+2 | Ctrl+2        | Show/hide right panel |
 
 ## Architecture
 
@@ -62,18 +62,13 @@ case '3': {
 
 ### 2. Add to native menu (if applicable)
 
-```rust
-// src-tauri/src/lib.rs
-.item(&MenuItemBuilder::with_id("my-action", "My Action")
-    .accelerator("CmdOrCtrl+3")
-    .build(app)?)
-```
-
-### 3. Add menu event handler
-
 ```typescript
-listen('menu-my-action', () => {
-  commandContext.myNewAction()
+// src/lib/menu.ts
+await MenuItem.new({
+  id: 'my-action',
+  text: t('menu.myAction'),
+  accelerator: 'CmdOrCtrl+3',
+  action: handleMyAction,
 })
 ```
 
@@ -83,13 +78,16 @@ See [Menus](./menus.md) for full menu integration details.
 
 ```typescript
 // Cross-platform modifier (Cmd on Mac, Ctrl elsewhere)
-if (e.metaKey || e.ctrlKey) { }
+if (e.metaKey || e.ctrlKey) {
+}
 
 // With Shift
-if ((e.metaKey || e.ctrlKey) && e.shiftKey) { }
+if ((e.metaKey || e.ctrlKey) && e.shiftKey) {
+}
 
 // Function keys (no modifier needed)
-if (e.key === 'F1') { }
+if (e.key === 'F1') {
+}
 ```
 
 **Always call `e.preventDefault()`** to prevent browser defaults (like Cmd+, opening browser settings).
@@ -100,19 +98,19 @@ Native DOM event listeners are used instead of libraries like `react-hotkeys-hoo
 
 ## Conventions
 
-| Pattern | Keys |
-|---------|------|
-| Preferences | Cmd/Ctrl + , |
-| Search/Command | Cmd/Ctrl + K |
-| Panel toggles | Cmd/Ctrl + 1,2,3... |
-| File operations | Cmd/Ctrl + N,O,S |
-| Undo | Cmd/Ctrl + Z |
-| Redo | Cmd/Ctrl + Shift+Z |
+| Pattern         | Keys                |
+| --------------- | ------------------- |
+| Preferences     | Cmd/Ctrl + ,        |
+| Search/Command  | Cmd/Ctrl + K        |
+| Panel toggles   | Cmd/Ctrl + 1,2,3... |
+| File operations | Cmd/Ctrl + N,O,S    |
+| Undo            | Cmd/Ctrl + Z        |
+| Redo            | Cmd/Ctrl + Shift+Z  |
 
 ## Troubleshooting
 
-| Issue | Check |
-|-------|-------|
-| Shortcuts not firing | `useMainWindowEventListeners` called in MainWindow |
-| Browser intercepts shortcut | Add `e.preventDefault()` |
-| Different behavior Mac vs Windows | Test `e.metaKey || e.ctrlKey` |
+| Issue                             | Check                                              |
+| --------------------------------- | -------------------------------------------------- | --- | ---------- |
+| Shortcuts not firing              | `useMainWindowEventListeners` called in MainWindow |
+| Browser intercepts shortcut       | Add `e.preventDefault()`                           |
+| Different behavior Mac vs Windows | Test `e.metaKey                                    |     | e.ctrlKey` |

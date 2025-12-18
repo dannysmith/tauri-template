@@ -131,12 +131,12 @@ Only include permissions you use in `src-tauri/capabilities/desktop.json`.
 
 ## Common Issues
 
-| Issue | Solution |
-|-------|----------|
-| Large initial bundle | Implement code splitting |
-| Duplicate dependencies | `npm ls react` then `npm dedupe` |
-| Unused shadcn components | Remove from `src/components/ui/` |
-| Heavy date library | Use `date-fns` with tree shaking or native `Intl` |
+| Issue                    | Solution                                          |
+| ------------------------ | ------------------------------------------------- |
+| Large initial bundle     | Implement code splitting                          |
+| Duplicate dependencies   | `npm ls react` then `npm dedupe`                  |
+| Unused shadcn components | Remove from `src/components/ui/`                  |
+| Heavy date library       | Use `date-fns` with tree shaking or native `Intl` |
 
 ## Measuring Impact
 

@@ -19,6 +19,7 @@ Three-layer "onion" architecture for state management.
 ### Layer 1: TanStack Query (Persistent Data)
 
 Use for data that:
+
 - Comes from Tauri backend (file system, external APIs)
 - Benefits from caching and automatic refetching
 - Has loading, error, and success states
@@ -34,6 +35,7 @@ const { data, isLoading, error } = useQuery({
 ### Layer 2: Zustand (Global UI State)
 
 Use for transient global state:
+
 - Panel visibility, layout state
 - Command palette open/closed
 - UI modes and navigation
@@ -51,7 +53,8 @@ export const useUIStore = create<UIState>()(
   devtools(
     set => ({
       sidebarVisible: true,
-      toggleSidebar: () => set(state => ({ sidebarVisible: !state.sidebarVisible })),
+      toggleSidebar: () =>
+        set(state => ({ sidebarVisible: !state.sidebarVisible })),
     }),
     { name: 'ui-store' }
   )
@@ -61,6 +64,7 @@ export const useUIStore = create<UIState>()(
 ### Layer 3: useState (Component State)
 
 Use for state that:
+
 - Only affects UI presentation
 - Is derived from props or global state
 - Is tightly coupled to component lifecycle
@@ -98,6 +102,7 @@ const handleSave = useCallback(() => {
 ```
 
 **When to use `getState()`:**
+
 - In `useCallback` dependencies when you need current state but don't want re-renders
 - In event handlers for accessing latest state without subscriptions
 - In `useEffect` with empty deps when you need current state on mount only
@@ -142,12 +147,14 @@ This app uses React Compiler which automatically handles memoization. You do **n
 ## Store Boundaries
 
 **UIStore** - Use for:
+
 - Panel visibility
 - Layout state
 - Command palette state
 - UI modes and navigation
 
 **Feature-specific stores** - Use for:
+
 - Domain-specific state (e.g., `useDocumentStore`)
 - Feature flags and configuration
 - Temporary workflow state
@@ -162,5 +169,5 @@ This app uses React Compiler which automatically handles memoization. You do **n
 rule:
   any:
     - pattern: const { $$$PROPS } = useUIStore($$$ARGS)
-    - pattern: const { $$$PROPS } = useNewStore($$$ARGS)  # Add new store
+    - pattern: const { $$$PROPS } = useNewStore($$$ARGS) # Add new store
 ```

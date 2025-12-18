@@ -10,9 +10,11 @@ import {
   Submenu,
   PredefinedMenuItem,
 } from '@tauri-apps/api/menu'
+import { check } from '@tauri-apps/plugin-updater'
 import i18n from '@/i18n/config'
 import { useUIStore } from '@/store/ui-store'
 import { logger } from '@/lib/logger'
+import { notifications } from '@/lib/notifications'
 
 const APP_NAME = 'Tauri Template'
 
@@ -119,12 +121,27 @@ export function setupMenuLanguageListener(): void {
 
 function handleAbout(): void {
   logger.info('About menu item clicked')
-  // For now, just log - could open an about dialog
+  alert(
+    `${APP_NAME}\n\nVersion: ${__APP_VERSION__}\n\nBuilt with Tauri v2 + React + TypeScript`
+  )
 }
 
-function handleCheckForUpdates(): void {
+async function handleCheckForUpdates(): Promise<void> {
   logger.info('Check for Updates menu item clicked')
-  // Implement update checking logic
+  try {
+    const update = await check()
+    if (update) {
+      notifications.info(
+        'Update Available',
+        `Version ${update.version} is available`
+      )
+    } else {
+      notifications.success('Up to Date', 'You are running the latest version')
+    }
+  } catch (error) {
+    logger.error('Update check failed', { error })
+    notifications.error('Update Check Failed', 'Could not check for updates')
+  }
 }
 
 function handleOpenPreferences(): void {

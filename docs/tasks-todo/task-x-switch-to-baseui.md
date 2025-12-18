@@ -5,6 +5,7 @@
 **Test on a branch.** If it works, merge. If it doesn't, close the branch and move on.
 
 This is a low-risk experiment because:
+
 - All UI components are standard shadcn components (replaceable via CLI)
 - Only 1 consumer file uses `asChild` pattern
 - The branch can simply be deleted if migration fails
@@ -41,6 +42,7 @@ npx shadcn@latest init
 ```
 
 When prompted:
+
 - Choose **Base UI** as the component library (not Radix)
 - Keep other settings as defaults or match existing project config
 - If it asks about overwriting files, allow it
@@ -72,12 +74,14 @@ npm uninstall @radix-ui/react-alert-dialog @radix-ui/react-checkbox @radix-ui/re
 Edit `src/components/preferences/PreferencesDialog.tsx` around line 80.
 
 **Find this pattern:**
+
 ```tsx
 <SidebarMenuButton asChild isActive={activePane === item.id}>
   <button onClick={() => setActivePane(item.id)} className="w-full">
 ```
 
 **Replace with:**
+
 ```tsx
 <SidebarMenuButton
   isActive={activePane === item.id}
@@ -102,6 +106,7 @@ npm run typecheck
 ```
 
 **If errors occur:** They will likely be related to:
+
 - Missing `render` prop type definitions
 - Changed component APIs
 
@@ -130,6 +135,7 @@ Start the dev server and test each item:
 ### Step 12: Commit and Report
 
 If all tests pass:
+
 ```bash
 git add -A
 git commit -m "Switch from Radix to Base UI
@@ -156,13 +162,13 @@ From [shadcn-ui/ui#9049](https://github.com/shadcn-ui/ui/issues/9049):
 
 If you see styling issues, these selectors have changed:
 
-| Radix Selector | Base UI Selector |
-|----------------|------------------|
-| `data-[state=open]` | `data-popup-open` or `data-open` |
-| `data-[state=closed]` | `data-closed` |
-| `data-[state=checked]` | `data-checked` |
-| `group-data-[state=open]/collapsible` | `group-data-panel-open` |
-| `w-(--radix-dropdown-menu-trigger-width)` | `w-(--anchor-width)` |
+| Radix Selector                            | Base UI Selector                 |
+| ----------------------------------------- | -------------------------------- |
+| `data-[state=open]`                       | `data-popup-open` or `data-open` |
+| `data-[state=closed]`                     | `data-closed`                    |
+| `data-[state=checked]`                    | `data-checked`                   |
+| `group-data-[state=open]/collapsible`     | `group-data-panel-open`          |
+| `w-(--radix-dropdown-menu-trigger-width)` | `w-(--anchor-width)`             |
 
 ### cmdk Library Note
 
@@ -174,13 +180,14 @@ If CommandDialog breaks, the fix is to ensure `cmdk` is not importing its own Ra
 
 ## API Changes Reference
 
-| Radix Pattern | Base UI Pattern |
-|--------------|-----------------|
-| `asChild` prop | `render` prop |
-| `<Slot>` component | `useRender` hook |
+| Radix Pattern           | Base UI Pattern                     |
+| ----------------------- | ----------------------------------- |
+| `asChild` prop          | `render` prop                       |
+| `<Slot>` component      | `useRender` hook                    |
 | `<Content side="left">` | `<Positioner side="left"><Content>` |
 
 Event handlers remain the same:
+
 - `onValueChange` - same
 - `onOpenChange` - same
 - `onCheckedChange` - same
@@ -203,6 +210,7 @@ That's it. The main branch is untouched.
 ## Success Criteria
 
 Migration is successful if:
+
 - [ ] `npm run check:all` passes
 - [ ] All manual tests in Step 11 pass
 - [ ] No visual regressions in UI components
