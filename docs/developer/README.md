@@ -47,6 +47,7 @@ Technical documentation for building and extending this app. These docs describe
 | [Testing](./testing.md)                               | Test patterns, Tauri mocking                            |
 | [Bundle Optimization](./bundle-optimization.md)       | Bundle size management                                  |
 | [Logging](./logging.md)                               | Rust and TypeScript logging                             |
+| [Writing Docs](./writing-docs.md)                     | Guide for creating and maintaining these docs           |
 
 ## Release & Distribution
 
