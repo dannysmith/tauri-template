@@ -17,6 +17,7 @@ export function CommandPalette() {
   const { t } = useTranslation()
   const commandPaletteOpen = useUIStore(state => state.commandPaletteOpen)
   const setCommandPaletteOpen = useUIStore(state => state.setCommandPaletteOpen)
+  const toggleCommandPalette = useUIStore(state => state.toggleCommandPalette)
   const commandContext = useCommandContext()
   const [search, setSearch] = useState('')
 
@@ -59,13 +60,13 @@ export function CommandPalette() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
-        setCommandPaletteOpen(!commandPaletteOpen)
+        toggleCommandPalette()
       }
     }
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [commandPaletteOpen, setCommandPaletteOpen])
+  }, [toggleCommandPalette])
 
   // Helper function to get readable group labels
   const getGroupLabel = (groupName: string): string => {

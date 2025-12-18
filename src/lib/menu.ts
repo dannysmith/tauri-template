@@ -105,16 +105,19 @@ export async function buildAppMenu(): Promise<Menu> {
 
 /**
  * Set up a listener to rebuild the menu when the language changes.
+ * Returns an unsubscribe function for cleanup.
  */
-export function setupMenuLanguageListener(): void {
-  i18n.on('languageChanged', async () => {
+export function setupMenuLanguageListener(): () => void {
+  const handler = async () => {
     logger.info('Language changed, rebuilding menu')
     try {
       await buildAppMenu()
     } catch (error) {
       logger.error('Failed to rebuild menu on language change', { error })
     }
-  })
+  }
+  i18n.on('languageChanged', handler)
+  return () => i18n.off('languageChanged', handler)
 }
 
 // Menu action handlers
@@ -151,12 +154,10 @@ function handleOpenPreferences(): void {
 
 function handleToggleLeftSidebar(): void {
   logger.info('Toggle Left Sidebar menu item clicked')
-  const store = useUIStore.getState()
-  store.setLeftSidebarVisible(!store.leftSidebarVisible)
+  useUIStore.getState().toggleLeftSidebar()
 }
 
 function handleToggleRightSidebar(): void {
   logger.info('Toggle Right Sidebar menu item clicked')
-  const store = useUIStore.getState()
-  store.setRightSidebarVisible(!store.rightSidebarVisible)
+  useUIStore.getState().toggleRightSidebar()
 }

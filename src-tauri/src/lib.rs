@@ -132,13 +132,6 @@ pub fn run() {
             // NOTE: Application menu is built from JavaScript for i18n support
             // See src/lib/menu.ts for the menu implementation
 
-            // Example of different log levels
-            log::trace!("This is a trace message (most verbose)");
-            log::debug!("This is a debug message (development only)");
-            log::info!("This is an info message (production)");
-            log::warn!("This is a warning message");
-            // log::error!("This is an error message");
-
             Ok(())
         })
         .invoke_handler(builder.invoke_handler())

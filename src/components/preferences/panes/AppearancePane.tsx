@@ -27,7 +27,7 @@ export function AppearancePane() {
   const { data: preferences } = usePreferences()
   const savePreferences = useSavePreferences()
 
-  const handleThemeChange = async (value: 'light' | 'dark' | 'system') => {
+  const handleThemeChange = (value: 'light' | 'dark' | 'system') => {
     // Update the theme provider immediately for instant UI feedback
     setTheme(value)
 

@@ -102,8 +102,8 @@ export function PreferencesDialog() {
                 <Breadcrumb>
                   <BreadcrumbList>
                     <BreadcrumbItem className="hidden md:block">
-                      <BreadcrumbLink href="#">
-                        {t('preferences.title')}
+                      <BreadcrumbLink asChild>
+                        <span>{t('preferences.title')}</span>
                       </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator className="hidden md:block" />

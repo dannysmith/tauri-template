@@ -50,6 +50,7 @@
 
   "common.enabled": "مفعّل",
   "common.disabled": "معطّل",
+  "common.reset": "إعادة تعيين",
 
   "commands.group.navigation": "التنقل",
   "commands.group.settings": "الإعدادات",
@@ -88,6 +89,11 @@
   "commandPalette.noResults": "لم يتم العثور على نتائج.",
 
   "titlebar.default": "تطبيق تاوري",
+  "titlebar.showLeftSidebar": "إظهار الشريط الجانبي الأيسر",
+  "titlebar.hideLeftSidebar": "إخفاء الشريط الجانبي الأيسر",
+  "titlebar.showRightSidebar": "إظهار الشريط الجانبي الأيمن",
+  "titlebar.hideRightSidebar": "إخفاء الشريط الجانبي الأيمن",
+  "titlebar.settings": "الإعدادات",
 
   "toast.success.preferencesSaved": "تم حفظ التفضيلات",
   "toast.success.testToast": "إشعار اختباري",

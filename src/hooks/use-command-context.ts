@@ -3,9 +3,9 @@ import { notify } from '@/lib/notifications'
 import type { CommandContext } from '@/lib/commands/types'
 
 /**
- * Stable singleton context for command execution.
- * These are imperative actions that read current state when called,
- * not reactive values - so they don't need to be recreated per render.
+ * Module-level singleton actions safe to call outside React components.
+ * Uses getState() at call time, so treat as imperative helpers, not hooks.
+ * Note: Store must be initialized before use (always true after app mount).
  */
 const commandContext: CommandContext = {
   openPreferences: () => useUIStore.getState().togglePreferences(),

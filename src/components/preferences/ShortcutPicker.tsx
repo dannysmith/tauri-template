@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
+import { getPlatform } from '@/hooks/use-platform'
 
 interface ShortcutPickerProps {
   value: string | null
@@ -14,7 +16,7 @@ interface ShortcutPickerProps {
  * Converts "CommandOrControl+Shift+." to "⌘⇧." on macOS or "Ctrl+Shift+." on other platforms.
  */
 function formatShortcutForDisplay(shortcut: string): string {
-  const isMac = navigator.platform.toUpperCase().includes('MAC')
+  const isMac = getPlatform() === 'macos'
 
   let formatted = shortcut
     // Handle CommandOrControl first
@@ -113,6 +115,7 @@ export function ShortcutPicker({
   disabled = false,
   className,
 }: ShortcutPickerProps) {
+  const { t } = useTranslation()
   const [isCapturing, setIsCapturing] = useState(false)
   const [pendingShortcut, setPendingShortcut] = useState<string | null>(null)
   const inputRef = useRef<HTMLDivElement>(null)
@@ -227,7 +230,7 @@ export function ShortcutPicker({
           onClick={handleReset}
           className="text-muted-foreground hover:text-foreground text-xs underline"
         >
-          Reset
+          {t('common.reset')}
         </button>
       )}
     </div>

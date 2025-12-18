@@ -68,12 +68,16 @@ pub async fn save_emergency_data(
         }
     })?;
 
-    std::fs::rename(&temp_path, &file_path).map_err(|e| {
-        log::error!("Failed to finalize emergency data file: {e}");
-        RecoveryError::IoError {
-            message: e.to_string(),
+    if let Err(rename_err) = std::fs::rename(&temp_path, &file_path) {
+        log::error!("Failed to finalize emergency data file: {rename_err}");
+        // Clean up the temp file to avoid leaving orphaned files on disk
+        if let Err(remove_err) = std::fs::remove_file(&temp_path) {
+            log::warn!("Failed to remove temp file after rename failure: {remove_err}");
         }
-    })?;
+        return Err(RecoveryError::IoError {
+            message: rename_err.to_string(),
+        });
+    }
 
     log::info!("Successfully saved emergency data to {file_path:?}");
     Ok(())

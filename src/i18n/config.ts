@@ -10,7 +10,7 @@ const resources = {
   fr: { translation: fr },
 }
 
-// RTL language detection
+// RTL language detection (includes languages not yet in resources for future expansion)
 const rtlLanguages = ['ar', 'he', 'fa', 'ur']
 
 i18n.use(initReactI18next).init({

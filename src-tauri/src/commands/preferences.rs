@@ -102,10 +102,14 @@ pub async fn save_preferences(app: AppHandle, preferences: AppPreferences) -> Re
         format!("Failed to write preferences file: {e}")
     })?;
 
-    std::fs::rename(&temp_path, &prefs_path).map_err(|e| {
-        log::error!("Failed to finalize preferences file: {e}");
-        format!("Failed to finalize preferences file: {e}")
-    })?;
+    if let Err(rename_err) = std::fs::rename(&temp_path, &prefs_path) {
+        log::error!("Failed to finalize preferences file: {rename_err}");
+        // Clean up the temp file to avoid leaving orphaned files on disk
+        if let Err(remove_err) = std::fs::remove_file(&temp_path) {
+            log::warn!("Failed to remove temp file after rename failure: {remove_err}");
+        }
+        return Err(format!("Failed to finalize preferences file: {rename_err}"));
+    }
 
     log::info!("Successfully saved preferences to {prefs_path:?}");
     Ok(())

@@ -50,6 +50,7 @@
 
   "common.enabled": "Activé",
   "common.disabled": "Désactivé",
+  "common.reset": "Réinitialiser",
 
   "commands.group.navigation": "Navigation",
   "commands.group.settings": "Paramètres",
@@ -88,6 +89,11 @@
   "commandPalette.noResults": "Aucun résultat trouvé.",
 
   "titlebar.default": "Application Tauri",
+  "titlebar.showLeftSidebar": "Afficher la barre latérale gauche",
+  "titlebar.hideLeftSidebar": "Masquer la barre latérale gauche",
+  "titlebar.showRightSidebar": "Afficher la barre latérale droite",
+  "titlebar.hideRightSidebar": "Masquer la barre latérale droite",
+  "titlebar.settings": "Paramètres",
 
   "toast.success.preferencesSaved": "Préférences enregistrées",
   "toast.success.testToast": "Toast de test",
