@@ -15,7 +15,7 @@ After receiving their input:
 2. **Get GitHub username** using `gh api user --jq .login` or `git config user.name`
 3. **Update `package.json`**: Set `name` (kebab-case) and `description`
 4. **Update `src/index.html`**: Set `<title>` tag
-5. **Update `CLAUDE.md`**: Update the Overview section with app name and description
+5. **Update `AGENTS.md`**: Update the Overview section with app name and description
 6. **Update `README.md`**: Replace "Tauri React Template" with app name, update description
 7. **Update `src-tauri/tauri.conf.json`**:
    - `productName`: App name

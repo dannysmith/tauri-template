@@ -28,7 +28,7 @@ Read and understand the task document or implementation plan being validated.
 
 Read ALL of these files to build complete understanding:
 
-- `CLAUDE.md` - core patterns and rules
+- `AGENTS.md` - core patterns and rules
 - `docs/developer/architecture-guide.md` - high-level architecture
 - `docs/developer/state-management.md` - state onion pattern
 - `docs/developer/command-system.md` - command patterns
