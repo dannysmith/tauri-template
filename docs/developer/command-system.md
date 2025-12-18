@@ -50,12 +50,12 @@ export function initializeCommandSystem(): void {
 ```typescript
 interface AppCommand {
   id: string
-  labelKey: string           // Translation key (e.g., 'commands.myAction.label')
-  descriptionKey?: string    // Translation key for description
+  labelKey: string // Translation key (e.g., 'commands.myAction.label')
+  descriptionKey?: string // Translation key for description
   icon?: LucideIcon
-  group?: string             // Grouping for command palette
-  keywords?: string[]        // Additional search terms
-  shortcut?: string          // Display shortcut (e.g., '⌘+1')
+  group?: string // Grouping for command palette
+  keywords?: string[] // Additional search terms
+  shortcut?: string // Display shortcut (e.g., '⌘+1')
   execute: (context: CommandContext) => void | Promise<void>
   isAvailable?: (context: CommandContext) => boolean
 }
@@ -191,7 +191,7 @@ import { myFeatureCommands } from './my-feature-commands'
 
 export function initializeCommandSystem(): void {
   registerCommands(navigationCommands)
-  registerCommands(myFeatureCommands)  // Add here
+  registerCommands(myFeatureCommands) // Add here
   // ...
 }
 ```
@@ -201,10 +201,15 @@ export function initializeCommandSystem(): void {
 ```typescript
 // src/hooks/use-command-context.ts
 export function useCommandContext(): CommandContext {
-  return useMemo(() => ({
-    // ... existing actions
-    myNewAction: () => { /* implementation */ },
-  }), [])
+  return useMemo(
+    () => ({
+      // ... existing actions
+      myNewAction: () => {
+        /* implementation */
+      },
+    }),
+    []
+  )
 }
 
 // Update CommandContext type in types.ts
@@ -223,10 +228,10 @@ Group labels are translated via `commands.group.{groupName}` keys.
 
 ## Best Practices
 
-| Do | Don't |
-|----|-------|
-| Use `labelKey` with translation keys | Hardcode label strings |
-| Use `getState()` in execute functions | Use hooks in commands |
-| Check `isAvailable` for context-dependent commands | Show unavailable commands |
-| Provide `keywords` for better searchability | Rely only on label matching |
-| Use `context.showToast()` for feedback | Silently execute without feedback |
+| Do                                                 | Don't                             |
+| -------------------------------------------------- | --------------------------------- |
+| Use `labelKey` with translation keys               | Hardcode label strings            |
+| Use `getState()` in execute functions              | Use hooks in commands             |
+| Check `isAvailable` for context-dependent commands | Show unavailable commands         |
+| Provide `keywords` for better searchability        | Rely only on label matching       |
+| Use `context.showToast()` for feedback             | Silently execute without feedback |

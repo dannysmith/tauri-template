@@ -8,10 +8,10 @@ Patterns for calling external HTTP APIs from Tauri applications.
 
 **Default recommendation: Use Rust backend (reqwest)**
 
-| Approach        | Pros                                              | Cons                           |
-| --------------- | ------------------------------------------------- | ------------------------------ |
-| Rust (reqwest)  | CORS bypass, secure token storage, type safety    | More code per endpoint         |
-| Frontend (fetch)| Less boilerplate, familiar API                    | CORS restrictions, exposed keys|
+| Approach         | Pros                                           | Cons                            |
+| ---------------- | ---------------------------------------------- | ------------------------------- |
+| Rust (reqwest)   | CORS bypass, secure token storage, type safety | More code per endpoint          |
+| Frontend (fetch) | Less boilerplate, familiar API                 | CORS restrictions, exposed keys |
 
 ### Use Rust Backend For
 
@@ -100,7 +100,13 @@ export function useUpdateUser() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ userId, data }: { userId: number; data: Partial<User> }) => {
+    mutationFn: async ({
+      userId,
+      data,
+    }: {
+      userId: number
+      data: Partial<User>
+    }) => {
       const result = await commands.updateUser(userId, data)
       if (result.status === 'error') throw new Error(result.error)
       return result.data
@@ -116,11 +122,11 @@ export function useUpdateUser() {
 
 ### Token Storage Options
 
-| Option | Security | Use When |
-| ------ | -------- | -------- |
-| `keyring` crate | High (OS keychain) | API tokens, credentials |
+| Option                    | Security            | Use When                          |
+| ------------------------- | ------------------- | --------------------------------- |
+| `keyring` crate           | High (OS keychain)  | API tokens, credentials           |
 | `tauri-plugin-stronghold` | High (encrypted DB) | Multiple secrets, encryption keys |
-| `tauri-plugin-store` | Low (plain JSON) | Non-sensitive data only |
+| `tauri-plugin-store`      | Low (plain JSON)    | Non-sensitive data only           |
 
 For OS keychain access, use the `keyring` crate directly:
 
@@ -219,11 +225,11 @@ See [data-persistence.md](./data-persistence.md) for SQLite setup.
 
 ## Quick Reference
 
-| Task                     | Pattern                                  |
-| ------------------------ | ---------------------------------------- |
-| Basic API call           | Rust command with reqwest                |
-| Caching                  | TanStack Query (frontend) or SQLite      |
-| Token storage            | `keyring` crate (OS keychain)            |
-| Type safety              | tauri-specta (same as local commands)    |
-| Error handling           | Result types, see error-handling.md      |
-| Offline support          | Cache to SQLite, fallback on network err |
+| Task            | Pattern                                  |
+| --------------- | ---------------------------------------- |
+| Basic API call  | Rust command with reqwest                |
+| Caching         | TanStack Query (frontend) or SQLite      |
+| Token storage   | `keyring` crate (OS keychain)            |
+| Type safety     | tauri-specta (same as local commands)    |
+| Error handling  | Result types, see error-handling.md      |
+| Offline support | Cache to SQLite, fallback on network err |

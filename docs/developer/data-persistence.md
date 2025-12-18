@@ -4,11 +4,11 @@ Patterns for saving and loading data to disk.
 
 ## Choosing a Storage Method
 
-| Need               | Solution           | When to Use                                    |
-| ------------------ | ------------------ | ---------------------------------------------- |
-| App preferences    | Preferences System | Strongly-typed settings (theme, shortcuts)     |
-| Emergency recovery | Recovery System    | Crash recovery, backup before risky operations |
-| Relational data    | SQLite             | User data requiring queries, relationships     |
+| Need               | Solution           | When to Use                                                           |
+| ------------------ | ------------------ | --------------------------------------------------------------------- |
+| App preferences    | Preferences System | Strongly-typed settings (theme, shortcuts)                            |
+| Emergency recovery | Recovery System    | Crash recovery, backup before risky operations                        |
+| Relational data    | SQLite             | User data requiring queries, relationships                            |
 | External API data  | TanStack Query     | Remote data with caching (see [external-apis.md](./external-apis.md)) |
 
 ```
@@ -174,20 +174,20 @@ Use Tauri's `app_data_dir()` for safe storage locations - never write to arbitra
 
 ### When to Use SQLite
 
-| Use Case                          | Recommendation         |
-| --------------------------------- | ---------------------- |
-| Simple key-value settings         | Preferences System     |
-| User data with relationships      | SQLite                 |
-| Data requiring complex queries    | SQLite                 |
-| Large datasets (1000+ records)    | SQLite                 |
-| Data needing atomic transactions  | SQLite                 |
+| Use Case                         | Recommendation     |
+| -------------------------------- | ------------------ |
+| Simple key-value settings        | Preferences System |
+| User data with relationships     | SQLite             |
+| Data requiring complex queries   | SQLite             |
+| Large datasets (1000+ records)   | SQLite             |
+| Data needing atomic transactions | SQLite             |
 
 ### Approach Options
 
-| Approach | Use When |
-| -------- | -------- |
-| `rusqlite` | Simpler setup, synchronous queries, smaller apps |
-| `sqlx` | Async queries, compile-time SQL checking, larger apps |
+| Approach   | Use When                                              |
+| ---------- | ----------------------------------------------------- |
+| `rusqlite` | Simpler setup, synchronous queries, smaller apps      |
+| `sqlx`     | Async queries, compile-time SQL checking, larger apps |
 
 Both integrate with Tauri commands and tauri-specta for type safety.
 

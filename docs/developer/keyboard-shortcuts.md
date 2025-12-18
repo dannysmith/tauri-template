@@ -110,7 +110,7 @@ Native DOM event listeners are used instead of libraries like `react-hotkeys-hoo
 ## Troubleshooting
 
 | Issue                             | Check                                              |
-| --------------------------------- | -------------------------------------------------- | --- | ---------- |
+| --------------------------------- | -------------------------------------------------- |
 | Shortcuts not firing              | `useMainWindowEventListeners` called in MainWindow |
 | Browser intercepts shortcut       | Add `e.preventDefault()`                           |
-| Different behavior Mac vs Windows | Test `e.metaKey                                    |     | e.ctrlKey` |
+| Different behavior Mac vs Windows | Test `e.metaKey \|\| e.ctrlKey`                    |

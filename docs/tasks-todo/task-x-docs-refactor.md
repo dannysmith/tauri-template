@@ -157,7 +157,7 @@ Apply guidelines to each remaining doc:
 - [x] Pass 2: Review for consistency with actual codebase patterns.
 - [x] Pass 3: Review for "evergreenness" - There should be no references to "this template" etc. It should be "This app". In some cases it may be helpful to include notes for humans and AI agents at the top of some of these to remind them to update these documents in certain circumstances. But we don't want to go overboard on this.
 - [x] Pass 4: review for possible additions - things wwhich are NOT in the codebase, but we know to be important when building out features in the future.
-- [ ] Pass 5: Lightweight review for improved token efficiency, formatting, consistency, spelling errors etc.
+- [x] Pass 5: Lightweight review for improved token efficiency, formatting, consistency, spelling errors etc.
 
 ### Step 5 - Getting started guide & init command
 

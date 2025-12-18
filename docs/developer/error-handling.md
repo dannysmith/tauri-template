@@ -132,8 +132,8 @@ pub async fn load_file(path: &str) -> Result<String, String> {
 // ✅ GOOD: Separate user feedback from technical logging
 const result = await commands.saveData(data)
 if (result.status === 'error') {
-  logger.error('Save failed', { error: result.error, data })  // Technical
-  toast.error('Failed to save')                                // User-facing
+  logger.error('Save failed', { error: result.error, data }) // Technical
+  toast.error('Failed to save') // User-facing
 }
 ```
 
@@ -190,11 +190,11 @@ useQuery({
 
 Error boundaries catch render errors, not async errors:
 
-| Caught by Error Boundary         | NOT Caught                              |
-| -------------------------------- | --------------------------------------- |
-| Errors during render             | Errors in event handlers                |
-| Errors in lifecycle methods      | Async code (promises)                   |
-| Errors in constructors           | Errors in the error boundary itself     |
+| Caught by Error Boundary    | NOT Caught                          |
+| --------------------------- | ----------------------------------- |
+| Errors during render        | Errors in event handlers            |
+| Errors in lifecycle methods | Async code (promises)               |
+| Errors in constructors      | Errors in the error boundary itself |
 
 For async Tauri command errors, use explicit handling or `unwrapResult` with TanStack Query.
 
@@ -227,12 +227,12 @@ const handleChange = async (newValue: string) => {
 
 ## Quick Reference
 
-| Scenario              | Rust Error Type     | TypeScript Pattern    | User Feedback    |
-| --------------------- | ------------------- | --------------------- | ---------------- |
-| Simple command        | `String`            | if/else + toast       | Toast on error   |
-| Multiple failure modes| Structured enum     | Match on `.type`      | Context-specific |
-| Data fetching         | Either              | `unwrapResult`        | Query error UI   |
-| Optional feature      | Either              | Graceful degradation  | Silent fallback  |
-| Critical operation    | Structured enum     | Explicit + rollback   | Toast + recovery |
+| Scenario               | Rust Error Type | TypeScript Pattern   | User Feedback    |
+| ---------------------- | --------------- | -------------------- | ---------------- |
+| Simple command         | `String`        | if/else + toast      | Toast on error   |
+| Multiple failure modes | Structured enum | Match on `.type`     | Context-specific |
+| Data fetching          | Either          | `unwrapResult`       | Query error UI   |
+| Optional feature       | Either          | Graceful degradation | Silent fallback  |
+| Critical operation     | Structured enum | Explicit + rollback  | Toast + recovery |
 
 See also: [tauri-commands.md](./tauri-commands.md) for Result type patterns, [logging.md](./logging.md) for logging best practices.

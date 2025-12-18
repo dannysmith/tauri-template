@@ -169,6 +169,7 @@ Tauri v2 uses a permission-based capabilities system. Each window only gets the 
 ```
 
 **Key rules:**
+
 - Use specific window labels, not `["*"]`
 - Only add permissions actually needed
 - Remote content (if any) should have minimal permissions
@@ -178,17 +179,18 @@ Tauri v2 uses a permission-based capabilities system. Each window only gets the 
 CSP prevents XSS attacks. Configuration is in `src-tauri/tauri.conf.json`.
 
 **Rules:**
+
 - Never load scripts from CDNs - bundle everything locally
 - Avoid `'unsafe-eval'` unless absolutely necessary
 - Images: restrict to specific domains when possible
 
 ### Secure Storage
 
-| Data Type           | Storage                      | Security Level |
-| ------------------- | ---------------------------- | -------------- |
-| API tokens/keys     | OS keychain (`keyring` crate)| High           |
-| App preferences     | App data directory (JSON)    | Medium         |
-| User content        | App data directory/SQLite    | Medium         |
+| Data Type       | Storage                       | Security Level |
+| --------------- | ----------------------------- | -------------- |
+| API tokens/keys | OS keychain (`keyring` crate) | High           |
+| App preferences | App data directory (JSON)     | Medium         |
+| User content    | App data directory/SQLite     | Medium         |
 
 Never store sensitive tokens in `tauri-plugin-store` (plain JSON on disk). See [external-apis.md](./external-apis.md) for keychain patterns.
 
