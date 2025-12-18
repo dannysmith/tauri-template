@@ -1,5 +1,5 @@
 ---
-allowed-tools: [Task, AskUserQuestion]
+allowed-tools: [Task, AskUserQuestion, Write, Read, Bash, Glob, TodoWrite, Edit]
 description: 'Run static analysis and get cleanup recommendations'
 ---
 

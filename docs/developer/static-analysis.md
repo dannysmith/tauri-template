@@ -96,8 +96,6 @@ Detects unused exports, dependencies, and files. Not in `check:all` - use period
 npm run knip
 ```
 
-Use the `/knip-cleanup` Claude command for guided cleanup.
-
 ### jscpd (Periodic Cleanup)
 
 Detects duplicated code blocks. Not in `check:all` - use periodically.
@@ -106,7 +104,7 @@ Detects duplicated code blocks. Not in `check:all` - use periodically.
 npm run jscpd
 ```
 
-Use the `/review-duplicates` Claude command for guided cleanup.
+Use the `/cleanup` command for guided analysis and cleanup of both knip and jscpd findings.
 
 ## CI Integration
 

@@ -65,8 +65,8 @@ const handleAction = () => {
 ### Static Analysis
 
 - **React Compiler**: Handles memoization automatically - no manual `useMemo`/`useCallback` needed
-- **ast-grep**: Enforces architecture patterns (e.g., no Zustand destructuring). See `docs/developer/ast-grep-linting.md`
-- **Knip/jscpd**: Periodic cleanup tools. Use `/knip-cleanup` and `/review-duplicates` commands
+- **ast-grep**: Enforces architecture patterns (e.g., no Zustand destructuring). See `docs/developer/static-analysis.md`
+- **Knip/jscpd**: Periodic cleanup tools. Use `/cleanup` command
 
 ### Event-Driven Bridge
 
@@ -115,3 +115,20 @@ const t = i18n.t.bind(i18n)
 
 - **Context7 First**: Always use Context7 for framework docs before WebSearch
 - **Version Requirements**: Tauri v2.x, shadcn/ui v4.x, Tailwind v4.x, React 19.x, Zustand v5.x, Vite v7.x, Vitest v4.x
+
+## Commands & Agents
+
+### Commands
+
+- `/check` - Check work against architecture, run `npm run check:all`, suggest commit message
+- `/cleanup` - Run static analysis (knip, jscpd, check:all), get structured recommendations
+- `/init` - One-time template initialization
+
+### Agents
+
+Task-focused agents that leverage separate context for focused work:
+
+- `plan-checker` - Validate implementation plans against documented architecture
+- `docs-reviewer` - Review developer docs for accuracy and codebase consistency
+- `userguide-reviewer` - Review user guide against actual system features
+- `cleanup-analyzer` - Analyze static analysis output (used by `/cleanup`)
