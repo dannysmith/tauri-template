@@ -15,26 +15,39 @@ import { useUIStore } from '@/store/ui-store'
 import { useMainWindowEventListeners } from '@/hooks/useMainWindowEventListeners'
 import { cn } from '@/lib/utils'
 
+/**
+ * Layout sizing configuration for resizable panels.
+ * All values are percentages of total width.
+ * Sidebar defaults + main default must equal 100.
+ */
+const LAYOUT = {
+  leftSidebar: { default: 20, min: 15, max: 40 },
+  rightSidebar: { default: 20, min: 15, max: 40 },
+  main: { min: 30 },
+} as const
+
+// Main content default is calculated to ensure totals sum to 100%
+const MAIN_CONTENT_DEFAULT =
+  100 - LAYOUT.leftSidebar.default - LAYOUT.rightSidebar.default
+
 export function MainWindow() {
   const { theme } = useTheme()
-  const { leftSidebarVisible, rightSidebarVisible } = useUIStore()
+  const leftSidebarVisible = useUIStore(state => state.leftSidebarVisible)
+  const rightSidebarVisible = useUIStore(state => state.rightSidebarVisible)
 
   // Set up global event listeners (keyboard shortcuts, etc.)
   useMainWindowEventListeners()
 
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden rounded-xl bg-background">
-      {/* Title Bar */}
       <TitleBar />
 
-      {/* Main Content Area with Resizable Panels */}
       <div className="flex flex-1 overflow-hidden">
         <ResizablePanelGroup direction="horizontal">
-          {/* Left Sidebar */}
           <ResizablePanel
-            defaultSize={20}
-            minSize={15}
-            maxSize={40}
+            defaultSize={LAYOUT.leftSidebar.default}
+            minSize={LAYOUT.leftSidebar.min}
+            maxSize={LAYOUT.leftSidebar.max}
             className={cn(!leftSidebarVisible && 'hidden')}
           >
             <LeftSideBar />
@@ -42,18 +55,19 @@ export function MainWindow() {
 
           <ResizableHandle className={cn(!leftSidebarVisible && 'hidden')} />
 
-          {/* Main Content */}
-          <ResizablePanel defaultSize={60} minSize={30}>
+          <ResizablePanel
+            defaultSize={MAIN_CONTENT_DEFAULT}
+            minSize={LAYOUT.main.min}
+          >
             <MainWindowContent />
           </ResizablePanel>
 
           <ResizableHandle className={cn(!rightSidebarVisible && 'hidden')} />
 
-          {/* Right Sidebar */}
           <ResizablePanel
-            defaultSize={20}
-            minSize={15}
-            maxSize={40}
+            defaultSize={LAYOUT.rightSidebar.default}
+            minSize={LAYOUT.rightSidebar.min}
+            maxSize={LAYOUT.rightSidebar.max}
             className={cn(!rightSidebarVisible && 'hidden')}
           >
             <RightSideBar />
@@ -85,5 +99,3 @@ export function MainWindow() {
     </div>
   )
 }
-
-export default MainWindow

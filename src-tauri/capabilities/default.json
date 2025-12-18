@@ -14,12 +14,16 @@
     "core:window:allow-is-fullscreen",
     "core:window:default",
     "core:window:allow-start-dragging",
+    "core:webview:allow-create-webview-window",
+    "core:event:default",
     "opener:default",
     "clipboard-manager:default",
     "dialog:default",
     "fs:default",
     "log:default",
     "notification:default",
-    "process:default"
+    "process:default",
+    "os:default",
+    "global-shortcut:default"
   ]
 }

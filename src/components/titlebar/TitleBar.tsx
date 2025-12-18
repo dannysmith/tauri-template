@@ -1,29 +1,77 @@
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
+import { usePlatform, type AppPlatform } from '@/hooks/use-platform'
 import { MacOSWindowControls } from './MacOSWindowControls'
-import { Button } from '@/components/ui/button'
-import { useUIStore } from '@/store/ui-store'
-import { executeCommand, useCommandContext } from '@/lib/commands'
+import { WindowsWindowControls } from './WindowsWindowControls'
 import {
-  PanelLeft,
-  PanelLeftClose,
-  PanelRight,
-  PanelRightClose,
-  Settings,
-} from 'lucide-react'
+  TitleBarLeftActions,
+  TitleBarRightActions,
+  TitleBarTitle,
+} from './TitleBarContent'
+import { LinuxTitleBar } from './LinuxTitleBar'
 
 interface TitleBarProps {
   className?: string
   title?: string
+  /**
+   * Force a specific platform for development/testing.
+   * Only works in development builds.
+   */
+  forcePlatform?: AppPlatform
 }
 
-export function TitleBar({ className, title = 'Tauri App' }: TitleBarProps) {
-  const {
-    leftSidebarVisible,
-    rightSidebarVisible,
-    toggleLeftSidebar,
-    toggleRightSidebar,
-  } = useUIStore()
-  const commandContext = useCommandContext()
+/**
+ * Cross-platform title bar component.
+ *
+ * Renders platform-specific title bars:
+ * - **macOS**: Custom title bar with traffic lights on LEFT
+ * - **Windows**: Custom title bar with controls on RIGHT
+ * - **Linux**: Toolbar only (native decorations provide window controls)
+ *
+ * Use `forcePlatform` prop in development to test other platform layouts.
+ */
+export function TitleBar({ className, title, forcePlatform }: TitleBarProps) {
+  const { t } = useTranslation()
+  const displayTitle = title ?? t('titlebar.default')
+  const detectedPlatform = usePlatform()
+
+  // In development, allow forcing a platform for testing
+  const platform =
+    import.meta.env.DEV && forcePlatform ? forcePlatform : detectedPlatform
+
+  // Linux uses native decorations, so render just the toolbar
+  if (platform === 'linux') {
+    return <LinuxTitleBar className={className} title={displayTitle} />
+  }
+
+  // Windows: controls on the right
+  if (platform === 'windows') {
+    return (
+      <div
+        data-tauri-drag-region
+        className={cn(
+          'relative flex h-8 w-full shrink-0 items-center justify-between border-b bg-background',
+          className
+        )}
+      >
+        {/* Left side - Actions */}
+        <div className="flex items-center pl-2">
+          <TitleBarLeftActions />
+        </div>
+
+        {/* Center - Title */}
+        <TitleBarTitle title={displayTitle} />
+
+        {/* Right side - Actions + Window Controls */}
+        <div className="flex items-center">
+          <TitleBarRightActions />
+          <WindowsWindowControls />
+        </div>
+      </div>
+    )
+  }
+
+  // macOS (default): traffic lights on the left
   return (
     <div
       data-tauri-drag-region
@@ -32,65 +80,19 @@ export function TitleBar({ className, title = 'Tauri App' }: TitleBarProps) {
         className
       )}
     >
-      {/* Left side - Window Controls + Left Actions */}
+      {/* Left side - Window Controls + Actions */}
       <div className="flex items-center">
         <MacOSWindowControls />
-
-        {/* Left Action Buttons */}
-        <div className="flex items-center gap-1">
-          <Button
-            onClick={toggleLeftSidebar}
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 text-foreground/70 hover:text-foreground"
-            title={
-              leftSidebarVisible ? 'Hide Left Sidebar' : 'Show Left Sidebar'
-            }
-          >
-            {leftSidebarVisible ? (
-              <PanelLeftClose className="h-3 w-3" />
-            ) : (
-              <PanelLeft className="h-3 w-3" />
-            )}
-          </Button>
-        </div>
+        <TitleBarLeftActions />
       </div>
 
       {/* Center - Title */}
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-        <span className="text-sm font-medium text-foreground/80">{title}</span>
-      </div>
+      <TitleBarTitle title={displayTitle} />
 
-      {/* Right side - Right Actions */}
-      <div className="flex items-center gap-1 pr-2">
-        <Button
-          onClick={() => executeCommand('open-preferences', commandContext)}
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6 text-foreground/70 hover:text-foreground"
-          title="Settings"
-        >
-          <Settings className="h-3 w-3" />
-        </Button>
-
-        <Button
-          onClick={toggleRightSidebar}
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6 text-foreground/70 hover:text-foreground"
-          title={
-            rightSidebarVisible ? 'Hide Right Sidebar' : 'Show Right Sidebar'
-          }
-        >
-          {rightSidebarVisible ? (
-            <PanelRightClose className="h-3 w-3" />
-          ) : (
-            <PanelRight className="h-3 w-3" />
-          )}
-        </Button>
+      {/* Right side - Actions */}
+      <div className="flex items-center pr-2">
+        <TitleBarRightActions />
       </div>
     </div>
   )
 }
-
-export default TitleBar

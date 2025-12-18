@@ -1,6 +1,6 @@
-import React, { useCallback } from 'react'
-import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
+import { useTranslation } from 'react-i18next'
+import { locale } from '@tauri-apps/plugin-os'
+import { toast } from 'sonner'
 import {
   Select,
   SelectContent,
@@ -9,56 +9,98 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useTheme } from '@/hooks/use-theme'
-import { useSavePreferences } from '@/services/preferences'
+import { SettingsField, SettingsSection } from '../shared/SettingsComponents'
+import { usePreferences, useSavePreferences } from '@/services/preferences'
+import { availableLanguages } from '@/i18n'
+import { logger } from '@/lib/logger'
 
-const SettingsField: React.FC<{
-  label: string
-  children: React.ReactNode
-  description?: string
-}> = ({ label, children, description }) => (
-  <div className="space-y-2">
-    <Label className="text-sm font-medium text-foreground">{label}</Label>
-    {children}
-    {description && (
-      <p className="text-sm text-muted-foreground">{description}</p>
-    )}
-  </div>
-)
+// Language display names (native names)
+const languageNames: Record<string, string> = {
+  en: 'English',
+  fr: 'Français',
+  ar: 'العربية',
+}
 
-const SettingsSection: React.FC<{
-  title: string
-  children: React.ReactNode
-}> = ({ title, children }) => (
-  <div className="space-y-4">
-    <div>
-      <h3 className="text-lg font-medium text-foreground">{title}</h3>
-      <Separator className="mt-2" />
-    </div>
-    <div className="space-y-4">{children}</div>
-  </div>
-)
-
-export const AppearancePane: React.FC = () => {
+export function AppearancePane() {
+  const { t, i18n } = useTranslation()
   const { theme, setTheme } = useTheme()
+  const { data: preferences } = usePreferences()
   const savePreferences = useSavePreferences()
 
-  const handleThemeChange = useCallback(
-    async (value: 'light' | 'dark' | 'system') => {
-      // Update the theme provider immediately for instant UI feedback
-      setTheme(value)
+  const handleThemeChange = (value: 'light' | 'dark' | 'system') => {
+    // Update the theme provider immediately for instant UI feedback
+    setTheme(value)
 
-      // Persist the theme preference to disk
-      savePreferences.mutate({ theme: value })
-    },
-    [setTheme, savePreferences]
-  )
+    // Persist the theme preference to disk, preserving other preferences
+    if (preferences) {
+      savePreferences.mutate({ ...preferences, theme: value })
+    }
+  }
+
+  const handleLanguageChange = async (value: string) => {
+    const language = value === 'system' ? null : value
+
+    try {
+      // Change the language immediately for instant UI feedback
+      if (language) {
+        await i18n.changeLanguage(language)
+      } else {
+        // System language selected - detect and apply system locale
+        const systemLocale = await locale()
+        const langCode = systemLocale?.split('-')[0]?.toLowerCase() ?? 'en'
+        const targetLang = availableLanguages.includes(langCode)
+          ? langCode
+          : 'en'
+        await i18n.changeLanguage(targetLang)
+      }
+    } catch (error) {
+      logger.error('Failed to change language', { error })
+      toast.error(t('toast.error.generic'))
+      return
+    }
+
+    // Persist the language preference to disk
+    if (preferences) {
+      savePreferences.mutate({ ...preferences, language })
+    }
+  }
+
+  // Determine the current language value for the select
+  const currentLanguageValue = preferences?.language ?? 'system'
 
   return (
     <div className="space-y-6">
-      <SettingsSection title="Theme">
+      <SettingsSection title={t('preferences.appearance.language')}>
         <SettingsField
-          label="Color Theme"
-          description="Choose your preferred color theme"
+          label={t('preferences.appearance.language')}
+          description={t('preferences.appearance.languageDescription')}
+        >
+          <Select
+            value={currentLanguageValue}
+            onValueChange={handleLanguageChange}
+            disabled={savePreferences.isPending}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="system">
+                {t('preferences.appearance.language.system')}
+              </SelectItem>
+              {availableLanguages.map(lang => (
+                <SelectItem key={lang} value={lang}>
+                  {languageNames[lang] ?? lang}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </SettingsField>
+      </SettingsSection>
+
+      <SettingsSection title={t('preferences.appearance.theme')}>
+        <SettingsField
+          label={t('preferences.appearance.colorTheme')}
+          description={t('preferences.appearance.colorThemeDescription')}
         >
           <Select
             value={theme}
@@ -66,12 +108,20 @@ export const AppearancePane: React.FC = () => {
             disabled={savePreferences.isPending}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select theme" />
+              <SelectValue
+                placeholder={t('preferences.appearance.selectTheme')}
+              />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="light">Light</SelectItem>
-              <SelectItem value="dark">Dark</SelectItem>
-              <SelectItem value="system">System</SelectItem>
+              <SelectItem value="light">
+                {t('preferences.appearance.theme.light')}
+              </SelectItem>
+              <SelectItem value="dark">
+                {t('preferences.appearance.theme.dark')}
+              </SelectItem>
+              <SelectItem value="system">
+                {t('preferences.appearance.theme.system')}
+              </SelectItem>
             </SelectContent>
           </Select>
         </SettingsField>

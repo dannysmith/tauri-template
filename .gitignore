@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 *.local.*
+jscpd-report
 
 # Editor directories and files
 .vscode/*

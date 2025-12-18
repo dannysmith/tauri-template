@@ -2,9 +2,9 @@
  * Simple notification system supporting both in-app toasts and native system notifications
  */
 
-import { invoke } from '@tauri-apps/api/core'
 import { toast } from 'sonner'
 import { logger } from './logger'
+import { commands } from './tauri-bindings'
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning'
 
@@ -47,10 +47,13 @@ export async function notify(
     if (native) {
       // Send native system notification via Tauri
       logger.debug('Sending native notification', { title, message, type })
-      await invoke('send_native_notification', {
+      const result = await commands.sendNativeNotification(
         title,
-        body: message,
-      })
+        message ?? null
+      )
+      if (result.status === 'error') {
+        throw new Error(result.error)
+      }
     } else {
       // Send in-app toast notification
       logger.debug('Sending toast notification', { title, message, type })

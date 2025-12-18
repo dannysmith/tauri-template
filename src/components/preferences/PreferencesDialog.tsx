@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Settings, Palette, Zap } from 'lucide-react'
 import {
   Breadcrumb,
@@ -34,44 +35,37 @@ type PreferencePane = 'general' | 'appearance' | 'advanced'
 const navigationItems = [
   {
     id: 'general' as const,
-    name: 'General',
+    labelKey: 'preferences.general',
     icon: Settings,
   },
   {
     id: 'appearance' as const,
-    name: 'Appearance',
+    labelKey: 'preferences.appearance',
     icon: Palette,
   },
   {
     id: 'advanced' as const,
-    name: 'Advanced',
+    labelKey: 'preferences.advanced',
     icon: Zap,
   },
-]
-
-const getPaneTitle = (pane: PreferencePane): string => {
-  switch (pane) {
-    case 'general':
-      return 'General'
-    case 'appearance':
-      return 'Appearance'
-    case 'advanced':
-      return 'Advanced'
-    default:
-      return 'General'
-  }
-}
+] as const
 
 export function PreferencesDialog() {
+  const { t } = useTranslation()
   const [activePane, setActivePane] = useState<PreferencePane>('general')
-  const { preferencesOpen, setPreferencesOpen } = useUIStore()
+  const preferencesOpen = useUIStore(state => state.preferencesOpen)
+  const setPreferencesOpen = useUIStore(state => state.setPreferencesOpen)
+
+  const getPaneTitle = (pane: PreferencePane): string => {
+    return t(`preferences.${pane}`)
+  }
 
   return (
     <Dialog open={preferencesOpen} onOpenChange={setPreferencesOpen}>
       <DialogContent className="overflow-hidden p-0 md:max-h-[600px] md:max-w-[900px] lg:max-w-[1000px] font-sans rounded-xl">
-        <DialogTitle className="sr-only">Preferences</DialogTitle>
+        <DialogTitle className="sr-only">{t('preferences.title')}</DialogTitle>
         <DialogDescription className="sr-only">
-          Customize your application preferences here.
+          {t('preferences.description')}
         </DialogDescription>
 
         <SidebarProvider className="items-start">
@@ -91,7 +85,7 @@ export function PreferencesDialog() {
                             className="w-full"
                           >
                             <item.icon />
-                            <span>{item.name}</span>
+                            <span>{t(item.labelKey)}</span>
                           </button>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -108,7 +102,9 @@ export function PreferencesDialog() {
                 <Breadcrumb>
                   <BreadcrumbList>
                     <BreadcrumbItem className="hidden md:block">
-                      <BreadcrumbLink href="#">Preferences</BreadcrumbLink>
+                      <BreadcrumbLink asChild>
+                        <span>{t('preferences.title')}</span>
+                      </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator className="hidden md:block" />
                     <BreadcrumbItem>
@@ -132,5 +128,3 @@ export function PreferencesDialog() {
     </Dialog>
   )
 }
-
-export default PreferencesDialog

@@ -2,12 +2,15 @@ import { useEffect } from 'react'
 import { check } from '@tauri-apps/plugin-updater'
 import { relaunch } from '@tauri-apps/plugin-process'
 import { initializeCommandSystem } from './lib/commands'
+import { buildAppMenu, setupMenuLanguageListener } from './lib/menu'
+import { initializeLanguage } from './i18n/language-init'
 import { logger } from './lib/logger'
 import { cleanupOldFiles } from './lib/recovery'
+import { commands } from './lib/tauri-bindings'
 import './App.css'
-import MainWindow from './components/layout/MainWindow'
+import { MainWindow } from './components/layout/MainWindow'
 import { ThemeProvider } from './components/ThemeProvider'
-import ErrorBoundary from './components/ErrorBoundary'
+import { ErrorBoundary } from './components/ErrorBoundary'
 
 function App() {
   // Initialize command system and cleanup on app startup
@@ -15,6 +18,28 @@ function App() {
     logger.info('🚀 Frontend application starting up')
     initializeCommandSystem()
     logger.debug('Command system initialized')
+
+    // Initialize language based on saved preference or system locale
+    const initLanguageAndMenu = async () => {
+      try {
+        // Load preferences to get saved language
+        const result = await commands.loadPreferences()
+        const savedLanguage =
+          result.status === 'ok' ? result.data.language : null
+
+        // Initialize language (will use system locale if no preference)
+        await initializeLanguage(savedLanguage)
+
+        // Build the application menu with the initialized language
+        await buildAppMenu()
+        logger.debug('Application menu built')
+        setupMenuLanguageListener()
+      } catch (error) {
+        logger.warn('Failed to initialize language or menu', { error })
+      }
+    }
+
+    initLanguageAndMenu()
 
     // Clean up old recovery files on startup
     cleanupOldFiles().catch(error => {

@@ -1,11 +1,8 @@
 import { render, screen } from '@/test/test-utils'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import App from './App'
 
-// Mock Tauri API
-vi.mock('@tauri-apps/api/core', () => ({
-  invoke: vi.fn().mockResolvedValue({ theme: 'system' }),
-}))
+// Tauri bindings are mocked globally in src/test/setup.ts
 
 describe('App', () => {
   it('renders main window layout', () => {
@@ -26,6 +23,6 @@ describe('App', () => {
           button.className.includes('window-control')
       )
     // Should have at least the window control buttons
-    expect(titleBarButtons.length).toBeGreaterThanOrEqual(0)
+    expect(titleBarButtons.length).toBeGreaterThan(0)
   })
 })

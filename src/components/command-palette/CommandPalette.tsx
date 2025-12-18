@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useUIStore } from '@/store/ui-store'
 import { useCommandContext } from '@/hooks/use-command-context'
 import { getAllCommands, executeCommand } from '@/lib/commands'
@@ -13,81 +14,84 @@ import {
 } from '@/components/ui/command'
 
 export function CommandPalette() {
-  const { commandPaletteOpen, setCommandPaletteOpen } = useUIStore()
+  const { t } = useTranslation()
+  const commandPaletteOpen = useUIStore(state => state.commandPaletteOpen)
+  const setCommandPaletteOpen = useUIStore(state => state.setCommandPaletteOpen)
+  const toggleCommandPalette = useUIStore(state => state.toggleCommandPalette)
   const commandContext = useCommandContext()
   const [search, setSearch] = useState('')
 
-  // Get all available commands (memoized to prevent re-filtering on every render)
-  const commandGroups = useMemo(() => {
-    const commands = getAllCommands(commandContext, search)
-
-    // Group commands by their group property
-    return commands.reduce(
-      (groups, command) => {
-        const group = command.group || 'other'
-        if (!groups[group]) {
-          groups[group] = []
-        }
-        groups[group].push(command)
-        return groups
-      },
-      {} as Record<string, typeof commands>
-    )
-  }, [commandContext, search])
+  // Get all available commands grouped by category
+  const commands = getAllCommands(commandContext, search, t)
+  const commandGroups = commands.reduce(
+    (groups, command) => {
+      const group = command.group || 'other'
+      if (!groups[group]) {
+        groups[group] = []
+      }
+      groups[group].push(command)
+      return groups
+    },
+    {} as Record<string, typeof commands>
+  )
 
   // Handle command execution
-  const handleCommandSelect = useCallback(
-    async (commandId: string) => {
-      setCommandPaletteOpen(false)
-      setSearch('') // Clear search when closing
+  const handleCommandSelect = async (commandId: string) => {
+    setCommandPaletteOpen(false)
+    setSearch('') // Clear search when closing
 
-      const result = await executeCommand(commandId, commandContext)
+    const result = await executeCommand(commandId, commandContext)
 
-      if (!result.success && result.error) {
-        commandContext.showToast(result.error, 'error')
-      }
-    },
-    [commandContext, setCommandPaletteOpen]
-  )
+    if (!result.success && result.error) {
+      commandContext.showToast(result.error, 'error')
+    }
+  }
 
   // Handle dialog open/close with search clearing
-  const handleOpenChange = useCallback(
-    (open: boolean) => {
-      setCommandPaletteOpen(open)
-      if (!open) {
-        setSearch('') // Clear search when closing
-      }
-    },
-    [setCommandPaletteOpen]
-  )
+  const handleOpenChange = (open: boolean) => {
+    setCommandPaletteOpen(open)
+    if (!open) {
+      setSearch('') // Clear search when closing
+    }
+  }
 
   // Keyboard shortcut handler
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
-        setCommandPaletteOpen(!commandPaletteOpen)
+        toggleCommandPalette()
       }
     }
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [commandPaletteOpen, setCommandPaletteOpen])
+  }, [toggleCommandPalette])
+
+  // Helper function to get readable group labels
+  const getGroupLabel = (groupName: string): string => {
+    const key = `commands.group.${groupName}`
+    const translated = t(key)
+    // If translation exists, use it; otherwise capitalize the group name
+    return translated !== key
+      ? translated
+      : groupName.charAt(0).toUpperCase() + groupName.slice(1)
+  }
 
   return (
     <CommandDialog
       open={commandPaletteOpen}
       onOpenChange={handleOpenChange}
-      title="Command Palette"
-      description="Type a command or search..."
+      title={t('commandPalette.title')}
+      description={t('commandPalette.placeholder')}
     >
       <CommandInput
-        placeholder="Type a command or search..."
+        placeholder={t('commandPalette.placeholder')}
         value={search}
         onValueChange={setSearch}
       />
       <CommandList>
-        <CommandEmpty>No results found.</CommandEmpty>
+        <CommandEmpty>{t('commandPalette.noResults')}</CommandEmpty>
 
         {Object.entries(commandGroups).map(([groupName, groupCommands]) => (
           <CommandGroup key={groupName} heading={getGroupLabel(groupName)}>
@@ -98,10 +102,10 @@ export function CommandPalette() {
                 onSelect={() => handleCommandSelect(command.id)}
               >
                 {command.icon && <command.icon className="mr-2 h-4 w-4" />}
-                <span>{command.label}</span>
-                {command.description && (
+                <span>{t(command.labelKey)}</span>
+                {command.descriptionKey && (
                   <span className="ml-auto text-xs text-muted-foreground">
-                    {command.description}
+                    {t(command.descriptionKey)}
                   </span>
                 )}
                 {command.shortcut && (
@@ -114,24 +118,6 @@ export function CommandPalette() {
       </CommandList>
     </CommandDialog>
   )
-}
-
-// Helper function to get readable group labels
-function getGroupLabel(groupName: string): string {
-  switch (groupName) {
-    case 'navigation':
-      return 'Navigation'
-    case 'settings':
-      return 'Settings'
-    case 'window':
-      return 'Window'
-    case 'notification':
-      return 'Notifications'
-    case 'other':
-      return 'Other'
-    default:
-      return groupName.charAt(0).toUpperCase() + groupName.slice(1)
-  }
 }
 
 export default CommandPalette

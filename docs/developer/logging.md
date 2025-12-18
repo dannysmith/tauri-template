@@ -30,7 +30,7 @@ logger.error('Request failed', { error: response.error })
 
 - Uses `tauri-plugin-log` with standard Rust `log` crate
 - **Development**: Debug level, logs to stdout + webview console
-- **Production**: Info level, logs to stdout + macOS system logs (Console.app)
+- **Production**: Info level, logs to stdout + app log directory
 - Configuration in `src-tauri/src/lib.rs`
 
 ### TypeScript Frontend
@@ -56,10 +56,12 @@ logger.error('Request failed', { error: response.error })
 - **Rust**: Terminal (stdout) + Browser DevTools console (webview)
 - **TypeScript**: Browser DevTools console
 
-### Production (macOS)
+### Production
 
-- **Rust**: Terminal (stdout) + macOS Console.app
+- **Rust**: Terminal (stdout) + log file in app log directory
 - **TypeScript**: Browser DevTools console
+
+Log directory locations vary by platform (e.g., `~/Library/Logs/` on macOS).
 
 ## Examples
 
@@ -112,9 +114,11 @@ function MyComponent() {
 4. **Keep messages concise** - But descriptive enough to be useful
 5. **Use structured logging** - Include objects/context for complex data
 
+See [error-handling.md](./error-handling.md) for patterns on when to log vs show errors to users.
+
 ## Production Considerations
 
-- Logs in production go to macOS Console.app (searchable by app name)
+- Rust logs go to the app's log directory (platform-specific location)
 - No sensitive data should be logged (passwords, tokens, etc.)
-- Consider log rotation for long-running applications
+- The plugin supports log rotation when files reach size limits
 - Frontend logs stay in browser - not sent to backend by default

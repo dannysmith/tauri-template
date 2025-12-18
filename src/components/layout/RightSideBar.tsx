@@ -14,5 +14,3 @@ export function RightSideBar({ children, className }: RightSideBarProps) {
     </div>
   )
 }
-
-export default RightSideBar

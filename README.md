@@ -1,205 +1,120 @@
 # Tauri React Template
 
-A production-ready template for building modern desktop applications with Tauri v2, React 19, and TypeScript. This template provides a solid foundation with best practices, comprehensive documentation, and quality tooling built-in.
+A batteries-included template for building production-ready desktop applications with **Tauri v2**, **React 19**, and **TypeScript**. Designed with opinionated patterns that help both human developers and AI coding agents build well-architected apps from day one.
 
-## 🚀 Features
+## Why This Template?
 
-- **Modern Stack**: Tauri v2 + React 19 + TypeScript + Vite
-- **UI Components**: shadcn/ui v4 + Tailwind CSS v4 + Lucide React
-- **State Management**: Zustand v5 + TanStack Query v5
-- **Testing**: Vitest v3 + Testing Library
-- **Quality Tools**: ESLint + Prettier + Rust clippy + comprehensive CI
-- **Native Integration**: Menu system + keyboard shortcuts + notifications + auto-updater
-- **Documentation**: Comprehensive developer and user guides
-- **AI-Ready**: Claude Code agents and documentation structure
+Most Tauri starters give you a blank canvas. This template gives you a **working application** with patterns already established:
 
-## 🛠 Architecture
+- **Type-safe Rust-TypeScript bridge** via tauri-specta (no more string-based `invoke()` calls)
+- **Performance patterns enforced by tooling** - ast-grep catches common Zustand anti-patterns before they hit code review
+- **Multi-window architecture** already working (quick pane with global shortcut)
+- **Cross-platform ready** with platform-specific title bars, window controls, and native menu integration
+- **i18n built-in** with RTL support from the start
 
-### Command System
+## Stack
 
-Centralized command palette with keyboard shortcuts and menu integration:
+| Layer    | Technologies                                    |
+| -------- | ----------------------------------------------- |
+| Frontend | React 19, TypeScript, Vite 7                    |
+| UI       | shadcn/ui v4, Tailwind CSS v4, Lucide React     |
+| State    | Zustand v5, TanStack Query v5                   |
+| Backend  | Tauri v2, Rust                                  |
+| Testing  | Vitest v4, Testing Library                      |
+| Quality  | ESLint, Prettier, ast-grep, knip, jscpd, clippy |
 
-```typescript
-// Execute commands via palette (Cmd+K), shortcuts, or menus
-const commands = [
-  { id: 'preferences', label: 'Open Preferences', shortcut: 'Cmd+,' },
-  { id: 'toggle-sidebar', label: 'Toggle Sidebar', shortcut: 'Cmd+1' },
-]
-```
+## What's Already Built
 
-### State Management Onion
+The template includes a working application with these features implemented:
 
-Layered state management approach:
+### Core Features
 
-- **useState**: Component-local state
-- **Zustand**: App-wide UI state (sidebar visibility, themes)
-- **TanStack Query**: Server state and caching (preferences, data)
+- **Command Palette** (`Cmd+K`) - Searchable command launcher with keyboard navigation
+- **Quick Pane** - Global shortcut (`Cmd+Shift+.`) opens a floating window from any app, even fullscreen. Uses native NSPanel on macOS for proper fullscreen overlay behavior.
+- **Keyboard Shortcuts** - Platform-aware shortcuts with automatic menu integration
+- **Native Menus** - File, Edit, View menus built from JavaScript with full i18n support
+- **Preferences System** - Settings dialog with Rust-side persistence, React hooks, and type-safe access throughout
+- **Collapsible Sidebars** - Left and right sidebars with state persistence via resizable panels
+- **Theme System** - Light/dark mode with system preference detection, synced across windows
+- **Notifications** - Toast notifications for in-app feedback, plus native system notifications
+- **Auto-updates** - Tauri updater plugin configured with GitHub Releases integration and update checking on launch
+- **Logging** - Structured logging utilities for both Rust (tracing) and TypeScript with consistent formatting
+- **Crash Recovery** - Emergency data persistence for recovering unsaved work after unexpected exits
 
-### Performance Patterns
+### Architecture Patterns
 
-```typescript
-// ✅ Use getState() to avoid render cascades
-const handleAction = useCallback(() => {
-  const { data, setData } = useStore.getState()
-  setData(newData)
-}, []) // Stable callback
-```
+- **Three-layer state management** - Clear decision tree: `useState` (component) → `Zustand` (global UI) → `TanStack Query` (persistent data)
+- **Event-driven Rust-React bridge** - Menus, shortcuts, and command palette all route through the same command system
+- **React Compiler** - Automatic memoization means no manual `useMemo`/`useCallback` needed
+- **Atomic file writes** - All disk operations use temp-file-then-rename to prevent corruption
 
-## 📚 Documentation
+### Cross-Platform
 
-- **[User Guide](docs/userguide/userguide.md)** - End-user documentation
-- **[Developer Docs](docs/developer/)** - Architecture, patterns, and guides
-- **[Testing Guide](docs/developer/testing.md)** - Testing strategies and utilities
-- **[Claude Agents](.claude/agents/)** - AI development assistants
+| Platform | Title Bar            | Window Controls | Bundle Format |
+| -------- | -------------------- | --------------- | ------------- |
+| macOS    | Custom with vibrancy | Traffic lights  | `.dmg`        |
+| Windows  | Custom               | Right side      | `.msi`        |
+| Linux    | Native + toolbar     | Native          | `.AppImage`   |
 
-## 🏗 Quick Start
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v18+)
-- [Rust](https://rustup.rs/) (latest stable)
-- Platform-specific dependencies (see [Tauri Prerequisites](https://tauri.app/start/prerequisites/))
-
-### Development
-
-```bash
-# Clone and install
-git clone <your-repo>
-cd tauri-template
-npm install
-
-# Start development server
-npm run dev
-
-# Run tests and quality checks
-npm run check:all
-
-# Build for production
-npm run build
-```
-
-### Project Structure
-
-```
-├── src/                    # React frontend
-│   ├── components/         # UI components
-│   ├── hooks/             # Custom hooks
-│   ├── store/             # Zustand stores
-│   └── services/          # API and external services
-├── src-tauri/             # Rust backend
-├── docs/                  # Documentation
-│   ├── developer/         # Developer guides
-│   └── userguide/         # User documentation
-└── .claude/agents/        # AI development assistants
-```
-
-## 🧪 Quality Assurance
-
-This template includes comprehensive quality gates:
-
-```bash
-npm run check:all  # Runs all checks below:
-```
-
-- ✅ TypeScript type checking
-- ✅ ESLint code linting
-- ✅ Prettier code formatting
-- ✅ Rust formatting (cargo fmt)
-- ✅ Rust linting (cargo clippy)
-- ✅ React component tests
-- ✅ Rust unit tests
-
-## 🎯 What You Get
-
-### Native Desktop Experience
-
-- **Native menus** with keyboard shortcuts
-- **System notifications** and tray integration
-- **Auto-updater** with GitHub releases
-- **File system access** with security validation
-- **Cross-platform** builds (macOS, Windows, Linux)
+Platform detection utilities, platform-specific UI strings ("Reveal in Finder" vs "Show in Explorer"), and separate Tauri configs per platform are all set up.
 
 ### Developer Experience
 
-- **Hot reload** in development
-- **Comprehensive testing** setup
-- **Type-safe** Rust ↔ React communication
-- **CLI tools** for common tasks
-- **AI assistants** for code generation and review
+- **Type-safe Tauri commands** - tauri-specta generates TypeScript bindings from Rust, with full autocomplete and compile-time checking
+- **Static analysis** - ESLint, Prettier, ast-grep (architecture enforcement), knip (unused code), jscpd (duplication)
+- **Single quality gate** - `npm run check:all` runs TypeScript, ESLint, Prettier, ast-grep, clippy, and all tests
+- **Testing patterns** - Vitest setup with Tauri command mocking
 
-### Production Ready
+## Tauri Plugins Included
 
-- **Security best practices** built-in
-- **Error handling** and logging
-- **Performance optimization** patterns
-- **CI/CD workflows** included
-- **Documentation** for maintenance
+| Plugin            | Purpose                          |
+| ----------------- | -------------------------------- |
+| single-instance   | Prevent multiple app instances   |
+| window-state      | Remember window position/size    |
+| fs                | File system access               |
+| dialog            | Native open/save dialogs         |
+| notification      | System notifications             |
+| clipboard-manager | Clipboard access                 |
+| global-shortcut   | System-wide keyboard shortcuts   |
+| updater           | In-app auto-updates              |
+| opener            | Open URLs/files with default app |
+| tauri-nspanel     | macOS floating panel behavior    |
 
-## 🔧 Customization
+## AI-Ready Development
 
-### Adding New Features
+This template is designed to work well with AI coding agents like Claude Code:
 
-1. **Commands**: Add to `src/lib/commands/`
-2. **UI State**: Extend Zustand stores in `src/store/`
-3. **Rust APIs**: Add Tauri commands in `src-tauri/src/lib.rs`
-4. **Documentation**: Update relevant docs in `docs/`
+- **Comprehensive documentation** in `docs/developer/` covering all patterns
+- **Claude Code integration** - Custom commands (`/check`, `/cleanup`) and specialized agents
+- **Pattern enforcement** via ast-grep catches common mistakes AI agents make
+- **Sensible file organization** - React code in `src/` with clear separation (components, hooks, stores, services), Rust in `src-tauri/src/` with modular command organization. Predictable structure for both humans and AI.
 
-### Configuration
+## Getting Started
 
-- **App metadata**: `src-tauri/tauri.conf.json`
-- **Build settings**: `src-tauri/Cargo.toml`
-- **Dependencies**: `package.json`
+See **[Using This Template](docs/USING_THIS_TEMPLATE.md)** for setup instructions and workflow guidance.
 
-## 🚀 Production Checklist
+### Quick Start
 
-Before deploying your application to production, ensure you complete these critical steps:
+```bash
+# Prerequisites: Node.js 18+, Rust (latest stable)
+# See https://tauri.app/start/prerequisites/ for platform-specific deps
 
-### Security Requirements (CRITICAL)
+git clone <your-repo>
+cd your-app
+npm install
+npm run dev
+```
 
-- [ ] **Generate proper Ed25519 updater keys** - Replace placeholder keys in `src-tauri/tauri.conf.json`
-- [ ] **Store private keys securely** - Never commit signing keys to version control
-- [ ] **Review plugin permissions** - Remove unused permissions in `src-tauri/capabilities/desktop.json`
+## Documentation
 
-### App Configuration
+- **[Developer Docs](docs/developer/)** - Architecture, patterns, and detailed guides
+- **[User Guide](docs/userguide/)** - End-user documentation template
+- **[Using This Template](docs/USING_THIS_TEMPLATE.md)** - Setup and workflow guide
 
-- [ ] **Update app metadata** - Change productName, version, identifier, publisher in `tauri.conf.json`
-- [ ] **Update package.json** - Set correct name, author, license, and copyright
-- [ ] **Configure proper logging** - Set production log levels (Info, not Debug)
-- [ ] **Set up error tracking** - Add Sentry, Rollbar, or similar service
+## License
 
-### Quality Assurance
-
-- [ ] **Run full test suite** - `npm run check:all` must pass
-- [ ] **Test on all target platforms** - macOS, Windows, Linux as needed
-- [ ] **Verify auto-updater flow** - Test with signed releases
-- [ ] **Performance testing** - Ensure app performs well with real data
-
-### Distribution
-
-- [ ] **Code signing certificates** - Set up proper certificates for each platform
-- [ ] **Release automation** - Configure CI/CD for automated builds and releases
-- [ ] **Update server setup** - Configure server for hosting app updates
-- [ ] **Analytics setup** - Add usage analytics if desired
-
-**📖 For detailed security instructions, see [SECURITY_PRODUCTION.md](docs/SECURITY_PRODUCTION.md)**
-
-## 📋 License
-
-This project is licensed under the [MIT](LICENSE.md) license.
-
-**Note:** Earlier versions incorrectly stated AGPL-3.0-or-later licensing. This was an error; all versions should be considered MIT licensed.
-
-## 🤝 Contributing
-
-Please read [CONTRIBUTING.md](docs/CONTRIBUTING.md) for contribution guidelines.
-
-## 🔒 Security
-
-For security concerns, please see [SECURITY.md](docs/SECURITY.md).
+[MIT](LICENSE.md)
 
 ---
 
-## Recommended IDE Setup
-
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
-- [Cursor](https://cursor.sh/) with the included `.claude/agents/` for AI-assisted development
+Built with [Tauri](https://tauri.app) | [shadcn/ui](https://ui.shadcn.com) | [React](https://react.dev)

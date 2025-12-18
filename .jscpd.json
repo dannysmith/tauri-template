@@ -1,0 +1,18 @@
+{
+  "threshold": 0,
+  "reporters": ["json", "console"],
+  "output": "jscpd-report",
+  "pattern": "**/*.{ts,tsx,rs}",
+  "ignore": [
+    "**/node_modules/**",
+    "**/target/**",
+    "**/dist/**",
+    "**/*.test.{ts,tsx}",
+    "**/*.spec.{ts,tsx}",
+    "**/test/**",
+    "src/components/ui/**"
+  ],
+  "minLines": 10,
+  "minTokens": 50,
+  "gitignore": true
+}

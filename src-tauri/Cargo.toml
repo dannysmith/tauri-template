@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
+rust-version = "1.82"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -29,11 +30,24 @@ tauri-plugin-log = "2"
 tauri-plugin-notification = "2"
 tauri-plugin-persisted-scope = "2"
 tauri-plugin-process = "2"
+tauri-plugin-os = "2"
+tauri-plugin-global-shortcut = "2"
 log = "0.4"
-regex = "1.11.1"
+regex = "1"
+
+# Type-safe Tauri command bindings
+specta = { version = "=2.0.0-rc.22", features = ["derive", "serde_json"] }
+tauri-specta = { version = "=2.0.0-rc.21", features = ["typescript"] }
+specta-typescript = "=0.0.9"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-single-instance = "2"
 tauri-plugin-updater = "2"
+tauri-plugin-window-state = "2"
+
+# macOS-only: NSPanel for native panel behavior (fullscreen overlay, click-outside dismiss)
+[target.'cfg(target_os = "macos")'.dependencies]
+tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2.1" }
 
 # Optimize for smaller binary size in release builds
 [profile.release]

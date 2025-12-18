@@ -1,25 +1,25 @@
-# Bundle Optimization Guide
+# Bundle Optimization
 
-This guide covers bundle size optimization for your Tauri React application, from the template's built-in optimizations to advanced techniques for production apps.
+Bundle size optimization for Tauri React applications.
 
-## Template's Current Optimizations
+## Built-in Optimizations
 
-This template includes several bundle size optimizations out of the box:
+This app includes several optimizations out of the box:
 
-### Rust Binary Optimizations (20-30% size reduction)
+### Rust Binary (20-30% size reduction)
 
 **File**: `src-tauri/Cargo.toml`
 
 ```toml
 [profile.release]
-codegen-units = 1        # Better LLVM optimization (slower build, smaller binary)
-lto = true               # Link-time optimizations
-opt-level = "s"          # Optimize for size over speed
-panic = "abort"          # Don't include panic unwinding code
-strip = true             # Remove debug symbols
+codegen-units = 1     # Better LLVM optimization
+lto = true            # Link-time optimizations
+opt-level = "s"       # Optimize for size
+panic = "abort"       # No panic unwinding code
+strip = true          # Remove debug symbols
 ```
 
-### Tauri Build Optimizations
+### Tauri Build
 
 **File**: `src-tauri/tauri.conf.json`
 
@@ -31,200 +31,28 @@ strip = true             # Remove debug symbols
 }
 ```
 
-This removes any Tauri commands that aren't actually called from your frontend.
-
-### Vite Configuration
-
-**File**: `vite.config.ts`
-
-```typescript
-{
-  build: {
-    chunkSizeWarningLimit: 600, // Prevents warnings for template's bundled components
-  }
-}
-```
+Removes Tauri commands not called from your frontend.
 
 ## Analyzing Bundle Size
 
-### Built-in Analysis
-
-Use the template's analysis script:
-
 ```bash
-npm run build:analyze
+npm run build:analyze   # Build and analyze
+
+# Manual analysis
+npm run build
+du -sh dist/*           # Check output sizes
+ls -lah dist/assets/    # Examine chunks
 ```
 
-This builds your app and provides guidance on analyzing the output.
+## When to Optimize Further
 
-### Manual Analysis
+The built-in optimizations are sufficient for most apps. Consider more when:
 
-1. **Check output folder sizes**:
+- Built app > 10MB
+- Initial load > 3 seconds
+- Large dependencies you don't fully use
 
-   ```bash
-   npm run build
-   du -sh dist/*
-   ```
-
-2. **Examine chunk details**:
-
-   ```bash
-   ls -lah dist/assets/
-   ```
-
-3. **Use browser dev tools**:
-   - Open your built app in browser
-   - Check Network tab for resource sizes
-   - Use Coverage tab to find unused code
-
-### Advanced Analysis Tools
-
-For detailed analysis, consider these tools:
-
-```bash
-# Install bundle analyzer (optional)
-npm install --save-dev vite-bundle-analyzer
-
-# Or use webpack-bundle-analyzer on the dist folder
-npx webpack-bundle-analyzer dist/assets/index-*.js
-```
-
-## When You Need More Optimization
-
-The template's optimizations are sufficient for most applications. Consider additional optimization when:
-
-- Your built app is > 10MB
-- Initial load time is > 3 seconds
-- You have large dependencies you don't fully use
-- You're building for bandwidth-constrained environments
-
-## Manual Chunking Strategies
-
-When your app grows large, you can implement manual chunking:
-
-### Code Splitting by Route
-
-```typescript
-// src/components/routing/LazyRoutes.tsx
-import { lazy } from 'react'
-
-const Dashboard = lazy(() => import('../dashboard/Dashboard'))
-const Settings = lazy(() => import('../settings/Settings'))
-const Reports = lazy(() => import('../reports/Reports'))
-
-export { Dashboard, Settings, Reports }
-```
-
-### Vendor Chunk Separation
-
-**File**: `vite.config.ts`
-
-```typescript
-export default defineConfig({
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
-          utils: ['date-fns', 'clsx', 'tailwind-merge'],
-        },
-      },
-    },
-  },
-})
-```
-
-### Feature-based Chunking
-
-```typescript
-// For larger applications
-export default defineConfig({
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            return 'vendor'
-          }
-          if (id.includes('src/components/dashboard')) {
-            return 'dashboard'
-          }
-          if (id.includes('src/components/settings')) {
-            return 'settings'
-          }
-          if (id.includes('src/components/reports')) {
-            return 'reports'
-          }
-        },
-      },
-    },
-  },
-})
-```
-
-## Dynamic Import Patterns
-
-For heavy components that aren't always needed:
-
-### Lazy Component Loading
-
-```typescript
-// src/components/heavy/LazyChart.tsx
-import { lazy, Suspense, useState } from 'react'
-import { Button } from '@/components/ui/button'
-
-const Chart = lazy(() => import('./Chart'))
-
-export function LazyChart() {
-  const [showChart, setShowChart] = useState(false)
-
-  return (
-    <div>
-      {!showChart ? (
-        <Button onClick={() => setShowChart(true)}>
-          Load Chart
-        </Button>
-      ) : (
-        <Suspense fallback={<div>Loading chart...</div>}>
-          <Chart />
-        </Suspense>
-      )}
-    </div>
-  )
-}
-```
-
-### Dynamic Feature Loading
-
-```typescript
-// src/hooks/useDynamicFeature.ts
-import { useState, useCallback } from 'react'
-
-export function useDynamicFeature<T>() {
-  const [feature, setFeature] = useState<T | null>(null)
-  const [loading, setLoading] = useState(false)
-
-  const loadFeature = useCallback(
-    async (importFn: () => Promise<{ default: T }>) => {
-      setLoading(true)
-      try {
-        const module = await importFn()
-        setFeature(module.default)
-      } catch (error) {
-        console.error('Failed to load feature:', error)
-      } finally {
-        setLoading(false)
-      }
-    },
-    []
-  )
-
-  return { feature, loading, loadFeature }
-}
-```
-
-## Tree Shaking Optimization
+## Tree Shaking
 
 ### Import Optimization
 
@@ -235,200 +63,90 @@ import * as icons from 'lucide-react'
 // ✅ Import only what you need
 import { Search, Settings, User } from 'lucide-react'
 
-// ❌ Imports entire utility library
+// ❌ Full lodash
 import _ from 'lodash'
 
-// ✅ Import specific functions
+// ✅ Specific functions
 import { debounce } from 'lodash-es'
 ```
 
-### Library-specific Optimizations
+### Date Libraries
 
 ```typescript
-// For date-fns
+// ✅ Tree-shakeable imports
 import { format } from 'date-fns/format'
 import { parseISO } from 'date-fns/parseISO'
 
-// For Radix UI - already optimized in template
-import { Dialog, DialogContent } from '@radix-ui/react-dialog'
+// Or use native API
+new Intl.DateTimeFormat('en-US').format(date)
 ```
 
-## Advanced Techniques
+## Code Splitting
 
-### Preloading Critical Chunks
+For apps with multiple routes/features:
 
 ```typescript
-// src/utils/preload.ts
-export function preloadRoute(routeImport: () => Promise<any>) {
-  // Preload when user hovers over navigation
-  const link = document.createElement('link')
-  link.rel = 'modulepreload'
-  link.href = routeImport.toString()
-  document.head.appendChild(link)
-}
+import { lazy, Suspense } from 'react'
+
+const Dashboard = lazy(() => import('./Dashboard'))
+const Settings = lazy(() => import('./Settings'))
+
+// In component
+<Suspense fallback={<div>Loading...</div>}>
+  <Dashboard />
+</Suspense>
 ```
 
-### Service Worker Caching
-
-```typescript
-// For Progressive Web App features
-// Consider workbox for advanced caching strategies
-```
-
-### Asset Optimization
+### Manual Chunking (Advanced)
 
 ```typescript
 // vite.config.ts
 export default defineConfig({
   build: {
-    assetsInlineLimit: 4096, // Inline assets smaller than 4kb
-    cssCodeSplit: true, // Split CSS by entry points
-    minify: 'terser', // Use terser for better minification
-    terserOptions: {
-      compress: {
-        drop_console: true, // Remove console.log in production
-        drop_debugger: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+        },
       },
     },
   },
 })
 ```
 
-## Common Pitfalls and Solutions
-
-### Issue: Large Initial Bundle
-
-**Problem**: Everything loads at once
-
-**Solution**: Implement route-based code splitting
-
-```typescript
-// Use React.lazy for route components
-const Dashboard = lazy(() => import('./Dashboard'))
-```
-
-### Issue: Duplicate Dependencies
-
-**Problem**: Same library bundled multiple times
-
-**Solution**: Check for version conflicts
-
-```bash
-npm ls react
-npm dedupe
-```
-
-### Issue: Unused shadcn/ui Components
-
-**Problem**: Template includes components you don't use
-
-**Solution**: Remove unused components (but consider keeping for future use)
-
-```bash
-rm src/components/ui/unused-component.tsx
-# Update index files accordingly
-```
-
-### Issue: Large Date/Time Libraries
-
-**Problem**: date-fns or moment.js are too large
-
-**Solution**: Use lighter alternatives or tree-shake
-
-```typescript
-// Instead of moment.js (heavy)
-import { format } from 'date-fns/format'
-
-// Or use native Intl API
-new Intl.DateTimeFormat('en-US').format(date)
-```
-
-## Monitoring Bundle Size
-
-### CI/CD Integration
-
-Add bundle size monitoring to your GitHub Actions:
-
-```yaml
-# .github/workflows/bundle-size.yml
-- name: Check bundle size
-  run: |
-    npm run build
-    size=$(du -sb dist | cut -f1)
-    echo "Bundle size: $size bytes"
-    if [ $size -gt 5000000 ]; then
-      echo "Bundle too large!"
-      exit 1
-    fi
-```
-
-### Development Monitoring
-
-```bash
-# Add to package.json scripts
-"size-check": "npm run build && bundlesize"
-```
-
-## Performance Testing
-
-### Measuring Impact
-
-```bash
-# Test build size
-cd src-tauri
-cargo build --release
-ls -lah target/release/tauri-app
-
-# Test bundle size
-npm run build
-du -sh dist/
-```
-
-### Load Time Testing
-
-```typescript
-// Add performance monitoring
-performance.mark('app-start')
-// ... your app loads
-performance.mark('app-ready')
-performance.measure('app-load-time', 'app-start', 'app-ready')
-```
-
 ## Tauri-Specific Optimizations
 
-### Plugin Optimization
-
-Only include plugins you use:
+### Remove Unused Plugins
 
 ```toml
-# src-tauri/Cargo.toml - Remove unused plugins
+# src-tauri/Cargo.toml - Comment out unused plugins
 [dependencies]
 # tauri-plugin-fs = "2"        # Remove if not used
-# tauri-plugin-dialog = "2"    # Remove if not used
 ```
 
-### Capability Permissions
+### Minimize Capabilities
 
-Minimize permissions in `src-tauri/capabilities/desktop.json`:
+Only include permissions you use in `src-tauri/capabilities/desktop.json`.
 
-```json
-{
-  "permissions": [
-    "core:default",
-    // Only include what you actually use
-    "fs:read-file"
-  ]
-}
+## Common Issues
+
+| Issue                    | Solution                                          |
+| ------------------------ | ------------------------------------------------- |
+| Large initial bundle     | Implement code splitting                          |
+| Duplicate dependencies   | `npm ls react` then `npm dedupe`                  |
+| Unused shadcn components | Remove from `src/components/ui/`                  |
+| Heavy date library       | Use `date-fns` with tree shaking or native `Intl` |
+
+## Measuring Impact
+
+```bash
+# Rust binary size
+cd src-tauri && cargo build --release
+ls -lah target/release/tauri-app
+
+# Frontend bundle
+npm run build && du -sh dist/
 ```
 
-## Conclusion
-
-Start with the template's built-in optimizations. As your app grows, implement these techniques progressively:
-
-1. **First**: Use route-based code splitting
-2. **Then**: Optimize imports and remove unused dependencies
-3. **Finally**: Implement advanced chunking strategies
-
-Remember: **Measure before optimizing**. Use `npm run build:analyze` to understand your bundle before making changes.
-
-The goal is a balance between bundle size and complexity. Don't over-optimize prematurely—focus on user experience first.
+**Remember**: Measure before optimizing. Don't over-optimize prematurely.

@@ -1,120 +1,46 @@
 # State Management
 
-## Overview
+Three-layer "onion" architecture for state management.
 
-### Local Component State -> `useState`
+## The Three Layers
 
-State that is only relevant to a single component (e.g., the value of an input field, whether a dropdown is open) uses the standard React `useState` and `useReducer` hooks.
+```
+┌─────────────────────────────────────┐
+│           useState                  │  ← Component UI State
+│  ┌─────────────────────────────────┐│
+│  │          Zustand                ││  ← Global UI State
+│  │  ┌─────────────────────────────┐││
+│  │  │      TanStack Query         │││  ← Persistent Data
+│  │  └─────────────────────────────┘││
+│  └─────────────────────────────────┘│
+└─────────────────────────────────────┘
+```
 
-### Global UI State -> Zustand
+### Layer 1: TanStack Query (Persistent Data)
 
-Transient global state related to the UI (e.g., `isSidebarVisible`, `isCommandPaletteOpen`) uses small, slices Zustand stores for different UI domains (e.g., `useMainUIStore.ts`, `useMyFancyFeaturePanelStore.ts`).
+Use for data that:
 
-### All Persisted State -> Tanstack Query
-
-Data that originates from outside of the react app, either from the Rust backend (eg read from disk) or from external services and APIs uses TanStack Query. Use **TanStack Query**. All `invoke` calls should be wrapped in `useQuery` or `useMutation` hooks within the `src/services/` directory. This handles loading, error, and caching states automatically.
-
-### Data on local disk
-
-Certain settings data should be persisted to local storage (in addition to or instead of to any remote backend system). This should usually be written to the applications support directory (eg. ``~/Library/Application Support/com.myapp.app/recovery/` on macOS). This is handled by Tauri's [filesystem plugin](https://v2.tauri.app/plugin/file-system/) and should be accessed and written in the same way as any other state which is not "owned" by the React App... ie via Tanstack Query.
-
-## The "Onion" Pattern: Three-Layer State Architecture
-
-The most critical architectural decision is how to organize state management. We discovered a three-layer "onion" approach that provides optimal performance and maintainability:
-
-#### Layer 1: Server State (TanStack Query)
-
-Use TanStack Query for state that:
-
-- Comes from the Tauri backend (file system, external APIs)
+- Comes from Tauri backend (file system, external APIs)
 - Benefits from caching and automatic refetching
-- Needs to be synchronized across components
 - Has loading, error, and success states
 
-Example:
-
 ```typescript
-// Query for server data
-const {
-  data: userData,
-  isLoading,
-  error,
-} = useQuery({
-  queryKey: ['user', userId, 'profile'],
-  queryFn: () => invokeCommand('get_user_profile', { userId }),
+const { data, isLoading, error } = useQuery({
+  queryKey: ['user', userId],
+  queryFn: () => commands.getUser({ userId }),
   enabled: !!userId,
 })
 ```
 
-#### Layer 2: Client State (Decomposed Zustand Stores)
+See [error-handling.md](./error-handling.md) for retry configuration and error display patterns.
 
-Break Zustand into focused, domain-specific stores. Examples:
+### Layer 2: Zustand (Global UI State)
 
-```typescript
-// AppStore - Application-level state
-interface AppState {
-  currentUser: User | null
-  theme: 'light' | 'dark'
-  setCurrentUser: (user: User | null) => void
-  toggleTheme: () => void
-}
+Use for transient global state:
 
-// UIStore - UI layout state
-interface UIState {
-  sidebarVisible: boolean
-  commandPaletteOpen: boolean
-  toggleSidebar: () => void
-  setCommandPaletteOpen: (open: boolean) => void
-}
-```
-
-**Why This Decomposition?**
-
-- **Performance**: Only relevant components re-render when specific state changes
-- **Clarity**: Each store has a single, focused responsibility
-- **Maintainability**: Easier to reason about and modify individual concerns
-- **Testability**: Each store can be tested independently
-
-#### Layer 3: Local State (React useState)
-
-Keep state local when it:
-
-- Only affects UI presentation
-- Is derived from props or global state
-- Doesn't need persistence
-- Is tightly coupled to component lifecycle
-
-```typescript
-// UI presentation state
-const [windowWidth, setWindowWidth] = useState(window.innerWidth)
-const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-```
-
-### Store Boundary Guidelines
-
-**AppStore** - Use for:
-
-- Application-wide settings
-- Current user information
-- Theme and preferences
-- Global application state
-
-**UIStore** - Use for:
-
-- Panel visibility
-- Layout state
+- Panel visibility, layout state
+- Command palette open/closed
 - UI modes and navigation
-- Command palette state
-
-**Feature-specific stores** - Use for:
-
-- Domain-specific state (e.g., `useDocumentStore`, `useNotificationStore`)
-- Feature flags and configuration
-- Temporary workflow state
-
-## Implementation Examples
-
-### Basic Zustand Store
 
 ```typescript
 import { create } from 'zustand'
@@ -137,30 +63,113 @@ export const useUIStore = create<UIState>()(
 )
 ```
 
-### TanStack Query with Tauri Commands
+### Layer 3: useState (Component State)
+
+Use for state that:
+
+- Only affects UI presentation
+- Is derived from props or global state
+- Is tightly coupled to component lifecycle
 
 ```typescript
-import { useQuery, useMutation } from '@tanstack/react-query'
-import { invokeCommand } from '@/lib/commands'
+const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+const [windowWidth, setWindowWidth] = useState(window.innerWidth)
+```
 
-// Query hook
-export function useUserProfile(userId: string) {
-  return useQuery({
-    queryKey: ['user', userId],
-    queryFn: () => invokeCommand<User>('get_user', { userId }),
-    enabled: !!userId,
-  })
-}
+## Performance Patterns (Critical)
 
-// Mutation hook
-export function useUpdateUserProfile() {
-  return useMutation({
-    mutationFn: (userData: Partial<User>) =>
-      invokeCommand('update_user', userData),
-    onSuccess: () => {
-      // Invalidate and refetch user queries
-      queryClient.invalidateQueries({ queryKey: ['user'] })
-    },
-  })
-}
+### The `getState()` Pattern
+
+**Problem**: Subscribing to store data in callbacks causes render cascades.
+
+**Solution**: Use `getState()` for callbacks that need current state.
+
+```typescript
+// ❌ BAD: Causes render cascade on every store change
+const { currentFile, isDirty, saveFile } = useEditorStore()
+
+const handleSave = useCallback(() => {
+  if (currentFile && isDirty) {
+    void saveFile()
+  }
+}, [currentFile, isDirty, saveFile]) // Re-creates on every change!
+
+// ✅ GOOD: No cascade, stable callback
+const handleSave = useCallback(() => {
+  const { currentFile, isDirty, saveFile } = useEditorStore.getState()
+  if (currentFile && isDirty) {
+    void saveFile()
+  }
+}, []) // Stable dependency array
+```
+
+**When to use `getState()`:**
+
+- In `useCallback` dependencies when you need current state but don't want re-renders
+- In event handlers for accessing latest state without subscriptions
+- In `useEffect` with empty deps when you need current state on mount only
+- In async operations when state might change during execution
+
+### Store Subscription Optimization
+
+```typescript
+// ❌ BAD: Object destructuring subscribes to entire store
+const { currentFile } = useEditorStore()
+
+// ✅ GOOD: Selector only re-renders when this specific value changes
+const currentFile = useEditorStore(state => state.currentFile)
+
+// ✅ GOOD: Derived selector for minimal re-renders
+const hasCurrentFile = useEditorStore(state => !!state.currentFile)
+const currentFileName = useEditorStore(state => state.currentFile?.name)
+```
+
+### CSS Visibility vs Conditional Rendering
+
+For stateful UI components (like `react-resizable-panels`), use CSS visibility:
+
+```typescript
+// ❌ BAD: Conditional rendering breaks stateful components
+{sidebarVisible ? <ResizablePanel /> : null}
+
+// ✅ GOOD: CSS visibility preserves component tree
+<ResizablePanel className={sidebarVisible ? '' : 'hidden'} />
+```
+
+### React Compiler (Automatic Memoization)
+
+This app uses React Compiler which automatically handles memoization. You do **not** need to manually add:
+
+- `useMemo` for computed values
+- `useCallback` for function references
+- `React.memo` for components
+
+**Note:** The `getState()` pattern is still critical - it avoids store subscriptions, not memoization.
+
+## Store Boundaries
+
+**UIStore** - Use for:
+
+- Panel visibility
+- Layout state
+- Command palette state
+- UI modes and navigation
+
+**Feature-specific stores** - Use for:
+
+- Domain-specific state (e.g., `useDocumentStore`)
+- Feature flags and configuration
+- Temporary workflow state
+
+## Adding a New Store
+
+1. Create store file in `src/store/`
+2. Follow the pattern with `devtools` middleware
+3. Add no-destructure rule to `.ast-grep/rules/zustand/no-destructure.yml`
+
+```yaml
+rule:
+  any:
+    - pattern: const { $$$PROPS } = useUIStore($$$ARGS)
+    - pattern: const { $$$PROPS } = useNewStore($$$ARGS) # Add new store
 ```

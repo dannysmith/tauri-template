@@ -13,11 +13,11 @@ src-tauri/gen/
 *.config.js
 *.config.ts
 vite.config.ts
-tailwind.config.js
 
 # Generated files
 package-lock.json
 .git/
+src/lib/bindings.ts
 
 # Logs
 *.log

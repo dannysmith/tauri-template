@@ -1,0 +1,31 @@
+id: hooks-in-hooks-dir
+message: |
+  React hooks (functions starting with 'use') must be in hooks/ or services/, not lib/.
+
+  BAD: lib/some-file.ts exporting useSomething()
+  GOOD: hooks/use-something.ts or services/something.ts
+
+  The lib/ directory is for pure business logic and utilities.
+severity: error
+language: TypeScript
+files:
+  - 'src/lib/**/*.ts'
+  - 'src/lib/**/*.tsx'
+rule:
+  any:
+    # Named function export: export function useFoo() {}
+    - pattern: export function $HOOK($$$PARAMS) { $$$BODY }
+    # Arrow function export: export const useFoo = () => {}
+    - pattern: export const $HOOK = ($$$PARAMS) => $BODY
+    # Async arrow function: export const useFoo = async () => {}
+    - pattern: export const $HOOK = async ($$$PARAMS) => $BODY
+constraints:
+  HOOK:
+    regex: '^use[A-Z]'
+note: |
+  Enforces directory boundaries:
+  - lib/: Pure business logic, utilities (no React hooks)
+  - hooks/: React hooks
+  - services/: TanStack Query hooks for data fetching
+
+  Exception: Theme context provider can live in lib/.
