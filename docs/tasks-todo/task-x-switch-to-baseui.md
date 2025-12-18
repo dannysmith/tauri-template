@@ -1,109 +1,174 @@
 # Task: Switch from Radix to Base UI in shadcn
 
-## Executive Summary
+## Approach
 
-**Recommendation: Proceed with migration**
+**Test on a branch.** If it works, merge. If it doesn't, close the branch and move on.
 
-Since the UI components in `src/components/ui/` are standard shadcn components, they can be replaced via the shadcn CLI. The actual work is limited to:
-1. Updating 1 consumer file that uses `asChild` (`PreferencesDialog.tsx`)
-2. Verifying the custom `CommandDialog` wrapper works with the new Dialog
-3. Testing all component usages
-
----
-
-## Migration Strategy
-
-### Phase 1: Preparation
-
-1. **Create a migration branch**
-2. **Document current behavior** - Screenshot/test the Preferences dialog, Command palette, and DatePicker
-
-### Phase 2: Replace UI Components via CLI
-
-The shadcn CLI can regenerate components for Base UI. The approach:
-
-```bash
-# Remove all current UI components
-rm -rf src/components/ui/*
-
-# Re-initialize shadcn with Base UI
-npx shadcn@latest init --base base
-
-# Add back required components
-npx shadcn@latest add alert alert-dialog badge breadcrumb button calendar card checkbox command dialog dropdown-menu input label popover radio-group resizable scroll-area select separator sheet skeleton sonner switch toggle toggle-group tooltip
-```
-
-**Note:** The `sidebar` component will need special handling (see Phase 3).
-
-### Phase 3: Handle Special Cases
-
-#### 3.1 Sidebar Component
-
-The sidebar uses `@radix-ui/react-slot` directly for `asChild` pattern. Options:
-
-**Option A (Recommended):** Use shadcn's Base UI sidebar if available
-```bash
-npx shadcn@latest add sidebar
-```
-
-**Option B:** If not available, manually update to use `useRender` from Base UI:
-```tsx
-// Before (Radix)
-import { Slot } from '@radix-ui/react-slot'
-const Comp = asChild ? Slot : 'button'
-
-// After (Base UI)
-import { useRender } from '@base-ui-components/react/use-render'
-// Use render prop pattern instead
-```
-
-#### 3.2 CommandDialog Wrapper
-
-The custom `CommandDialog` in `command.tsx` wraps the Dialog component. After Dialog is replaced:
-- Verify it still works (it just passes props through)
-- The `cmdk` library is independent of Radix/Base UI
-
-#### 3.3 DatePicker Component
-
-Uses `PopoverTrigger asChild`. After Base UI migration:
-```tsx
-// Before
-<PopoverTrigger asChild>
-  <Button>...</Button>
-</PopoverTrigger>
-
-// After
-<PopoverTrigger render={<Button />}>
-  ...
-</PopoverTrigger>
-```
+This is a low-risk experiment because:
+- All UI components are standard shadcn components (replaceable via CLI)
+- Only 1 consumer file uses `asChild` pattern
+- The branch can simply be deleted if migration fails
 
 ---
 
-## Consumer Code Changes Required
+## Step-by-Step Instructions for AI Agent
 
-Based on codebase analysis, only **1 file** outside `components/ui/` uses the `asChild` prop:
+Follow these steps exactly in order. Do not skip steps. If any step fails, stop and report the error.
 
-### `src/components/preferences/PreferencesDialog.tsx` (Line 80)
+### Step 1: Create Branch and Verify Clean State
 
+```bash
+git checkout -b feature/switch-to-baseui
+npm run check:all
+```
+
+**Expected:** All checks pass. If not, fix issues before proceeding.
+
+### Step 2: Remove All Current UI Components
+
+```bash
+rm -f src/components/ui/*
+```
+
+**Expected:** The `src/components/ui/` directory is now empty.
+
+### Step 3: Re-initialize shadcn with Base UI
+
+Run the interactive CLI:
+
+```bash
+npx shadcn@latest init
+```
+
+When prompted:
+- Choose **Base UI** as the component library (not Radix)
+- Keep other settings as defaults or match existing project config
+- If it asks about overwriting files, allow it
+
+**Important:** The `--base base` flag does NOT exist. You must use the interactive prompt.
+
+### Step 4: Add All Required Components
+
+```bash
+npx shadcn@latest add alert alert-dialog badge breadcrumb button calendar card checkbox command dialog dropdown-menu input label popover radio-group resizable scroll-area select separator sheet sidebar skeleton sonner switch toggle toggle-group tooltip
+```
+
+**Note:** The sidebar component IS available in Base UI mode (confirmed via basecn.dev).
+
+### Step 5: Install Base UI Package (if not auto-installed)
+
+```bash
+npm install @base-ui-components/react
+```
+
+### Step 6: Remove Radix Dependencies
+
+```bash
+npm uninstall @radix-ui/react-alert-dialog @radix-ui/react-checkbox @radix-ui/react-dialog @radix-ui/react-dropdown-menu @radix-ui/react-label @radix-ui/react-popover @radix-ui/react-radio-group @radix-ui/react-scroll-area @radix-ui/react-select @radix-ui/react-separator @radix-ui/react-slot @radix-ui/react-switch @radix-ui/react-toggle @radix-ui/react-toggle-group @radix-ui/react-tooltip
+```
+
+### Step 7: Update PreferencesDialog.tsx
+
+Edit `src/components/preferences/PreferencesDialog.tsx` around line 80.
+
+**Find this pattern:**
 ```tsx
-// Current (Radix pattern)
 <SidebarMenuButton asChild isActive={activePane === item.id}>
   <button onClick={() => setActivePane(item.id)} className="w-full">
-    <item.icon />
-    <span>{t(item.labelKey)}</span>
-  </button>
-</SidebarMenuButton>
+```
 
-// After (Base UI pattern)
+**Replace with:**
+```tsx
 <SidebarMenuButton
   isActive={activePane === item.id}
   render={<button onClick={() => setActivePane(item.id)} className="w-full" />}
 >
-  <item.icon />
-  <span>{t(item.labelKey)}</span>
-</SidebarMenuButton>
 ```
+
+**Note:** The `asChild` prop becomes `render` prop in Base UI. The children remain inside the component.
+
+### Step 8: Check for Any Remaining asChild Usage
+
+```bash
+grep -r "asChild" src/
+```
+
+**Expected:** No results outside `src/components/ui/`. If found in consumer code, update using the same `render` prop pattern.
+
+### Step 9: Run Type Checking
+
+```bash
+npm run typecheck
+```
+
+**If errors occur:** They will likely be related to:
+- Missing `render` prop type definitions
+- Changed component APIs
+
+Fix each error by consulting the Base UI component API.
+
+### Step 10: Run All Checks
+
+```bash
+npm run check:all
+```
+
+**Expected:** All checks pass.
+
+### Step 11: Manual Testing Checklist
+
+Start the dev server and test each item:
+
+1. **Preferences Dialog** - Opens via menu or Cmd+,
+2. **Sidebar Navigation** - Click each pane (General, Appearance, Advanced)
+3. **Select Dropdowns** - Theme select, language select work
+4. **Switch Toggles** - All toggle switches work
+5. **Command Palette** - Cmd+K opens, search works, items selectable
+6. **Tooltips** - Hover states show tooltips
+7. **Mobile View** - Resize window, sidebar becomes Sheet
+
+### Step 12: Commit and Report
+
+If all tests pass:
+```bash
+git add -A
+git commit -m "Switch from Radix to Base UI
+
+- Replace all shadcn components with Base UI versions
+- Update PreferencesDialog asChild → render pattern
+- Remove 15 @radix-ui/* packages
+- Add @base-ui-components/react
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+```
+
+If tests fail: Document which step failed and what error occurred.
+
+---
+
+## Known Issues and Workarounds
+
+From [shadcn-ui/ui#9049](https://github.com/shadcn-ui/ui/issues/9049):
+
+### CSS Selector Changes
+
+If you see styling issues, these selectors have changed:
+
+| Radix Selector | Base UI Selector |
+|----------------|------------------|
+| `data-[state=open]` | `data-popup-open` or `data-open` |
+| `data-[state=closed]` | `data-closed` |
+| `data-[state=checked]` | `data-checked` |
+| `group-data-[state=open]/collapsible` | `group-data-panel-open` |
+| `w-(--radix-dropdown-menu-trigger-width)` | `w-(--anchor-width)` |
+
+### cmdk Library Note
+
+The `cmdk` library internally uses Radix Dialog, BUT our `command.tsx` wraps it with our own Dialog component. This should work fine since the wrapper just passes props through to our (now Base UI) Dialog.
+
+If CommandDialog breaks, the fix is to ensure `cmdk` is not importing its own Radix Dialog.
 
 ---
 
@@ -112,127 +177,42 @@ Based on codebase analysis, only **1 file** outside `components/ui/` uses the `a
 | Radix Pattern | Base UI Pattern |
 |--------------|-----------------|
 | `asChild` prop | `render` prop |
+| `<Slot>` component | `useRender` hook |
 | `<Content side="left">` | `<Positioner side="left"><Content>` |
-| `onValueChange` | `onValueChange` (same) |
-| `onOpenChange` | `onOpenChange` (same) |
-| `onCheckedChange` | `onCheckedChange` (same) |
-| `data-[state=open]` | `data-open` |
-| `data-[state=closed]` | `data-closed` |
 
----
-
-## Component Usage Summary
-
-| Component | Usage Location | Risk | Notes |
-|-----------|---------------|------|-------|
-| Select | AppearancePane, AdvancedPane | Low | Standard controlled usage, no asChild |
-| Dialog | PreferencesDialog, command.tsx | Low | Standard controlled usage |
-| Button | TitleBar, MainWindow, etc. | Low | Simple props: variant, size, onClick |
-| Switch | GeneralPane, AdvancedPane | Low | Standard onCheckedChange |
-| Popover | date-picker.tsx | Medium | asChild on trigger - in UI folder |
-| Sidebar | PreferencesDialog | Medium | asChild on MenuButton |
-| Command | CommandPalette | Low | Custom wrapper, uses cmdk directly |
-| Resizable | MainWindow | Low | No Radix dependencies |
-| Breadcrumb | PreferencesDialog | Low | Simple static usage |
-| Input/Label | Various panes | Low | Standard form controls |
-
----
-
-## Migration Checklist
-
-### Pre-Migration
-- [ ] Create feature branch `feature/switch-to-baseui`
-- [ ] Run `npm run check:all` to ensure clean baseline
-- [ ] Document/screenshot current UI behavior
-
-### UI Component Replacement
-- [ ] Remove existing `src/components/ui/*` files
-- [ ] Initialize shadcn with Base UI base
-- [ ] Add all required components via CLI
-- [ ] Handle sidebar component (check if shadcn provides Base UI version)
-
-### Consumer Code Updates
-- [ ] Update `PreferencesDialog.tsx` - change `asChild` to `render` pattern
-- [ ] Verify `date-picker.tsx` works (should be replaced by CLI)
-- [ ] Verify `CommandDialog` wrapper in `command.tsx` still works
-
-### CSS/Styling Adjustments
-- [ ] Update any CSS selectors using `data-[state=open]` to `data-open`
-- [ ] Update any CSS selectors using `data-[state=closed]` to `data-closed`
-- [ ] Check Tailwind classes in component usages
-
-### Testing
-- [ ] Test Preferences Dialog opens/closes
-- [ ] Test all preference panes (General, Appearance, Advanced)
-- [ ] Test Select dropdowns work correctly
-- [ ] Test Switch toggles work
-- [ ] Test Command Palette (Cmd+K)
-- [ ] Test DatePicker if used
-- [ ] Test sidebar navigation in preferences
-- [ ] Test mobile responsive behavior (Sheet for sidebar)
-- [ ] Run `npm run check:all`
-- [ ] Run `npm run test:run`
-
-### Post-Migration
-- [ ] Update package.json - remove `@radix-ui/*` packages
-- [ ] Verify bundle size improvement
-- [ ] Update any relevant documentation
-
----
-
-## Dependency Changes
-
-### Remove (15 packages)
-```
-@radix-ui/react-alert-dialog
-@radix-ui/react-checkbox
-@radix-ui/react-dialog
-@radix-ui/react-dropdown-menu
-@radix-ui/react-label
-@radix-ui/react-popover
-@radix-ui/react-radio-group
-@radix-ui/react-scroll-area
-@radix-ui/react-select
-@radix-ui/react-separator
-@radix-ui/react-slot
-@radix-ui/react-switch
-@radix-ui/react-toggle
-@radix-ui/react-toggle-group
-@radix-ui/react-tooltip
-```
-
-### Add (1 package)
-```
-@base-ui-components/react
-```
-
----
-
-## Estimated Effort
-
-| Task | Effort |
-|------|--------|
-| UI component replacement via CLI | ~30 min |
-| PreferencesDialog.tsx update | ~15 min |
-| CSS selector updates (if needed) | ~15 min |
-| Testing all functionality | ~1 hour |
-| **Total** | **~2 hours** |
+Event handlers remain the same:
+- `onValueChange` - same
+- `onOpenChange` - same
+- `onCheckedChange` - same
 
 ---
 
 ## Rollback Plan
 
-If issues arise:
-1. `git checkout main -- src/components/ui/`
-2. `git checkout main -- src/components/preferences/PreferencesDialog.tsx`
-3. `npm install` to restore Radix dependencies
+If migration fails completely:
+
+```bash
+git checkout main
+git branch -D feature/switch-to-baseui
+```
+
+That's it. The main branch is untouched.
+
+---
+
+## Success Criteria
+
+Migration is successful if:
+- [ ] `npm run check:all` passes
+- [ ] All manual tests in Step 11 pass
+- [ ] No visual regressions in UI components
+- [ ] Bundle size is same or smaller
 
 ---
 
 ## Sources
 
-- [basecn - Migrating from Radix UI](https://basecn.dev/docs/get-started/migrating-from-radix-ui)
+- [shadcn/ui Changelog - Base UI Support](https://ui.shadcn.com/docs/changelog)
+- [basecn.dev - Sidebar Component](https://basecn.dev/docs/components/sidebar)
+- [GitHub Issue #9049 - asChild removal in Base UI](https://github.com/shadcn-ui/ui/issues/9049)
 - [Base UI useRender documentation](https://base-ui.com/react/utils/use-render)
-- [jscodeshift codemod for asChild → render](https://gist.github.com/phibr0/48ac88eafbd711784963a3b72015fd09)
-- [shadcn/ui Changelog](https://ui.shadcn.com/docs/changelog)
-- [Base UI v1.0 Release](https://base-ui.com/react/overview/releases)
