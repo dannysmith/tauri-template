@@ -1,10 +1,8 @@
 # Architecture Guide
 
-High-level architectural overview and mental models for building Tauri + React applications with this template.
+High-level architectural overview and mental models for this app.
 
 ## Philosophy
-
-This template follows these core principles:
 
 1. **Clarity over Cleverness** - Predictable patterns over magic
 2. **AI-Friendly Architecture** - Clear patterns that AI agents can follow
@@ -16,7 +14,7 @@ This template follows these core principles:
 
 ### The "Onion" State Architecture
 
-State management follows a clear three-layer hierarchy:
+State management follows a three-layer hierarchy:
 
 ```
 ┌─────────────────────────────────────┐
@@ -40,9 +38,9 @@ Is this data needed across multiple components?
     └─ Yes → TanStack Query
 ```
 
-See [state-management.md](./state-management.md) for detailed patterns.
+See [state-management.md](./state-management.md) for implementation details.
 
-### Event-Driven Bridge Architecture
+### Event-Driven Bridge
 
 Rust and React communicate through events for loose coupling:
 
@@ -56,7 +54,7 @@ This ensures the same actions work consistently across all interaction methods.
 
 ### Command-Centric Design
 
-All user actions flow through a centralized command system:
+All user actions flow through a centralized [command system](./command-system.md):
 
 - **Commands** are pure objects with `execute()` functions
 - **Context** provides all state and actions commands need
@@ -64,26 +62,40 @@ All user actions flow through a centralized command system:
 
 This decouples UI triggers from implementations and enables consistent behavior.
 
-## System Architecture
+## Pattern Dependencies
 
-### Core Systems
+Understanding how patterns work together:
 
-Each major system has focused documentation:
+```
+Command System
+├── Depends on: State Management (context)
+├── Integrates with: Keyboard Shortcuts, Menus
+└── Enables: Consistent behavior across UI
 
-- **[Command System](./command-system.md)** - Unified action dispatch
-- **[Keyboard Shortcuts](./keyboard-shortcuts.md)** - Native event handling
-- **[Native Menus](./menus.md)** - Cross-platform menu integration
-- **[Quick Panes](./quick-panes.md)** - Multi-window quick entry pattern
-- **[Data Persistence](./data-persistence.md)** - Disk storage patterns
-- **[Notifications](./notifications.md)** - Toast and native notifications
-- **[Logging](./logging.md)** - Rust and TypeScript logging
-- **[Testing](./testing.md)** - Quality gates and test patterns
-- **[Releases](./releases.md)** - Automated release process
-- **[Auto-Updates](./auto-updates.md)** - Update system integration
-- **[Cross-Platform](./cross-platform.md)** - Platform detection and OS-specific patterns
-- **[Internationalization](./i18n-patterns.md)** - Translation system and RTL support
+State Management
+├── Enables: Performance (getState pattern)
+├── Supports: Data Persistence, UI State
+└── Foundation for: All other systems
 
-### Component Hierarchy
+Event-Driven Bridge
+├── Enables: Rust-React communication
+├── Supports: Security (validation in Rust)
+└── Foundation for: Menus, Updates, Notifications
+```
+
+## Core Systems
+
+| System               | Documentation                                    |
+| -------------------- | ------------------------------------------------ |
+| Command System       | [command-system.md](./command-system.md)         |
+| Keyboard Shortcuts   | [keyboard-shortcuts.md](./keyboard-shortcuts.md) |
+| Native Menus         | [menus.md](./menus.md)                           |
+| Quick Panes          | [quick-panes.md](./quick-panes.md)               |
+| Data Persistence     | [data-persistence.md](./data-persistence.md)     |
+| Internationalization | [i18n-patterns.md](./i18n-patterns.md)           |
+| Cross-Platform       | [cross-platform.md](./cross-platform.md)         |
+
+## Component Hierarchy
 
 ```
 MainWindow (Top-level orchestrator)
@@ -97,10 +109,10 @@ MainWindow (Top-level orchestrator)
     └── Toaster (Notifications)
 ```
 
-### File Organization
+## File Organization
 
 ```
-locales/                  # Translation JSON files (en.json, ar.json, etc.)
+locales/                  # Translation JSON files
 src/
 ├── components/
 │   ├── layout/          # Layout components (MainWindow, sidebars)
@@ -117,9 +129,9 @@ src/
 └── types/               # Shared TypeScript types
 ```
 
-### Multi-Window Architecture
+## Multi-Window Architecture
 
-Tauri applications can have multiple windows, each running a separate JavaScript context. This means windows cannot share React state directly.
+Tauri applications can have multiple windows, each running a separate JavaScript context. Windows cannot share React state directly.
 
 **Key patterns:**
 
@@ -138,41 +150,7 @@ listen('data-updated', ({ payload }) => {
 })
 ```
 
-**Window creation pattern:**
-
-```rust
-// Create at startup (in setup closure, runs on main thread)
-init_secondary_window(app.handle())?;
-
-// Show/hide via commands (fast, window already exists)
-show_secondary_window(app_handle);
-```
-
-See [Quick Panes](./quick-panes.md) for a complete implementation example.
-
-## Performance Patterns
-
-### The `getState()` Pattern (Critical)
-
-**Problem**: Store subscriptions in callbacks cause render cascades.
-
-**Solution**: Use `getState()` for callbacks that need current state:
-
-```typescript
-// ✅ Good: Stable callback, no cascades
-const handleAction = useCallback(() => {
-  const { currentData, updateData } = useStore.getState()
-  updateData(currentData.modified)
-}, []) // Empty deps - stable reference
-
-// ❌ Bad: Re-creates on every state change
-const { currentData, updateData } = useStore()
-const handleAction = useCallback(() => {
-  updateData(currentData.modified)
-}, [currentData, updateData]) // Cascades on every change
-```
-
-See [performance-patterns.md](./performance-patterns.md) for complete patterns.
+See [quick-panes.md](./quick-panes.md) for a complete implementation example.
 
 ## Security Architecture
 
@@ -181,7 +159,6 @@ See [performance-patterns.md](./performance-patterns.md) for complete patterns.
 All file operations happen in Rust with built-in validation:
 
 ```rust
-// Path validation prevents traversal attacks
 fn is_blocked_directory(path: &Path) -> bool {
     let blocked_patterns = ["/System/", "/usr/", "/etc/", "/.ssh/"];
     blocked_patterns.iter().any(|pattern| path.starts_with(pattern))
@@ -191,51 +168,11 @@ fn is_blocked_directory(path: &Path) -> bool {
 ### Input Sanitization
 
 ```rust
-// Filename sanitization
 pub fn sanitize_filename(filename: &str) -> String {
     filename.chars()
         .filter(|c| !['/', '\\', ':', '*', '?', '"', '<', '>', '|'].contains(c))
         .collect()
 }
-```
-
-## Integration Patterns
-
-### Type-Safe Tauri Commands (tauri-specta)
-
-All Tauri commands are type-safe using [tauri-specta](https://github.com/specta-rs/tauri-specta). TypeScript bindings are auto-generated from Rust.
-
-```typescript
-// ✅ Good: Type-safe with autocomplete and compile-time checking
-import { commands, type AppPreferences } from '@/lib/tauri-bindings'
-
-const result = await commands.loadPreferences()
-if (result.status === 'ok') {
-  console.log(result.data.theme) // Type-safe access
-}
-
-// ❌ Bad: String-based invoke (no type safety)
-const prefs = await invoke<AppPreferences>('load_preferences')
-```
-
-**Adding new commands:**
-
-1. Add `#[specta::specta]` to Rust command
-2. Register in `src-tauri/src/bindings.rs`
-3. Run `npm run rust:bindings` to regenerate TypeScript
-4. Import from `@/lib/tauri-bindings`
-
-See [tauri-commands.md](./tauri-commands.md) for details.
-
-### Multi-Source Event Coordination
-
-The same action can be triggered from multiple sources:
-
-```typescript
-// All trigger the same command
-handleKeyboard('cmd+comma') → commandContext.openPreferences()
-handleMenu('menu-preferences') → commandContext.openPreferences()
-handleCommand('open-preferences') → commandContext.openPreferences()
 ```
 
 ### Atomic File Operations
@@ -248,119 +185,50 @@ std::fs::write(&temp_path, content)?;
 std::fs::rename(&temp_path, &final_path)?;
 ```
 
-## Development Workflow
+## Type-Safe Tauri Commands
 
-### Quality Gates
+All Tauri commands use [tauri-specta](https://github.com/specta-rs/tauri-specta) for type safety:
+
+```typescript
+// ✅ GOOD: Type-safe with autocomplete
+import { commands } from '@/lib/tauri-bindings'
+
+const result = await commands.loadPreferences()
+if (result.status === 'ok') {
+  console.log(result.data.theme)
+}
+
+// ❌ BAD: String-based invoke (no type safety)
+const prefs = await invoke<AppPreferences>('load_preferences')
+```
+
+See [tauri-commands.md](./tauri-commands.md) for adding new commands.
+
+## Quality Gates
 
 Before any changes are committed:
 
 ```bash
-npm run check:all  # Runs all checks
+npm run check:all
 ```
 
-This includes:
+See [static-analysis.md](./static-analysis.md) for all tools included.
 
-- TypeScript type checking
-- ESLint linting
-- ast-grep architectural linting
-- Prettier formatting
-- Vitest tests
-- Rust formatting (cargo fmt)
-- Rust linting (clippy)
-- Rust tests
+## Anti-Patterns to Avoid
 
-### Static Analysis Tools
+| Anti-Pattern                    | Why It's Bad                        | Do This Instead               |
+| ------------------------------- | ----------------------------------- | ----------------------------- |
+| State in wrong layer            | Confuses ownership, breaks patterns | Follow the onion model        |
+| Direct Rust-React coupling      | Tight coupling, hard to maintain    | Use command system and events |
+| Store subscription in callbacks | Causes render cascades              | Use `getState()` pattern      |
+| Skipping input validation       | Security vulnerabilities            | Always validate in Rust       |
+| Magic/implicit patterns         | Hard for AI and humans to follow    | Prefer explicit, clear code   |
 
-| Tool           | Purpose                  | Usage              |
-| -------------- | ------------------------ | ------------------ |
-| ESLint         | Syntax, style, TS rules  | `npm run lint`     |
-| ast-grep       | Architecture patterns    | `npm run ast:lint` |
-| React Compiler | Automatic memoization    | Build-time         |
-| Knip           | Unused code detection    | `npm run knip`     |
-| jscpd          | Duplicate code detection | `npm run jscpd`    |
-
-**React Compiler** handles memoization automatically - no manual `useMemo`/`useCallback` needed.
-
-**ast-grep** enforces patterns ESLint can't detect (e.g., no Zustand destructuring). See [ast-grep-linting.md](./ast-grep-linting.md).
-
-**Knip/jscpd** are for periodic cleanup, not in `check:all`. Use `/knip-cleanup` and `/review-duplicates` commands.
-
-### Documentation-Driven Development
-
-1. **Understand patterns** - Read relevant docs in `docs/developer/`
-2. **Follow established patterns** - Don't invent new approaches
-3. **Update docs** - Document new patterns as they emerge
-4. **Test comprehensively** - Use the established testing patterns
-
-## Extension Points
-
-### Adding New Features
+## Adding New Features
 
 1. **Commands** - Add to appropriate command group file
 2. **State** - Choose appropriate layer (useState/Zustand/TanStack Query)
-3. **UI** - Follow component architecture guidelines
-4. **Persistence** - Use established data persistence patterns
-5. **Testing** - Add tests following established patterns
+3. **UI** - Follow component architecture
+4. **Persistence** - Use established [data-persistence.md](./data-persistence.md) patterns
+5. **Testing** - Add tests following [testing.md](./testing.md) patterns
 6. **Documentation** - Update relevant docs
-
-### Adding New Systems
-
-When adding entirely new systems:
-
-1. **Create focused docs** - Add new file to `docs/developer/`
-2. **Follow architectural patterns** - Use established bridge patterns
-3. **Integrate with command system** - Make actions discoverable
-4. **Add keyboard shortcuts** - Follow shortcut conventions
-5. **Update this guide** - Add system to architecture overview
-
-## Cross-Platform Architecture
-
-This template supports macOS, Windows, and Linux with platform-specific UI adaptations.
-
-### Platform Detection
-
-```typescript
-// Frontend: Use hooks for platform-aware rendering
-import { usePlatform, getPlatform } from '@/hooks/use-platform'
-
-const platform = usePlatform() // 'macos' | 'windows' | 'linux'
-```
-
-```rust
-// Backend: Use conditional compilation
-#[cfg(target_os = "macos")]
-fn macos_specific() { /* ... */ }
-```
-
-### Title Bar Strategy
-
-| Platform | Approach                                    |
-| -------- | ------------------------------------------- |
-| macOS    | Custom title bar with traffic light buttons |
-| Windows  | Custom title bar with controls on right     |
-| Linux    | Native decorations + custom toolbar         |
-
-### Configuration Merging
-
-Tauri v2 automatically merges platform-specific configs:
-
-```
-tauri.conf.json         # Base (safe defaults)
-tauri.macos.conf.json   # macOS overrides
-tauri.windows.conf.json # Windows overrides
-tauri.linux.conf.json   # Linux overrides
-```
-
-See [cross-platform.md](./cross-platform.md) for detailed patterns.
-
-## Best Practices Summary
-
-1. **Follow the onion** - Use the three-layer state architecture
-2. **Commands everywhere** - Route all actions through the command system
-3. **Performance first** - Use `getState()` pattern to avoid cascades
-4. **Security by default** - Validate all inputs, especially file paths
-5. **Event-driven bridges** - Keep Rust and React loosely coupled
-6. **Test everything** - Use quality gates to maintain code health
-7. **Document patterns** - Keep docs current as patterns evolve
-
-This architecture provides a solid foundation for building maintainable, performant, and secure desktop applications with Tauri and React.

@@ -52,7 +52,9 @@ This summary should be written to a file in the root of the project, And will be
 
 Review all docs currently in `docs/developer/` in the context of the changes we have made. and come up with a plan for how to improve or update these documents. Before we actually make changes to these, let's get the plan together and iterate to make any decisions necessary. Once we have a plan, we should write that plan out to an appropriate place in this task document.
 
-#### Plan for Developer Docs Rework
+### Step 3 - Rework the developer docs
+
+Rework and review the developer docs in accordance with the plan below
 
 ##### Final Structure (19 docs)
 
@@ -83,23 +85,24 @@ docs/developer/
 
 ##### Structural Changes
 
-| Action | Document | Details |
-|--------|----------|---------|
-| MERGE INTO | `architecture-guide.md` | Absorbs `architectural-patterns.md` (pattern dependencies, anti-patterns) |
-| MERGE INTO | `state-management.md` | Absorbs `performance-patterns.md` (getState pattern) |
-| MERGE INTO | `releases.md` | Absorbs `auto-updates.md` |
-| CREATE | `README.md` | Index grouping docs by category |
-| CREATE | `rust-architecture.md` | Rust module organization, expandable for future |
-| CREATE | `static-analysis.md` | All tools: ESLint, Prettier, ast-grep, knip, jscpd, React Compiler |
-| CREATE | `writing-ast-grep-rules.md` | AI-focused rule writing guide |
-| DELETE | `architectural-patterns.md` | Content merged into architecture-guide.md |
-| DELETE | `performance-patterns.md` | Content merged into state-management.md |
-| DELETE | `auto-updates.md` | Content merged into releases.md |
-| DELETE | `ast-grep-linting.md` | Split into static-analysis.md and writing-ast-grep-rules.md |
+| Action     | Document                    | Details                                                                   |
+| ---------- | --------------------------- | ------------------------------------------------------------------------- |
+| MERGE INTO | `architecture-guide.md`     | Absorbs `architectural-patterns.md` (pattern dependencies, anti-patterns) |
+| MERGE INTO | `state-management.md`       | Absorbs `performance-patterns.md` (getState pattern)                      |
+| MERGE INTO | `releases.md`               | Absorbs `auto-updates.md`                                                 |
+| CREATE     | `README.md`                 | Index grouping docs by category                                           |
+| CREATE     | `rust-architecture.md`      | Rust module organization, expandable for future                           |
+| CREATE     | `static-analysis.md`        | All tools: ESLint, Prettier, ast-grep, knip, jscpd, React Compiler        |
+| CREATE     | `writing-ast-grep-rules.md` | AI-focused rule writing guide                                             |
+| DELETE     | `architectural-patterns.md` | Content merged into architecture-guide.md                                 |
+| DELETE     | `performance-patterns.md`   | Content merged into state-management.md                                   |
+| DELETE     | `auto-updates.md`           | Content merged into releases.md                                           |
+| DELETE     | `ast-grep-linting.md`       | Split into static-analysis.md and writing-ast-grep-rules.md               |
 
 ##### Content Guidelines
 
 **Remove from all docs:**
+
 - "Future Enhancements" sections (speculative)
 - "Related Documentation" footer sections (use inline links instead)
 - Extensive "Troubleshooting" sections (keep only critical gotchas)
@@ -107,6 +110,7 @@ docs/developer/
 - Large code blocks duplicating the actual codebase
 
 **Keep/Add:**
+
 - ✅/❌ pattern examples (prescriptive, scannable)
 - "Adding X" sections where pattern isn't obvious from code
 - Inline links to related docs
@@ -115,20 +119,21 @@ docs/developer/
 
 ##### Streamlining Targets
 
-| Document | Current | Target | Main Cuts |
-|----------|---------|--------|-----------|
-| `testing.md` | 528 | ~250 | Remove boilerplate examples, focus on Tauri mocking |
-| `data-persistence.md` | 472 | ~200 | Trim Rust impl details, pattern-focus |
-| `bundle-optimization.md` | 435 | ~200 | Remove speculative "Advanced Techniques" |
-| `menus.md` | 391 | ~200 | Remove "Future Enhancements", trim examples |
-| `releases.md` (merged) | 586 | ~300 | Merge smartly, remove redundancy |
-| `keyboard-shortcuts.md` | 324 | ~180 | Reference state-management.md for getState |
-| `i18n-patterns.md` | 313 | ~200 | Trim, more tables |
-| `quick-panes.md` | 274 | ~200 | Trim implementation details |
+| Document                 | Current | Target | Main Cuts                                           |
+| ------------------------ | ------- | ------ | --------------------------------------------------- |
+| `testing.md`             | 528     | ~250   | Remove boilerplate examples, focus on Tauri mocking |
+| `data-persistence.md`    | 472     | ~200   | Trim Rust impl details, pattern-focus               |
+| `bundle-optimization.md` | 435     | ~200   | Remove speculative "Advanced Techniques"            |
+| `menus.md`               | 391     | ~200   | Remove "Future Enhancements", trim examples         |
+| `releases.md` (merged)   | 586     | ~300   | Merge smartly, remove redundancy                    |
+| `keyboard-shortcuts.md`  | 324     | ~180   | Reference state-management.md for getState          |
+| `i18n-patterns.md`       | 313     | ~200   | Trim, more tables                                   |
+| `quick-panes.md`         | 274     | ~200   | Trim implementation details                         |
 
 ##### Implementation Order
 
 **Phase 1: Structural changes**
+
 1. Create `docs/developer/README.md` (index)
 2. Create `rust-architecture.md`
 3. Create `static-analysis.md`
@@ -140,14 +145,11 @@ docs/developer/
 
 **Phase 2: Streamline each doc**
 Apply guidelines to each remaining doc:
+
 - Remove specified content types
 - Convert to inline links
 - Add prescriptive ✅/❌ where missing
 - Fix "this template" → "this app"
-
-### Step 3 - Rework the developer docs
-
-Rework and review the developer docs in accordance with the plan.
 
 ### Step 4 - Review new developer docs
 
