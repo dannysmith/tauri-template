@@ -52,7 +52,7 @@ This summary should be written to a file in the root of the project, And will be
 
 Review all docs currently in `docs/developer/` in the context of the changes we have made. and come up with a plan for how to improve or update these documents. Before we actually make changes to these, let's get the plan together and iterate to make any decisions necessary. Once we have a plan, we should write that plan out to an appropriate place in this task document.
 
-### Step 3 - Rework the developer docs
+### Step 3 - Rework the developer docs [DONE]
 
 Rework and review the developer docs in accordance with the plan below
 
@@ -153,9 +153,9 @@ Apply guidelines to each remaining doc:
 
 ### Step 4 - Review new developer docs
 
-- [ ] Pass 1: Review with critical eye. Anything that is clearly incorrect or wrong.
-- [ ] Pass 2: Review for consistency with actual codebase patterns.
-- [ ] Pass 3: Review for "evergreenness" - There should be no references to "this template" etc. It should be "This app". In some cases it may be helpful to include notes for humans and AI agents at the top of some of these to remind them to update these documents in certain circumstances. But we don't want to go overboard on this.
+- [x] Pass 1: Review with critical eye. Anything that is clearly incorrect or wrong.
+- [x] Pass 2: Review for consistency with actual codebase patterns.
+- [x] Pass 3: Review for "evergreenness" - There should be no references to "this template" etc. It should be "This app". In some cases it may be helpful to include notes for humans and AI agents at the top of some of these to remind them to update these documents in certain circumstances. But we don't want to go overboard on this.
 - [ ] Pass 4: review for possible additions - things wwhich are NOT in the codebase, but we know to be important when building out features in the future.
 - [ ] Pass 5: Lightweight review for improved token efficiency, formatting, consistency, spelling errors etc.
 

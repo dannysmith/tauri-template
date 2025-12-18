@@ -13,7 +13,7 @@ This app supports macOS, Windows, and Linux. This guide covers platform-specific
 **Design decisions:**
 
 - macOS is the primary development target
-- No Windows code signing (template users configure their own)
+- No Windows code signing (configure your own certificates)
 - Linux uses native decorations for desktop environment compatibility
 - Keyboard shortcuts use `mod+` prefix (Cmd on macOS, Ctrl elsewhere)
 
@@ -324,7 +324,7 @@ Windows requires an additional CSS rule for drag regions to work with touch/pen 
 }
 ```
 
-This is already included in the template's global styles.
+This is already included in the app's global styles.
 
 ### GPU Acceleration
 
