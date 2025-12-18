@@ -151,7 +151,7 @@ Apply guidelines to each remaining doc:
 - Add prescriptive ✅/❌ where missing
 - Fix "this template" → "this app"
 
-### Step 4 - Review new developer docs
+### Step 4 - Review new developer docs [DONE]
 
 - [x] Pass 1: Review with critical eye. Anything that is clearly incorrect or wrong.
 - [x] Pass 2: Review for consistency with actual codebase patterns.
@@ -159,7 +159,7 @@ Apply guidelines to each remaining doc:
 - [x] Pass 4: review for possible additions - things wwhich are NOT in the codebase, but we know to be important when building out features in the future.
 - [x] Pass 5: Lightweight review for improved token efficiency, formatting, consistency, spelling errors etc.
 
-### Step 5 - Getting started guide & init command
+### Step 5 - Getting started guide & init command [DONE]
 
 Rename GETTING_STARTED.md to USING_THIS_TEMPLATE.md. This is the only document in this template which is specifically about the template. The expectation is that this file will be removed fairly early on in projects built on the template. It should probably include:
 

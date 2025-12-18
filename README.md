@@ -217,7 +217,7 @@ Before deploying your application to production, ensure you complete these criti
 - [ ] **Update server setup** - Configure server for hosting app updates
 - [ ] **Analytics setup** - Add usage analytics if desired
 
-**📖 For detailed security instructions, see [SECURITY_PRODUCTION.md](docs/SECURITY_PRODUCTION.md)**
+**📖 For release setup and signing keys, see [docs/developer/releases.md](docs/developer/releases.md)**
 
 ## 📋 License
 
