@@ -26,7 +26,11 @@ export function TitleBarLeftActions() {
         variant="ghost"
         size="icon"
         className="h-6 w-6 text-foreground/70 hover:text-foreground"
-        title={t(leftSidebarVisible ? 'titlebar.hideLeftSidebar' : 'titlebar.showLeftSidebar')}
+        title={t(
+          leftSidebarVisible
+            ? 'titlebar.hideLeftSidebar'
+            : 'titlebar.showLeftSidebar'
+        )}
       >
         {leftSidebarVisible ? (
           <PanelLeftClose className="h-3 w-3" />
@@ -72,7 +76,11 @@ export function TitleBarRightActions() {
         variant="ghost"
         size="icon"
         className="h-6 w-6 text-foreground/70 hover:text-foreground"
-        title={t(rightSidebarVisible ? 'titlebar.hideRightSidebar' : 'titlebar.showRightSidebar')}
+        title={t(
+          rightSidebarVisible
+            ? 'titlebar.hideRightSidebar'
+            : 'titlebar.showRightSidebar'
+        )}
       >
         {rightSidebarVisible ? (
           <PanelRightClose className="h-3 w-3" />
