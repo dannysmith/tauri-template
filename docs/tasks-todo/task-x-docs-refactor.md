@@ -175,7 +175,23 @@ This step should also include a refactoring of the init claude command, which sh
 
 ### Step 6 - Simplify Claude commands and Agents
 
-We have a number of clawed agents and commands. We should carefully review these for usefulness and effectiveness. Um particularly with the agents, it probably makes more sense to have them be a little more task focused and less role focused. We will do this iteratively.
+We have a number of Claude agents and commands. We should carefully review these for usefulness and effectiveness. Um particularly with the agents, it probably makes more sense to have them be a little more task focused and less role focused. LEt's explore this iteratively.
+
+#### Agents
+
+the main advantage of agents is that they have their own context window. So they're very well suited to going off and doing research or exploration and then returning focussed information to the main agent. Here are some agents which I think might actually be useful:
+
+- Implementation Plan checker - when given a task document with an implementation plan as input, it goes off and specifically reads the internal documentation in docs/developer/ and ensures that the given implementation plan is following the correct patterns described in the documentation. It can then return recommendations for changes to the plan to the main agent. Effectively, it's an expert in the documented patterns and architecture of this codebase.
+- Developer Documentation Manager - When given a task document as input, it goes and reviews all of the developer documentation and returns details of any updates required as part of the implementation plan. The main agent can then just add these to the end of the task doc. If it's not given a task document as input, it should simply look at all of the developer documentation and make recommendations to the main agent for anything which is out of date or is not ideal. The idea is that this agent can be used to take away some of the work required to keep the developer docs up to date.
+- Cleanup-reporter - Rather than having two clawed commands to run knip and review-duplicates, we could create an agent which runs these two commands looks at the code base in the context of the instructions which we currently have in those clawed commands and then returns to the main agent a recommendation for things that we should look at changing which is nicely structured and formatted so that the main agent can just output that to the user this agent could then be used in a more generic /cleanup command.
+
+Regardless, I feel like all of these agents should include information on when they should be used, What their knowledge/personality/skillset is, what input they should expect if any and what output but they should provide to the main agent calling them.
+
+#### Commands
+
+- /check - Checks the current sessions work against important parts of the documentation and runs and fixes any errors. Since this is going to be run just before uh a commit is made, it would also be sensible to have this look at the work that's been done in the current session and recommend a short commit message about that to the user.
+- /init - This is only going to be used once to set up the the new project based on this template.
+- /cleanup - This could be a command that we just run periodically, which fires off a bunch of agents to check various things and explore the code base uh for potential improvements and then brings all of those things back together. It should probably turn the stuff it finds into a new task document with multiple stages for each thing.
 
 ### Step 7 - Review other docs
 
