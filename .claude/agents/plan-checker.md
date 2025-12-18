@@ -27,6 +27,7 @@ Read and understand the task document or implementation plan being validated.
 ### 2. Load All Architecture Documentation
 
 Read ALL of these files to build complete understanding:
+
 - `CLAUDE.md` - core patterns and rules
 - `docs/developer/architecture-guide.md` - high-level architecture
 - `docs/developer/state-management.md` - state onion pattern
@@ -41,6 +42,7 @@ Read ALL of these files to build complete understanding:
 ### 3. Check Each Step Against Patterns
 
 For each step in the implementation plan:
+
 - Does it follow the documented patterns?
 - Does it violate any anti-patterns mentioned in docs?
 - Are there missing steps that the patterns require?
@@ -48,6 +50,7 @@ For each step in the implementation plan:
 ### 4. Identify Issues
 
 Look for:
+
 - **Violations:** Steps that contradict documented patterns
 - **Missing steps:** Required patterns not included (e.g., missing i18n, missing tests)
 - **Anti-pattern risks:** Approaches that docs warn against
@@ -79,13 +82,14 @@ Return this structured report to the main agent:
    - **Mitigation:** [how to avoid]
 
 ### Looks Good
+
 - [Aspects that align well with documented patterns]
 
 ### Recommendations (Priority Order)
 
 1. [Most important change]
 2. [Next most important]
-...
+   ...
 ```
 
 ## Guidelines

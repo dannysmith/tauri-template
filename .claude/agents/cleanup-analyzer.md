@@ -36,6 +36,7 @@ For each issue found, READ the relevant code to understand context. Do not blind
 ### 3. Categorize Knip Findings
 
 **KEEP (do not recommend removal):**
+
 - All files in `src/components/ui/` (shadcn - future use)
 - Radix dependencies used by ANY shadcn component
 - All barrel exports (`index.ts` files)
@@ -43,11 +44,13 @@ For each issue found, READ the relevant code to understand context. Do not blind
 - Core dependencies: `zod`, `react-hook-form`, `@hookform/resolvers`, `date-fns`
 
 **Safe to Remove (high confidence):**
+
 - Unused non-shadcn files with no imports anywhere
 - Dependencies with zero usage
 - Unused devDependencies for tools not configured
 
 **Needs Review:**
+
 - Files that might be planned features
 - Ambiguous dependency usage
 - Type exports (might be external API)
@@ -55,11 +58,13 @@ For each issue found, READ the relevant code to understand context. Do not blind
 ### 4. Categorize Duplicate Code Findings
 
 **By Priority:**
+
 - **High** (>15 lines business logic, complex conditionals) - recommend extraction
 - **Medium** (10-15 lines utilities, transformations) - consider extraction
 - **Low** (<10 lines, patterns, boilerplate) - likely intentional
 
 **Keep as intentional:**
+
 - shadcn/ui patterns (consistency)
 - Test setup code (isolation)
 - Type definitions (decoupling)
@@ -80,28 +85,35 @@ Return this structured report to the main agent:
 ### Knip Findings
 
 #### Safe to Remove (high confidence)
+
 - `[file/package]` - [reason] - `[location]`
 
 #### Needs Review
+
 - `[file/package]` - [context from investigation] - [recommendation]
 
 #### Keeping (intentional)
+
 - `[file/package]` - [reason: shadcn/Radix/barrel/etc.]
 
 ### Duplicate Code Findings
 
 #### High Priority
+
 - **[description]** - [X lines]
   - Locations: `[file:lines]`, `[file:lines]`
   - Recommendation: [extract to shared function / etc.]
 
 #### Keep As-Is (intentional)
+
 - **[description]** - [reason]
 
 ### Check:all Issues
+
 [Any errors/warnings with context]
 
 ### Summary
+
 - X items safe to auto-remove
 - Y items need your decision
 - Z duplicates worth addressing

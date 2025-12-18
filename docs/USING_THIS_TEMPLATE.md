@@ -50,6 +50,8 @@ If you're not using Claude Code, update these files manually:
 | `.github/workflows/release.yml` | Workflow name, release name                                                    |
 | `CLAUDE.md`                     | Overview section with app name/description                                     |
 | `README.md`                     | Replace template references with your app                                      |
+| `docs/SECURITY.md`              | Replace `YOUR_SECURITY_EMAIL` placeholder                                      |
+| `docs/CONTRIBUTING.md`          | Replace `YOUR_USERNAME/YOUR_REPO` placeholder                                  |
 
 ### Identifier Format
 

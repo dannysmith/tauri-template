@@ -18,6 +18,7 @@ Review user guide documentation against actual system features. Identify gaps, o
 ## Input
 
 Either:
+
 - A task document (to identify what user-facing changes need documenting)
 - No input (general review of user guide against codebase)
 
@@ -30,6 +31,7 @@ Read all content in `docs/userguide/` to understand what's currently documented.
 ### 2. Explore UI Codebase
 
 Investigate actual features by examining:
+
 - `src/components/` - UI components and their capabilities
 - `src/stores/` - Available state and features
 - `src/lib/commands/` - Command palette actions
@@ -41,6 +43,7 @@ Investigate actual features by examining:
 ### 3. Cross-Reference
 
 Compare documented features against actual implementation:
+
 - What features exist but aren't documented?
 - What documented features have changed?
 - What documented features no longer exist?
@@ -48,6 +51,7 @@ Compare documented features against actual implementation:
 ### 4. Check Content Quality
 
 Review for:
+
 - **Accuracy** - Does documentation match actual behavior?
 - **Completeness** - Are all user-facing features covered?
 - **Clarity** - Is content easy for users to understand?
@@ -88,7 +92,7 @@ Return this structured report to the main agent:
 
 1. **[Most important]** - [brief reason]
 2. **[Next]** - [brief reason]
-...
+   ...
 ```
 
 ## Writing Guidelines

@@ -18,6 +18,7 @@ Review developer documentation in `docs/developer/` for accuracy, consistency wi
 ## Input
 
 Either:
+
 - A task document (to identify which docs need updating based on what was implemented)
 - No input (general review of all developer docs)
 
@@ -34,6 +35,7 @@ Read every file in `docs/developer/` to understand current state.
 ### 3. Sample Codebase
 
 Read relevant code files to verify that documented patterns match actual implementation:
+
 - Check key files mentioned in docs actually exist
 - Verify code examples reflect actual patterns
 - Confirm described behaviors match implementation
@@ -56,34 +58,37 @@ Return this structured report to the main agent:
 ## Developer Docs Review
 
 ### [document-name.md]
+
 **Status:** [Needs Updates / Good / Minor Issues]
 
 #### Issues Found
+
 - **[Criterion]:** [Specific issue] at [location/line]
   - **Fix:** [What to change]
 
 ---
 
 ### [next-document.md]
+
 ...
 
 ---
 
 ### Summary by Criterion
 
-| Criterion | Total Issues |
-|-----------|--------------|
-| Correctness | X |
-| Codebase Consistency | X |
-| Evergreenness | X |
-| Completeness | X |
-| Quality | X |
+| Criterion            | Total Issues |
+| -------------------- | ------------ |
+| Correctness          | X            |
+| Codebase Consistency | X            |
+| Evergreenness        | X            |
+| Completeness         | X            |
+| Quality              | X            |
 
 ### Priority Recommendations
 
 1. **[Most important fix]** - [doc] - [brief reason]
 2. **[Next most important]** - [doc] - [brief reason]
-...
+   ...
 ```
 
 ## Guidelines

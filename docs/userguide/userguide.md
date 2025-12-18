@@ -2,90 +2,64 @@
 
 ## Getting Started
 
-This is a template app built with Tauri v2 + React + TypeScript. The specific features and functionality will depend on what you build with this template.
+Welcome! This guide covers the core features available in the app.
 
 ## Keyboard Shortcuts
 
 ### Global Shortcuts
 
-- **Cmd+K** (Mac) / **Ctrl+K** (Windows/Linux): Open Command Palette
-- **Cmd+,** (Mac) / **Ctrl+,** (Windows/Linux): Open Preferences
-- **Cmd+1** (Mac) / **Ctrl+1** (Windows/Linux): Toggle Left Sidebar
-- **Cmd+2** (Mac) / **Ctrl+2** (Windows/Linux): Toggle Right Sidebar
+| Shortcut        | Mac          | Windows/Linux | Action                |
+| --------------- | ------------ | ------------- | --------------------- |
+| Command Palette | Cmd+K        | Ctrl+K        | Open command palette  |
+| Preferences     | Cmd+,        | Ctrl+,        | Open preferences      |
+| Quick Pane      | Configurable | Configurable  | Open quick entry pane |
+| Left Sidebar    | Cmd+1        | Ctrl+1        | Toggle left sidebar   |
+| Right Sidebar   | Cmd+2        | Ctrl+2        | Toggle right sidebar  |
 
 ## Core Features
 
 ### Command Palette
 
-Press **Cmd+K** to open the command palette - a powerful way to quickly find and run any action in the app. Start typing to search through available commands.
+Press **Cmd+K** to open the command palette - a quick way to find and run any action. Start typing to search through available commands.
 
-The command palette includes:
+### Quick Pane
 
-- Navigation commands (toggle sidebars, preferences)
-- Notification test commands (for development)
-- Any additional commands you add to your app
+The Quick Pane is a small floating window that can be summoned with a global keyboard shortcut, even when the app is in the background. Use it for quick data entry or actions without switching to the main window.
+
+Configure the Quick Pane shortcut in **Preferences → Keyboard Shortcuts**.
 
 ### Preferences
 
-Press **Cmd+,** or use the command palette to open app preferences. Currently includes:
+Press **Cmd+,** to open preferences:
 
-- Theme selection (Light, Dark, System)
-- Additional preferences will appear here as you add features
+- **Theme**: Light, Dark, or System
+- **Language**: Select your preferred language
+- **Keyboard Shortcuts**: Customize the Quick Pane shortcut
 
 ### Native Menus
 
-The app includes native macOS/Windows menus accessible from the menu bar:
+Access features from the menu bar:
 
 - **App Menu**: About, Check for Updates, Preferences, Quit
 - **View Menu**: Toggle sidebars
 
-All menu items have corresponding keyboard shortcuts and are also available in the command palette.
+All menu items have keyboard shortcuts and are also available in the command palette.
 
 ## Layout
 
-The app uses a flexible layout system:
-
 - **Title Bar**: Window controls and app title
-- **Left Sidebar**: Collapsible panel (toggle with Cmd+1)
-- **Main Content Area**: Primary app content
-- **Right Sidebar**: Collapsible panel (toggle with Cmd+2)
+- **Left Sidebar**: Collapsible panel (Cmd+1)
+- **Main Content**: Primary app content
+- **Right Sidebar**: Collapsible panel (Cmd+2)
 
 ## Updates
 
-The app includes an auto-updater system:
+The app checks for updates automatically:
 
-- Check for updates via the menu: App � Check for Updates
-- Updates are downloaded from GitHub releases
+- Manual check: App menu → Check for Updates
+- Updates download from GitHub releases
 - You'll be notified when updates are available
 
-## Development Features
-
-When running in development mode, you'll have access to additional features:
-
-- Enhanced logging in browser console
-- Test commands in the command palette
-- Development-specific menu items
-
 ---
 
-## Coming Soon
-
-As you build your app with this template, document new features here:
-
-### File Management
-
-_Coming Soon_ - File operations and management features
-
-### Advanced Features
-
-_Coming Soon_ - Specific features for your application
-
-### Data Management
-
-_Coming Soon_ - Data persistence and management features
-
----
-
-## Need Help?
-
-This is a template app - the specific help documentation will depend on what you build. Consider updating this guide as you add features to provide users with clear instructions for your specific application.
+_This user guide should be expanded as new features are added to the app._

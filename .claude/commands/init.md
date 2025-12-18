@@ -31,6 +31,10 @@ After receiving their input:
 9. **Update `.github/workflows/release.yml`**:
    - Workflow `name`
    - Release name and body references
+10. **Update `docs/SECURITY.md`**:
+    - Replace `YOUR_SECURITY_EMAIL` with appropriate contact (or GitHub username if no email)
+11. **Update `docs/CONTRIBUTING.md`**:
+    - Replace `YOUR_USERNAME/YOUR_REPO` with their GitHub username and repo name
 
 ## Step 3: Verify
 

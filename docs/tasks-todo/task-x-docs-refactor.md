@@ -173,7 +173,7 @@ Rename GETTING_STARTED.md to USING_THIS_TEMPLATE.md. This is the only document i
 
 This step should also include a refactoring of the init claude command, which should be used to help with project setup.
 
-### Step 6 - Simplify Claude commands and Agents
+### Step 6 - Simplify Claude commands and Agents [DONE]
 
 We have a number of Claude agents and commands. We should carefully review these for usefulness and effectiveness. Um particularly with the agents, it probably makes more sense to have them be a little more task focused and less role focused. LEt's explore this iteratively.
 
@@ -221,13 +221,13 @@ Regardless, I feel like all of these agents should include information on when t
 
 ##### Commands
 
-| Action | Command | Details |
-|--------|---------|---------|
-| ENHANCE | `/check` | Add commit message suggestion at end |
-| KEEP | `/init` | No changes |
-| CREATE | `/cleanup` | Spawns `cleanup-analyzer` agent, presents findings, offers to create task doc |
-| DELETE | `/knip-cleanup` | Replaced by `/cleanup` |
-| DELETE | `/review-duplicates` | Replaced by `/cleanup` |
+| Action  | Command              | Details                                                                       |
+| ------- | -------------------- | ----------------------------------------------------------------------------- |
+| ENHANCE | `/check`             | Add commit message suggestion at end                                          |
+| KEEP    | `/init`              | No changes                                                                    |
+| CREATE  | `/cleanup`           | Spawns `cleanup-analyzer` agent, presents findings, offers to create task doc |
+| DELETE  | `/knip-cleanup`      | Replaced by `/cleanup`                                                        |
+| DELETE  | `/review-duplicates` | Replaced by `/cleanup`                                                        |
 
 ##### Agents
 
@@ -292,8 +292,8 @@ All agents use consistent structure: Purpose, When to Use, Input, Process, Outpu
 
 ### Step 7 - Review other docs
 
-- [ ] Review other docs in `docs/` (SECURITY.md etc)
-- [ ] Review userguide
+- [x] Review other docs in `docs/` (SECURITY.md etc)
+- [x] Review userguide
 - [ ] Move contents of CLAUDE.md to AGENTS.md and reference in CLAUDE.md. Remove cursor bridge and GEMINI.md (both read AGENTS.md automatically). Review and update AGENTS.md.
 - [ ] Rewrite README.md to explain the features of this template and point to the getting-started guide. The readme file is almost like the poster for this project on GitHub. So it should be short. And the expectation is that people building new projects on this are going to completely replace the readme file with their own for their project.
 
