@@ -10,7 +10,7 @@ This repository is a template with sensible defaults for building Tauri React ap
 
 - Read @docs/tasks.md for task management
 - Review `docs/developer/architecture-guide.md` for high-level patterns
-- Check `docs/developer/` for system-specific patterns (command-system.md, performance-patterns.md, etc.)
+- Check `docs/developer/README.md` for the full documentation index
 - Check git status and project structure
 
 ### Development Practices
@@ -111,6 +111,17 @@ const t = i18n.t.bind(i18n)
 
 - **Context7 First**: Always use Context7 for framework docs before WebSearch
 - **Version Requirements**: Tauri v2.x, shadcn/ui v4.x, Tailwind v4.x, React 19.x, Zustand v5.x, Vite v7.x, Vitest v4.x
+
+## Developer Documentation
+
+For complete patterns and detailed guidance, see `docs/developer/README.md`.
+
+Key documents:
+
+- `architecture-guide.md` - Mental models, security, anti-patterns
+- `state-management.md` - State onion, getState() pattern details
+- `tauri-commands.md` - Adding new Rust commands
+- `static-analysis.md` - All linting tools and quality gates
 
 ## Claude Code Commands & Agents
 
