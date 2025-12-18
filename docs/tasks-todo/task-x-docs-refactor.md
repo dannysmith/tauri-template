@@ -163,13 +163,13 @@ Apply guidelines to each remaining doc:
 
 Rename GETTING_STARTED.md to USING_THIS_TEMPLATE.md. This is the only document in this template which is specifically about the template. The expectation is that this file will be removed fairly early on in projects built on the template. It should probably include:
 
-- [ ] Background
-- [ ] Steps to create a new project on this template and customise / initialise
-- [ ] Example workflow for adding new features with an AI agent:
+- [x] Background
+- [x] Steps to create a new project on this template and customise / initialise
+- [x] Example workflow for adding new features with an AI agent:
   - Ask AI to read the relevant docs, code and plan a feature. Iterate as needed and write the file to `docs/tasks-todo`
   - Implement the feature, running `npm check:all` periodically
   - When finished, run `/check` , ask AI to update any relevant developer documentation and the userguide, and then `pnm task complete` to move the task doc to `docs/tasks-done`
-- [ ] Setting up builds with GH Actions - should include the stuff in SECURITY_PRODUCTION.md
+- [x] Setting up builds with GH Actions - should include the stuff in SECURITY_PRODUCTION.md
 
 This step should also include a refactoring of the init claude command, which should be used to help with project setup.
 
@@ -192,6 +192,103 @@ Regardless, I feel like all of these agents should include information on when t
 - /check - Checks the current sessions work against important parts of the documentation and runs and fixes any errors. Since this is going to be run just before uh a commit is made, it would also be sensible to have this look at the work that's been done in the current session and recommend a short commit message about that to the user.
 - /init - This is only going to be used once to set up the the new project based on this template.
 - /cleanup - This could be a command that we just run periodically, which fires off a bunch of agents to check various things and explore the code base uh for potential improvements and then brings all of those things back together. It should probably turn the stuff it finds into a new task document with multiple stages for each thing.
+
+---
+
+#### Final Plan
+
+##### File Changes
+
+```
+.claude/
+├── commands/
+│   ├── check.md              # ENHANCE (add commit message suggestion)
+│   ├── init.md               # KEEP
+│   ├── cleanup.md            # CREATE
+│   ├── knip-cleanup.md       # DELETE
+│   └── review-duplicates.md  # DELETE
+└── agents/
+    ├── cleanup-analyzer.md           # CREATE
+    ├── plan-checker.md               # CREATE
+    ├── docs-reviewer.md              # CREATE
+    ├── userguide-reviewer.md         # CREATE
+    ├── codebase-mental-model-documenter.md  # DELETE
+    ├── tauri-rust-expert.md          # DELETE
+    ├── ui-design-expert.md           # DELETE
+    ├── react-architect.md            # DELETE
+    └── user-guide-expert.md          # DELETE
+```
+
+##### Commands
+
+| Action | Command | Details |
+|--------|---------|---------|
+| ENHANCE | `/check` | Add commit message suggestion at end |
+| KEEP | `/init` | No changes |
+| CREATE | `/cleanup` | Spawns `cleanup-analyzer` agent, presents findings, offers to create task doc |
+| DELETE | `/knip-cleanup` | Replaced by `/cleanup` |
+| DELETE | `/review-duplicates` | Replaced by `/cleanup` |
+
+##### Agents
+
+All agents use consistent structure: Purpose, When to Use, Input, Process, Output Format, Guidelines.
+
+**`cleanup-analyzer`**
+
+- **Purpose:** Run static analysis tools, investigate flagged code, return structured recommendations
+- **Process:**
+  1. Run `npm run knip` → capture output
+  2. Run `npm run jscpd` → capture output
+  3. Run `npm run check:all` → capture output
+  4. For each issue: read the relevant code to understand context
+  5. Categorize findings with confidence levels
+  6. Return structured report
+- **Does NOT:** Explore codebase for additional problems, make changes, create task docs
+- **Output:** Structured markdown with categories (Safe to Remove, Needs Review, Keep As-Is), locations, recommendations, confidence levels
+
+**`plan-checker`**
+
+- **Purpose:** Validate implementation plans against documented architecture patterns
+- **Triggered when:**
+  - User explicitly asks to check/validate a plan
+  - Main agent is asked to "review", "check", or "look over" a task document or implementation plan
+- **Process:**
+  1. Read the task document/plan being validated
+  2. Read ALL docs in `docs/developer/`
+  3. Read `CLAUDE.md` for core patterns
+  4. For each step, check against documented patterns
+  5. Identify: violations, missing steps, anti-pattern risks
+- **Output:** Violations found (with fixes), missing steps (with suggestions), recommendations
+
+**`docs-reviewer`**
+
+- **Purpose:** Review developer documentation for accuracy, consistency, and quality
+- **References:** `docs/developer/writing-docs.md` for guidelines
+- **Single-pass review criteria** (all applied together):
+  1. Correctness - anything clearly incorrect or wrong
+  2. Codebase consistency - do docs match actual patterns in code?
+  3. Evergreenness - no "this template" language; proper tone for evolving app
+  4. Completeness - missing guidance for important future features
+  5. Quality - token efficiency, formatting, consistency, spelling
+- **Process:**
+  1. Read `docs/developer/writing-docs.md` for guidelines
+  2. Read ALL docs in `docs/developer/`
+  3. Sample relevant code to verify described patterns
+  4. Apply all 5 criteria in unified analysis
+  5. Return structured recommendations
+- **Output:** Per-document findings with categorized issues and priority recommendations
+
+**`userguide-reviewer`**
+
+- **Purpose:** Review user guide against actual system features, recommend updates
+- **Process:**
+  1. Read current `docs/userguide/` content
+  2. Explore UI codebase to understand actual features (components, commands, shortcuts)
+  3. Cross-reference: what features exist vs what's documented
+  4. Identify gaps, outdated content, accuracy issues
+  5. Return specific recommendations
+- **Tone guidance:** User-centric, clear/engaging writing, active voice, progressive disclosure, completeness with concision
+- **Output:** Features not documented, outdated content, accuracy issues, tone/clarity issues, prioritized update recommendations
 
 ### Step 7 - Review other docs
 

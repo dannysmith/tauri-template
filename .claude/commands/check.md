@@ -7,7 +7,7 @@ description: 'Check work for adherance with architecture and run checks'
 
 ## Purpose
 
-Check work for adherance with architecture and run checks
+Check work for adherence with architecture, run checks, and suggest a commit message.
 
 ## Usage
 
@@ -17,6 +17,7 @@ Check work for adherance with architecture and run checks
 
 ## Execution
 
-1. Check all work in this session for adherance with `docs/developer/architecture-guide.md`.
-2. Remove any unnececarry comments or `console.logs` we've introduced and clean up any "leftovers" from approaches we tried but didn't work.
-3. Run `npm check:all` and fix any errors.
+1. Check all work in this session for adherence with `docs/developer/architecture-guide.md`.
+2. Remove any unnecessary comments or `console.log` statements introduced during development, and clean up any "leftovers" from approaches that didn't work.
+3. Run `npm run check:all` and fix any errors.
+4. Suggest a concise commit message summarizing the work done in this session.
