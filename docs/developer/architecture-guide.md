@@ -154,6 +154,44 @@ See [quick-panes.md](./quick-panes.md) for a complete implementation example.
 
 ## Security Architecture
 
+### Tauri Capabilities
+
+Tauri v2 uses a permission-based capabilities system. Each window only gets the permissions it needs.
+
+**Location:** `src-tauri/capabilities/default.json`
+
+```json
+{
+  "identifier": "main-capability",
+  "windows": ["main"],
+  "permissions": ["core:window:allow-minimize", "fs:default"]
+}
+```
+
+**Key rules:**
+- Use specific window labels, not `["*"]`
+- Only add permissions actually needed
+- Remote content (if any) should have minimal permissions
+
+### Content Security Policy
+
+CSP prevents XSS attacks. Configuration is in `src-tauri/tauri.conf.json`.
+
+**Rules:**
+- Never load scripts from CDNs - bundle everything locally
+- Avoid `'unsafe-eval'` unless absolutely necessary
+- Images: restrict to specific domains when possible
+
+### Secure Storage
+
+| Data Type           | Storage                   | Security Level |
+| ------------------- | ------------------------- | -------------- |
+| API tokens/keys     | OS keychain (keyring)     | High           |
+| App preferences     | App data directory (JSON) | Medium         |
+| User content        | App data directory/SQLite | Medium         |
+
+Never store sensitive tokens in `tauri-plugin-store` (plain JSON on disk).
+
 ### Rust-First Security
 
 All file operations happen in Rust with built-in validation:
@@ -184,6 +222,8 @@ All disk writes use atomic operations to prevent corruption:
 std::fs::write(&temp_path, content)?;
 std::fs::rename(&temp_path, &final_path)?;
 ```
+
+See [Tauri Security Documentation](https://v2.tauri.app/security/) for detailed guidance.
 
 ## Type-Safe Tauri Commands
 

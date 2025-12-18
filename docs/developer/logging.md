@@ -114,6 +114,8 @@ function MyComponent() {
 4. **Keep messages concise** - But descriptive enough to be useful
 5. **Use structured logging** - Include objects/context for complex data
 
+See [error-handling.md](./error-handling.md) for patterns on when to log vs show errors to users.
+
 ## Production Considerations
 
 - Rust logs go to the app's log directory (platform-specific location)

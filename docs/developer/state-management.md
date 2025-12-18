@@ -32,6 +32,8 @@ const { data, isLoading, error } = useQuery({
 })
 ```
 
+See [error-handling.md](./error-handling.md) for retry configuration and error display patterns.
+
 ### Layer 2: Zustand (Global UI State)
 
 Use for transient global state:

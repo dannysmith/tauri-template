@@ -8,10 +8,14 @@ Patterns for saving and loading data to disk.
 | ------------------ | ------------------ | ---------------------------------------------- |
 | App preferences    | Preferences System | Strongly-typed settings (theme, shortcuts)     |
 | Emergency recovery | Recovery System    | Crash recovery, backup before risky operations |
+| Relational data    | SQLite             | User data requiring queries, relationships     |
+| External API data  | TanStack Query     | Remote data with caching (see [external-apis.md](./external-apis.md)) |
 
 ```
 Need to persist data?
 ├─ App settings? → Preferences (Rust struct + TanStack Query)
+├─ User data with queries/relationships? → SQLite (see below)
+├─ Remote API data? → external-apis.md
 └─ Emergency/crash recovery? → Recovery System
 ```
 
@@ -163,3 +167,112 @@ if filename.contains("..") || filename.contains("/") || filename.contains("\\") 
 ### Directory Permissions
 
 Use Tauri's `app_data_dir()` for safe storage locations - never write to arbitrary paths.
+
+## SQLite Database (When Needed)
+
+> **Note:** SQLite is not installed in this app. Install `tauri-plugin-sql` when your app needs relational data with queries.
+
+### When to Use SQLite
+
+| Use Case                          | Recommendation         |
+| --------------------------------- | ---------------------- |
+| Simple key-value settings         | Preferences System     |
+| User data with relationships      | SQLite                 |
+| Data requiring complex queries    | SQLite                 |
+| Large datasets (1000+ records)    | SQLite                 |
+| Data needing atomic transactions  | SQLite                 |
+
+### Setup
+
+```bash
+# Rust
+cd src-tauri && cargo add tauri-plugin-sql --features sqlite
+
+# JavaScript
+npm install @tauri-apps/plugin-sql
+```
+
+Register the plugin with migrations in `src-tauri/src/lib.rs`:
+
+```rust
+use tauri_plugin_sql::{Builder, Migration, MigrationKind};
+
+let migrations = vec![
+    Migration {
+        version: 1,
+        description: "create_initial_tables",
+        sql: "CREATE TABLE IF NOT EXISTS items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );",
+        kind: MigrationKind::Up,
+    },
+];
+
+tauri::Builder::default()
+    .plugin(
+        tauri_plugin_sql::Builder::default()
+            .add_migrations("sqlite:app.db", migrations)
+            .build(),
+    )
+```
+
+Add permissions in `src-tauri/capabilities/default.json`:
+
+```json
+{
+  "permissions": ["sql:default", "sql:allow-load", "sql:allow-execute", "sql:allow-select"]
+}
+```
+
+### Architecture Pattern
+
+Follow the same pattern as other persistent data: Tauri commands wrap database operations, TanStack Query provides caching.
+
+```
+React Component → TanStack Query → Tauri Command → SQLite
+```
+
+```rust
+// ✅ GOOD: Wrap SQL in typed commands (type safety via tauri-specta)
+#[tauri::command]
+#[specta::specta]
+pub async fn get_items(app: tauri::AppHandle) -> Result<Vec<Item>, String> {
+    let db = app.db("sqlite:app.db").map_err(|e| e.to_string())?;
+    db.select("SELECT * FROM items ORDER BY created_at DESC")
+        .map_err(|e| e.to_string())
+}
+```
+
+```typescript
+// ✅ GOOD: TanStack Query for caching and loading states
+export function useItems() {
+  return useQuery({
+    queryKey: ['items'],
+    queryFn: async () => unwrapResult(await commands.getItems()),
+  })
+}
+
+export function useAddItem() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (item: CreateItem) => commands.addItem(item),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['items'] }),
+  })
+}
+```
+
+```typescript
+// ❌ BAD: Direct database access from frontend (loses type safety)
+import Database from '@tauri-apps/plugin-sql'
+const db = await Database.load('sqlite:app.db')
+const items = await db.select('SELECT * FROM items')
+```
+
+### Migration Rules
+
+- Each migration has a unique incrementing version number
+- Never modify existing migrations - always add new ones
+- Write idempotent SQL (`IF NOT EXISTS`, `IF EXISTS`)
+- Migrations run in transactions (atomic)

@@ -36,6 +36,8 @@ Commands that can fail return a `Result<T, E>` type:
 type Result<T, E> = { status: 'ok'; data: T } | { status: 'error'; error: E }
 ```
 
+See [error-handling.md](./error-handling.md) for comprehensive error handling patterns including structured error types, retry logic, and user feedback.
+
 Handle both cases:
 
 ```typescript
