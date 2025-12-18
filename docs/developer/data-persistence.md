@@ -170,7 +170,7 @@ Use Tauri's `app_data_dir()` for safe storage locations - never write to arbitra
 
 ## SQLite Database (When Needed)
 
-> **Note:** SQLite is not installed in this app. Install `tauri-plugin-sql` when your app needs relational data with queries.
+> **Note:** SQLite is not installed in this app. Add it when your app needs relational data with queries.
 
 ### When to Use SQLite
 
@@ -182,71 +182,82 @@ Use Tauri's `app_data_dir()` for safe storage locations - never write to arbitra
 | Large datasets (1000+ records)    | SQLite                 |
 | Data needing atomic transactions  | SQLite                 |
 
-### Setup
+### Approach Options
+
+| Approach | Use When |
+| -------- | -------- |
+| `rusqlite` | Simpler setup, synchronous queries, smaller apps |
+| `sqlx` | Async queries, compile-time SQL checking, larger apps |
+
+Both integrate with Tauri commands and tauri-specta for type safety.
+
+### Setup (rusqlite)
 
 ```bash
-# Rust
-cd src-tauri && cargo add tauri-plugin-sql --features sqlite
-
-# JavaScript
-npm install @tauri-apps/plugin-sql
-```
-
-Register the plugin with migrations in `src-tauri/src/lib.rs`:
-
-```rust
-use tauri_plugin_sql::{Builder, Migration, MigrationKind};
-
-let migrations = vec![
-    Migration {
-        version: 1,
-        description: "create_initial_tables",
-        sql: "CREATE TABLE IF NOT EXISTS items (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-        );",
-        kind: MigrationKind::Up,
-    },
-];
-
-tauri::Builder::default()
-    .plugin(
-        tauri_plugin_sql::Builder::default()
-            .add_migrations("sqlite:app.db", migrations)
-            .build(),
-    )
-```
-
-Add permissions in `src-tauri/capabilities/default.json`:
-
-```json
-{
-  "permissions": ["sql:default", "sql:allow-load", "sql:allow-execute", "sql:allow-select"]
-}
+cd src-tauri && cargo add rusqlite --features bundled
 ```
 
 ### Architecture Pattern
 
-Follow the same pattern as other persistent data: Tauri commands wrap database operations, TanStack Query provides caching.
+Tauri commands wrap database operations, TanStack Query provides frontend caching.
 
 ```
-React Component → TanStack Query → Tauri Command → SQLite
+React Component → TanStack Query → Tauri Command (rusqlite) → SQLite
 ```
 
 ```rust
-// ✅ GOOD: Wrap SQL in typed commands (type safety via tauri-specta)
+use rusqlite::{Connection, params};
+use std::sync::Mutex;
+use tauri::State;
+
+// Database connection managed as Tauri state
+pub struct DbConnection(pub Mutex<Connection>);
+
 #[tauri::command]
 #[specta::specta]
-pub async fn get_items(app: tauri::AppHandle) -> Result<Vec<Item>, String> {
-    let db = app.db("sqlite:app.db").map_err(|e| e.to_string())?;
-    db.select("SELECT * FROM items ORDER BY created_at DESC")
-        .map_err(|e| e.to_string())
+pub fn get_items(db: State<DbConnection>) -> Result<Vec<Item>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    let mut stmt = conn
+        .prepare("SELECT id, name, created_at FROM items ORDER BY created_at DESC")
+        .map_err(|e| e.to_string())?;
+
+    let items = stmt
+        .query_map([], |row| {
+            Ok(Item {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                created_at: row.get(2)?,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+
+    Ok(items)
 }
 ```
 
+Initialize in `src-tauri/src/lib.rs`:
+
+```rust
+let db_path = app.path().app_data_dir()?.join("app.db");
+let conn = Connection::open(&db_path)?;
+
+// Run migrations
+conn.execute(
+    "CREATE TABLE IF NOT EXISTS items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )",
+    [],
+)?;
+
+app.manage(DbConnection(Mutex::new(conn)));
+```
+
 ```typescript
-// ✅ GOOD: TanStack Query for caching and loading states
+// Frontend: TanStack Query for caching and loading states
 export function useItems() {
   return useQuery({
     queryKey: ['items'],
@@ -263,16 +274,8 @@ export function useAddItem() {
 }
 ```
 
-```typescript
-// ❌ BAD: Direct database access from frontend (loses type safety)
-import Database from '@tauri-apps/plugin-sql'
-const db = await Database.load('sqlite:app.db')
-const items = await db.select('SELECT * FROM items')
-```
-
 ### Migration Rules
 
-- Each migration has a unique incrementing version number
-- Never modify existing migrations - always add new ones
-- Write idempotent SQL (`IF NOT EXISTS`, `IF EXISTS`)
-- Migrations run in transactions (atomic)
+- Run migrations at app startup before managing database state
+- Use `IF NOT EXISTS` / `IF EXISTS` for idempotent migrations
+- For complex apps, consider a version table to track applied migrations

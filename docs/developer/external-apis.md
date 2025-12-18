@@ -31,11 +31,9 @@ Patterns for calling external HTTP APIs from Tauri applications.
 ```bash
 # Rust HTTP client
 cd src-tauri && cargo add reqwest --features json,rustls-tls
-
-# Secure token storage (optional, for authenticated APIs)
-npm install @tauri-apps/plugin-keyring
-cd src-tauri && cargo add tauri-plugin-keyring
 ```
+
+For secure token storage, see the Authentication section below.
 
 ## Architecture Pattern
 
@@ -116,35 +114,43 @@ export function useUpdateUser() {
 
 ## Authentication
 
-### Token Storage
+### Token Storage Options
 
-Store tokens securely using OS keychain, not in files:
+| Option | Security | Use When |
+| ------ | -------- | -------- |
+| `keyring` crate | High (OS keychain) | API tokens, credentials |
+| `tauri-plugin-stronghold` | High (encrypted DB) | Multiple secrets, encryption keys |
+| `tauri-plugin-store` | Low (plain JSON) | Non-sensitive data only |
+
+For OS keychain access, use the `keyring` crate directly:
+
+```bash
+cd src-tauri && cargo add keyring
+```
 
 ```rust
-// ✅ GOOD: OS keychain (encrypted, secure)
-use tauri_plugin_keyring::KeyringExt;
+use keyring::Entry;
 
 #[tauri::command]
 #[specta::specta]
-pub async fn save_auth_token(app: tauri::AppHandle, token: String) -> Result<(), String> {
-    app.keyring()
-        .set_password("myapp_auth_token", &token)
+pub fn save_auth_token(token: String) -> Result<(), String> {
+    let entry = Entry::new("myapp", "auth_token")
+        .map_err(|e| format!("Keyring error: {e}"))?;
+    entry.set_password(&token)
         .map_err(|e| format!("Failed to save token: {e}"))
 }
 
 #[tauri::command]
 #[specta::specta]
-pub async fn get_auth_token(app: tauri::AppHandle) -> Result<Option<String>, String> {
-    match app.keyring().get_password("myapp_auth_token") {
+pub fn get_auth_token() -> Result<Option<String>, String> {
+    let entry = Entry::new("myapp", "auth_token")
+        .map_err(|e| format!("Keyring error: {e}"))?;
+    match entry.get_password() {
         Ok(token) => Ok(Some(token)),
-        Err(_) => Ok(None),
+        Err(keyring::Error::NoEntry) => Ok(None),
+        Err(e) => Err(format!("Failed to get token: {e}")),
     }
 }
-```
-
-```rust
-// ❌ BAD: File-based storage (unencrypted, insecure)
-// tauri-plugin-store stores data as plain JSON on disk
 ```
 
 ### Authenticated Requests
@@ -152,9 +158,10 @@ pub async fn get_auth_token(app: tauri::AppHandle) -> Result<Option<String>, Str
 ```rust
 #[tauri::command]
 #[specta::specta]
-pub async fn fetch_protected_data(app: tauri::AppHandle) -> Result<Data, String> {
-    let token = app.keyring()
-        .get_password("myapp_auth_token")
+pub async fn fetch_protected_data() -> Result<Data, String> {
+    let entry = Entry::new("myapp", "auth_token")
+        .map_err(|e| format!("Keyring error: {e}"))?;
+    let token = entry.get_password()
         .map_err(|_| "Not authenticated")?;
 
     let client = reqwest::Client::new();
@@ -216,7 +223,7 @@ See [data-persistence.md](./data-persistence.md) for SQLite setup.
 | ------------------------ | ---------------------------------------- |
 | Basic API call           | Rust command with reqwest                |
 | Caching                  | TanStack Query (frontend) or SQLite      |
-| Token storage            | tauri-plugin-keyring (OS keychain)       |
+| Token storage            | `keyring` crate (OS keychain)            |
 | Type safety              | tauri-specta (same as local commands)    |
 | Error handling           | Result types, see error-handling.md      |
 | Offline support          | Cache to SQLite, fallback on network err |

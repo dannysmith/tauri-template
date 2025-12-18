@@ -184,13 +184,13 @@ CSP prevents XSS attacks. Configuration is in `src-tauri/tauri.conf.json`.
 
 ### Secure Storage
 
-| Data Type           | Storage                   | Security Level |
-| ------------------- | ------------------------- | -------------- |
-| API tokens/keys     | OS keychain (keyring)     | High           |
-| App preferences     | App data directory (JSON) | Medium         |
-| User content        | App data directory/SQLite | Medium         |
+| Data Type           | Storage                      | Security Level |
+| ------------------- | ---------------------------- | -------------- |
+| API tokens/keys     | OS keychain (`keyring` crate)| High           |
+| App preferences     | App data directory (JSON)    | Medium         |
+| User content        | App data directory/SQLite    | Medium         |
 
-Never store sensitive tokens in `tauri-plugin-store` (plain JSON on disk).
+Never store sensitive tokens in `tauri-plugin-store` (plain JSON on disk). See [external-apis.md](./external-apis.md) for keychain patterns.
 
 ### Rust-First Security
 

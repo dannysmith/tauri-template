@@ -147,9 +147,9 @@ const { data } = useQuery({
   queryKey: ['data'],
   queryFn: loadData,
   retry: (failureCount, error) => {
-    // Don't retry validation errors
-    if (error.type === 'ValidationError') return false
-    // Retry network errors up to 3 times
+    // Don't retry client errors (4xx)
+    if (error.message.includes('API error: 4')) return false
+    // Retry network/server errors up to 3 times
     return failureCount < 3
   },
 })
