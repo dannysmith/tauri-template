@@ -104,9 +104,14 @@ On macOS, the quick pane uses `tauri-nspanel` for native panel behavior:
 - Proper focus handling without activating the main app
 - Native panel dismissal on focus loss
 
-**Critical configuration:**
+**Critical configuration for fullscreen overlay:**
 
 ```rust
+// These settings are required for proper fullscreen behavior.
+// See src-tauri/src/commands/quick_pane.rs for the complete builder chain
+// which also includes .url(), .title(), .size(), .transparent(), .has_shadow(),
+// .with_window() configuration, and .build().
+
 PanelBuilder::<_, QuickPanePanel>::new(app, label)
     .level(PanelLevel::Status)  // High z-order for fullscreen
     .style_mask(StyleMask::empty().nonactivating_panel())  // Required!
@@ -115,6 +120,8 @@ PanelBuilder::<_, QuickPanePanel>::new(app, label)
             .full_screen_auxiliary()
             .can_join_all_spaces(),
     )
+    // ... additional builder calls required ...
+    .build()
 ```
 
 The `nonactivating_panel()` style mask is critical for fullscreen overlay visibility.

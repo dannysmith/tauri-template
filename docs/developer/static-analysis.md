@@ -47,7 +47,7 @@ npm run format:check   # Check formatting
 npm run format         # Fix formatting
 ```
 
-Configuration in `.prettierrc`.
+Configuration in `prettier.config.js`.
 
 ### ast-grep
 
@@ -120,4 +120,4 @@ npm run check:all
 
 **ast-grep:** Create YAML files in `.ast-grep/rules/`. See [writing-ast-grep-rules.md](./writing-ast-grep-rules.md).
 
-**Prettier:** Modify `.prettierrc`
+**Prettier:** Modify `prettier.config.js`
