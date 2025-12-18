@@ -15,7 +15,7 @@ The release system provides:
 ### 1. Generate Signing Keys
 
 ```bash
-npm install -g @tauri-apps/cli@next
+npm install -g @tauri-apps/cli
 tauri signer generate -w ~/.tauri/myapp.key
 # Outputs private key (saved) and public key (displayed)
 ```

@@ -106,7 +106,8 @@ Native DOM event listeners are used instead of libraries like `react-hotkeys-hoo
 | Search/Command | Cmd/Ctrl + K |
 | Panel toggles | Cmd/Ctrl + 1,2,3... |
 | File operations | Cmd/Ctrl + N,O,S |
-| Undo/Redo | Cmd/Ctrl + Z, Shift+Z |
+| Undo | Cmd/Ctrl + Z |
+| Redo | Cmd/Ctrl + Shift+Z |
 
 ## Troubleshooting
 
