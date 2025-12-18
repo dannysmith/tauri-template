@@ -2,7 +2,7 @@
 
 ## Overview
 
-This template uses [react-i18next](https://react.i18next.com/) for internationalization. All user-facing strings, including native menus, are translated from a single source of truth in JSON translation files.
+This app uses [react-i18next](https://react.i18next.com/) for internationalization. All user-facing strings, including native menus, are translated from a single source of truth in JSON translation files.
 
 ### Key Design Decisions
 

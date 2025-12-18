@@ -1,6 +1,6 @@
 # Cross-Platform Development
 
-This template supports macOS, Windows, and Linux. This guide covers platform-specific patterns, utilities, and configuration.
+This app supports macOS, Windows, and Linux. This guide covers platform-specific patterns, utilities, and configuration.
 
 ## Overview
 

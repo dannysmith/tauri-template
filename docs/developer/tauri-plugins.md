@@ -1,6 +1,6 @@
 # Tauri Plugins
 
-Guide to all Tauri plugins installed in this template, plus built-in features and guidance on when to add more.
+Guide to all Tauri plugins installed in this app, plus built-in features and guidance on when to add more.
 
 ## Installed Plugins
 
@@ -177,7 +177,7 @@ Built into Tauri v2 via the `tray-icon` feature. See [Tauri docs](https://v2.tau
 
 ### App Menus
 
-The Menu API is built into `@tauri-apps/api/menu`. This template uses it for:
+The Menu API is built into `@tauri-apps/api/menu`. This app uses it for:
 
 - Application menu (File, Edit, View, etc.)
 - Context menus via `src/lib/context-menu.ts`

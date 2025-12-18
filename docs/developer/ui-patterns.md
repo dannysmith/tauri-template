@@ -2,7 +2,7 @@
 
 ## Overview
 
-This template uses a modern CSS stack optimized for Tauri desktop applications:
+This app uses a modern CSS stack optimized for Tauri desktop applications:
 
 - **Tailwind CSS v4** with CSS-based configuration
 - **shadcn/ui v4** component library
@@ -106,7 +106,7 @@ function MyComponent() {
 
 ### Why `.dark` Class (Not `light-dark()`)
 
-This template uses the `.dark` class approach rather than CSS `light-dark()` because:
+This app uses the `.dark` class approach rather than CSS `light-dark()` because:
 
 - Standard pattern for shadcn/ui ecosystem
 - JavaScript control over theme switching
@@ -264,7 +264,7 @@ const buttonVariants = cva('...', {
 
 ### Available Components
 
-This template includes commonly needed components. Run `npx shadcn@latest add [component]` to add more from [ui.shadcn.com](https://ui.shadcn.com/docs/components).
+This app includes commonly needed components. Run `npx shadcn@latest add [component]` to add more from [ui.shadcn.com](https://ui.shadcn.com/docs/components).
 
 ## The `cn()` Utility
 
@@ -351,9 +351,3 @@ This preserves scroll position, form state, and resize dimensions.
 - Add `cursor-pointer` everywhere (only for actual clickable elements)
 - Use viewport-based responsive design (this is a fixed-size desktop app)
 
-## Related Documentation
-
-- [State Management](./state-management.md) - Zustand selector patterns
-- [Performance Patterns](./performance-patterns.md) - CSS visibility for performance
-- [Cross-Platform](./cross-platform.md) - Platform-specific UI considerations
-- [Architecture Guide](./architecture-guide.md) - Overall application structure

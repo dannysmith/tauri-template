@@ -4,7 +4,7 @@ Type-safe Tauri command bindings using [tauri-specta](https://github.com/specta-
 
 ## Overview
 
-This template uses tauri-specta to generate TypeScript bindings from Rust commands, providing:
+This app uses tauri-specta to generate TypeScript bindings from Rust commands, providing:
 
 - **Compile-time type checking** - TypeScript catches errors before runtime
 - **Auto-generated types** - No manual sync between Rust and TypeScript

@@ -360,31 +360,3 @@ let mut app_submenu_builder = SubmenuBuilder::new(app, "App");
 6. **Error handling**: Log menu creation and event handling errors
 7. **Cross-platform testing**: Test menus on all target platforms
 
-## Future Enhancements
-
-### Dynamic Menu Updates
-
-```rust
-// Not yet implemented - future enhancement
-#[tauri::command]
-pub fn update_menu_item_state(
-    app: AppHandle,
-    item_id: String,
-    enabled: bool,
-    checked: bool,
-) -> Result<(), String> {
-    // Update menu item state dynamically
-    Ok(())
-}
-```
-
-### Context Menus
-
-```rust
-// Future: Right-click context menus
-pub fn create_context_menu() -> Result<Menu, Box<dyn std::error::Error>> {
-    // Context menu implementation
-}
-```
-
-The menu system provides a native, platform-appropriate interface that integrates seamlessly with keyboard shortcuts and the command system, ensuring users can access functionality through their preferred interaction method.

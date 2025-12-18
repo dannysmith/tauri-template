@@ -266,8 +266,3 @@ tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2.
 - **Linux Wayland**: Global shortcuts are not supported
 - **Visual blur**: Native frosted glass blur is not available due to conflicts between `window-vibrancy` and `tauri-nspanel`. The current implementation uses CSS `backdrop-blur` with semi-transparent backgrounds.
 
-## Related Documentation
-
-- [Keyboard Shortcuts](./keyboard-shortcuts.md) - Global shortcut patterns
-- [Cross-Platform](./cross-platform.md) - Platform-specific patterns
-- [Tauri Commands](./tauri-commands.md) - Adding new Rust commands
