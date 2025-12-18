@@ -1,16 +1,16 @@
 # Tauri React Template
 
-A batteries-included template for building production-ready desktop applications with **Tauri v2**, **React 19**, and **TypeScript**. Designed with opinionated patterns that help both human developers and AI coding agents build well-architected apps from day one.
+A "batteries-included" template for building production-ready desktop applications with **Tauri v2**, **React**, and **TypeScript**. Designed with opinionated patterns that help both human developers and AI coding agents build well-architected apps from the start.
 
 ## Why This Template?
 
 Most Tauri starters give you a blank canvas. This template gives you a **working application** with patterns already established:
 
-- **Type-safe Rust-TypeScript bridge** via tauri-specta (no more string-based `invoke()` calls)
-- **Performance patterns enforced by tooling** - ast-grep catches common Zustand anti-patterns before they hit code review
-- **Multi-window architecture** already working (quick pane with global shortcut)
+- **Type-safe Rust-TypeScript bridge** via tauri-specta.
+- **Performance patterns enforced by tooling** - all the usual linting plus ast-grep for common anti-patterns
+- **Multi-window architecture** already working (quick pane with global shortcut as a demo)
 - **Cross-platform ready** with platform-specific title bars, window controls, and native menu integration
-- **i18n built-in** with RTL support from the start
+- **i18n built-in** with RTL support
 
 ## Stack
 
@@ -34,19 +34,18 @@ The template includes a working application with these features implemented:
 - **Keyboard Shortcuts** - Platform-aware shortcuts with automatic menu integration
 - **Native Menus** - File, Edit, View menus built from JavaScript with full i18n support
 - **Preferences System** - Settings dialog with Rust-side persistence, React hooks, and type-safe access throughout
-- **Collapsible Sidebars** - Left and right sidebars with state persistence via resizable panels
+- **Collapsible Sidebars** - Empty left and right sidebars with state persistence via resizable panels
 - **Theme System** - Light/dark mode with system preference detection, synced across windows
 - **Notifications** - Toast notifications for in-app feedback, plus native system notifications
 - **Auto-updates** - Tauri updater plugin configured with GitHub Releases integration and update checking on launch
-- **Logging** - Structured logging utilities for both Rust (tracing) and TypeScript with consistent formatting
+- **Logging** - Structured logging utilities for both Rust and TypeScript with consistent formatting
 - **Crash Recovery** - Emergency data persistence for recovering unsaved work after unexpected exits
 
 ### Architecture Patterns
 
-- **Three-layer state management** - Clear decision tree: `useState` (component) → `Zustand` (global UI) → `TanStack Query` (persistent data)
+- **Three-layer state management** - Clear decision tree: `useState` (component) → `Zustand` (global UI) → `TanStack Query` (persistent data "not owned by the app)
 - **Event-driven Rust-React bridge** - Menus, shortcuts, and command palette all route through the same command system
 - **React Compiler** - Automatic memoization means no manual `useMemo`/`useCallback` needed
-- **Atomic file writes** - All disk operations use temp-file-then-rename to prevent corruption
 
 ### Cross-Platform
 
@@ -84,9 +83,8 @@ Platform detection utilities, platform-specific UI strings ("Reveal in Finder" v
 
 This template is designed to work well with AI coding agents like Claude Code:
 
-- **Comprehensive documentation** in `docs/developer/` covering all patterns
-- **Claude Code integration** - Custom commands (`/check`, `/cleanup`) and specialized agents
-- **Pattern enforcement** via ast-grep catches common mistakes AI agents make
+- **Comprehensive documentation** in `docs/developer/` covering all patterns. Human readable but really designed to explain the "why" of certain patterns to AI agents. Not slop.
+- **Claude Code integration** - Custom commands (`/check`, `/cleanup`) and a couple of specialized agents
 - **Sensible file organization** - React code in `src/` with clear separation (components, hooks, stores, services), Rust in `src-tauri/src/` with modular command organization. Predictable structure for both humans and AI.
 
 ## Getting Started
