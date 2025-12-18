@@ -12,7 +12,16 @@ files:
   - 'src/lib/**/*.ts'
   - 'src/lib/**/*.tsx'
 rule:
-  pattern: export function use$NAME($$$PARAMS) { $$$BODY }
+  any:
+    # Named function export: export function useFoo() {}
+    - pattern: export function $HOOK($$$PARAMS) { $$$BODY }
+    # Arrow function export: export const useFoo = () => {}
+    - pattern: export const $HOOK = ($$$PARAMS) => $BODY
+    # Async arrow function: export const useFoo = async () => {}
+    - pattern: export const $HOOK = async ($$$PARAMS) => $BODY
+constraints:
+  HOOK:
+    regex: '^use[A-Z]'
 note: |
   Enforces directory boundaries:
   - lib/: Pure business logic, utilities (no React hooks)
