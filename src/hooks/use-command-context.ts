@@ -9,7 +9,8 @@ import type { CommandContext } from '@/lib/commands/types'
  */
 const commandContext: CommandContext = {
   openPreferences: () => useUIStore.getState().togglePreferences(),
-  showToast: (message, type = 'info') => void notify(message, undefined, { type }),
+  showToast: (message, type = 'info') =>
+    void notify(message, undefined, { type }),
 }
 
 /**
