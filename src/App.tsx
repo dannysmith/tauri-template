@@ -118,7 +118,8 @@ function App() {
     // Check for updates 5 seconds after app loads
     const updateTimer = setTimeout(checkForUpdates, 5000)
     return () => clearTimeout(updateTimer)
-  }, [])
+
+  }, [isWindows])
 
   return (
     <ErrorBoundary>
