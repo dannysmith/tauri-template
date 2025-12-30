@@ -14,6 +14,7 @@ import { useTheme } from '@/hooks/use-theme'
 import { useUIStore } from '@/store/ui-store'
 import { useMainWindowEventListeners } from '@/hooks/useMainWindowEventListeners'
 import { cn } from '@/lib/utils'
+import { useIsWindows } from '@/hooks/use-platform'
 
 /**
  * Layout sizing configuration for resizable panels.
@@ -34,12 +35,19 @@ export function MainWindow() {
   const { theme } = useTheme()
   const leftSidebarVisible = useUIStore(state => state.leftSidebarVisible)
   const rightSidebarVisible = useUIStore(state => state.rightSidebarVisible)
-
+  const isWindows = useIsWindows()
   // Set up global event listeners (keyboard shortcuts, etc.)
   useMainWindowEventListeners()
 
   return (
-    <div className="flex h-screen w-full flex-col overflow-hidden rounded-xl bg-background">
+        // Main window container with rounded corners on non-Windows platforms
+    // This is needed on Mac, but bad on Windows
+    <div
+      className={cn(
+        'flex h-screen w-full flex-col overflow-hidden bg-background',
+        !isWindows && 'rounded-xl'
+      )}
+    >
       <TitleBar />
 
       <div className="flex flex-1 overflow-hidden">

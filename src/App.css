@@ -10,7 +10,18 @@
     box-sizing: border-box;
     cursor: default;
   }
-
+  html {
+    /* Set a var based on platform */
+    &[data-platform='windows'] {
+      --body-bg: theme(colors.background);
+    }
+    &[data-platform='mac'] {
+      --body-bg: transparent;
+    }
+    &:not([data-platform]) {
+      --body-bg: transparent;
+    }
+  }
   body {
     @apply text-foreground;
     font-family: -apple-system, 'Segoe UI', 'Roboto', sans-serif;
@@ -27,6 +38,8 @@
     min-width: 100vw;
     overflow: hidden;
     position: relative;
+    /* Use CSS var */
+    background-color: var(--body-bg, transparent);
   }
 
   svg {
