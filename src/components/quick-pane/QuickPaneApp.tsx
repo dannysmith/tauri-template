@@ -3,6 +3,8 @@ import { emit, listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { commands } from '@/lib/tauri-bindings'
 import { logger } from '@/lib/logger'
+import { getPlatform, useIsWindows } from '@/hooks/use-platform'
+import clsx from 'clsx'
 
 /** Dismiss the quick pane window, logging any errors */
 async function dismissQuickPane() {
@@ -25,8 +27,18 @@ async function dismissQuickPane() {
 function applyTheme() {
   const theme = localStorage.getItem('ui-theme') || 'system'
   const root = document.documentElement
-
+  // Check platform
+  const isWindows = getPlatform() === 'windows'
   root.classList.remove('light', 'dark')
+
+  // Set platform attribute, windows need a special background color to fix the transparent background
+  // but mac need transparent background to show the window rounded corner
+  // not sure on linux
+  if (isWindows) {
+    document.documentElement.setAttribute('data-platform', 'windows')
+  } else {
+    document.documentElement.setAttribute('data-platform', 'mac')
+  }
 
   if (theme === 'system') {
     const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
@@ -42,7 +54,7 @@ function applyTheme() {
 export default function QuickPaneApp() {
   const [text, setText] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
-
+  const isWindows = useIsWindows()
   // Apply theme on mount and listen for theme changes from main window
   useEffect(() => {
     applyTheme()
@@ -107,7 +119,13 @@ export default function QuickPaneApp() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex h-screen w-screen items-center rounded-xl border border-border bg-background px-5 shadow-lg"
+      // remove the round inside to fix the window style on Windows
+      className={clsx(
+        'flex h-screen w-screen items-center border border-border bg-background px-5 shadow-lg',
+        {
+          'rounded-xl': !isWindows,
+        }
+      )}
     >
       <input
         ref={inputRef}
