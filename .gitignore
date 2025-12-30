@@ -25,3 +25,4 @@ jscpd-report
 *.njsproj
 *.sln
 *.sw?
+/img/

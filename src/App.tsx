@@ -11,13 +11,25 @@ import './App.css'
 import { MainWindow } from './components/layout/MainWindow'
 import { ThemeProvider } from './components/ThemeProvider'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { useIsWindows } from './hooks/use-platform'
 
 function App() {
+  // Check platform
+  const isWindows = useIsWindows()
   // Initialize command system and cleanup on app startup
   useEffect(() => {
     logger.info('🚀 Frontend application starting up')
     initializeCommandSystem()
     logger.debug('Command system initialized')
+
+    // Set platform attribute, windows need a special background color to fix the transparent background
+    // but mac need transparent background to show the window rounded corner
+    // not sure on linux
+    if (isWindows) {
+      document.documentElement.setAttribute('data-platform', 'windows')
+    } else {
+      document.documentElement.setAttribute('data-platform', 'mac')
+    }
 
     // Initialize language based on saved preference or system locale
     const initLanguageAndMenu = async () => {
