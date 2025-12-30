@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Settings, Palette, Zap } from 'lucide-react'
+import { Settings, Palette, Zap, XIcon } from 'lucide-react'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -29,6 +29,7 @@ import { useUIStore } from '@/store/ui-store'
 import { GeneralPane } from './panes/GeneralPane'
 import { AppearancePane } from './panes/AppearancePane'
 import { AdvancedPane } from './panes/AdvancedPane'
+import { Button } from '../ui/button'
 
 type PreferencePane = 'general' | 'appearance' | 'advanced'
 
@@ -62,7 +63,7 @@ export function PreferencesDialog() {
 
   return (
     <Dialog open={preferencesOpen} onOpenChange={setPreferencesOpen}>
-      <DialogContent className="overflow-hidden p-0 md:max-h-[600px] md:max-w-[900px] lg:max-w-[1000px] font-sans rounded-xl">
+      <DialogContent showCloseButton={false} className="overflow-hidden p-0 md:max-h-[600px] md:max-w-[900px] lg:max-w-[1000px] font-sans rounded-xl">
         <DialogTitle className="sr-only">{t('preferences.title')}</DialogTitle>
         <DialogDescription className="sr-only">
           {t('preferences.description')}
@@ -96,10 +97,10 @@ export function PreferencesDialog() {
             </SidebarContent>
           </Sidebar>
 
-          <main className="flex flex-1 flex-col overflow-hidden">
-            <header className="flex h-16 shrink-0 items-center gap-2">
-              <div className="flex items-center gap-2 px-4">
-                <Breadcrumb>
+          <main className="flex flex-1 flex-col overflow-hidden ">
+            <header className="flex h-16 shrink-0 items-center gap-2 ">
+              <div className="flex items-center gap-2 px-4 grow">
+                <Breadcrumb className="grow">
                   <BreadcrumbList>
                     <BreadcrumbItem className="hidden md:block">
                       <BreadcrumbLink asChild>
@@ -114,6 +115,9 @@ export function PreferencesDialog() {
                     </BreadcrumbItem>
                   </BreadcrumbList>
                 </Breadcrumb>
+                <Button variant="ghost" onClick={() => setPreferencesOpen(false)}>
+                  <XIcon className="h-4 w-4" />
+                </Button>
               </div>
             </header>
 
