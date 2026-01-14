@@ -9,7 +9,7 @@ mod commands;
 mod types;
 mod utils;
 
-use tauri::Manager;
+use tauri::{Manager, RunEvent, WindowEvent};
 
 // Re-export only what's needed externally
 pub use types::DEFAULT_QUICK_PANE_SHORTCUT;
@@ -39,12 +39,14 @@ pub fn run() {
     }
 
     // Window state plugin - saves/restores window position and size
-    // Note: Only applies to windows listed in capabilities (main window only, not quick-pane)
+    // Note: quick-pane is denylisted because it's an NSPanel and calling is_maximized() on it crashes
+    // See: https://github.com/tauri-apps/plugins-workspace/issues/1546
     #[cfg(desktop)]
     {
         app_builder = app_builder.plugin(
             tauri_plugin_window_state::Builder::new()
                 .with_state_flags(tauri_plugin_window_state::StateFlags::all())
+                .with_denylist(&["quick-pane"])
                 .build(),
         );
     }
@@ -135,6 +137,52 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(builder.invoke_handler())
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|app_handle, event| {
+            if let RunEvent::WindowEvent {
+                label,
+                event: WindowEvent::CloseRequested { .. },
+                ..
+            } = &event
+            {
+                if label == "main" {
+                    log::info!("Main window close requested - performing cleanup");
+
+                    // Save window state before closing
+                    #[cfg(desktop)]
+                    {
+                        use tauri_plugin_window_state::{AppHandleExt, StateFlags};
+                        if let Err(e) = app_handle.save_window_state(StateFlags::all()) {
+                            log::warn!("Failed to save window state: {e}");
+                        } else {
+                            log::info!("Window state saved successfully");
+                        }
+                    }
+
+                    // Hide the quick-pane panel before main window closes
+                    #[cfg(target_os = "macos")]
+                    {
+                        use tauri_nspanel::ManagerExt;
+                        if let Ok(panel) = app_handle.get_webview_panel("quick-pane") {
+                            log::debug!("Hiding quick-pane panel before close");
+                            panel.hide();
+                        }
+                    }
+
+                    // Unregister global shortcuts
+                    #[cfg(desktop)]
+                    {
+                        use tauri_plugin_global_shortcut::GlobalShortcutExt;
+                        if let Err(e) = app_handle.global_shortcut().unregister_all() {
+                            log::warn!("Failed to unregister global shortcuts: {e}");
+                        } else {
+                            log::debug!("Global shortcuts unregistered");
+                        }
+                    }
+
+                    log::info!("Cleanup complete, allowing close to proceed");
+                }
+            }
+        });
 }

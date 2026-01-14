@@ -13,9 +13,10 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "tauri-app",
-        "width": 1000,
-        "height": 700,
+        "width": 1200,
+        "height": 800,
         "minWidth": 1000,
         "minHeight": 700,
         "resizable": true,
