@@ -6,6 +6,7 @@ Ask the user for:
 
 1. **App Name**: What is the name of their application?
 2. **App Description**: What does their app do? (1-2 sentences)
+3. **Package Manager**: Which package manager? (`npm`, `bun`, or `pnpm`) — default is `npm`
 
 ## Step 2: Process and Update Files
 
@@ -36,22 +37,28 @@ After receiving their input:
 11. **Update `docs/CONTRIBUTING.md`**:
     - Replace `YOUR_USERNAME/YOUR_REPO` with their GitHub username and repo name
 
-## Step 3: Verify
+## Step 3: Switch Package Manager (if needed)
 
-Run these commands:
+If the user chose `bun` or `pnpm` (anything other than `npm`), run `/change-package-manager <chosen-pm>` to update all references across the project.
+
+If they chose `npm` (the default), skip this step.
+
+## Step 4: Verify
+
+Run these commands (using whichever package manager was selected):
 
 ```bash
-npm install
-npm run check:all
+<pm> install
+<pm> run check:all
 ```
 
 Fix any errors before proceeding.
 
-## Step 4: Next Steps
+## Step 5: Next Steps
 
 Summarize what was updated, then guide the user:
 
-1. **Try the app**: Run `npm run tauri:dev` to verify everything works
+1. **Try the app**: Run `<pm> run tauri:dev` to verify everything works
 2. **Set up releases** (if using GitHub Actions): See `docs/developer/releases.md` for signing key generation and GitHub secrets
 3. **Explore the codebase**:
    - Read `docs/developer/architecture-guide.md` for patterns
