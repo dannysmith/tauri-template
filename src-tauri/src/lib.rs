@@ -60,7 +60,23 @@ pub fn run() {
     app_builder = app_builder
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_notification::init())
-        .plugin(
+        .plugin({
+            #[allow(unused_mut)]
+            let mut targets = vec![
+                // Always log to stdout for development
+                tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::Stdout),
+                // Log to system logs on macOS (appears in Console.app)
+                #[cfg(target_os = "macos")]
+                tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::LogDir {
+                    file_name: None,
+                }),
+            ];
+            // Log to webview console — excluded on Linux where the WebKitGTK webview
+            // doesn't exist during setup(), causing app.emit() to deadlock on the IPC socket.
+            #[cfg(not(target_os = "linux"))]
+            targets.push(tauri_plugin_log::Target::new(
+                tauri_plugin_log::TargetKind::Webview,
+            ));
             tauri_plugin_log::Builder::new()
                 // Use Debug level in development, Info in production
                 .level(if cfg!(debug_assertions) {
@@ -68,19 +84,9 @@ pub fn run() {
                 } else {
                     log::LevelFilter::Info
                 })
-                .targets([
-                    // Always log to stdout for development
-                    tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::Stdout),
-                    // Log to webview console for development
-                    tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::Webview),
-                    // Log to system logs on macOS (appears in Console.app)
-                    #[cfg(target_os = "macos")]
-                    tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::LogDir {
-                        file_name: None,
-                    }),
-                ])
-                .build(),
-        );
+                .targets(targets)
+                .build()
+        });
 
     // macOS: Add NSPanel plugin for native panel behavior
     #[cfg(target_os = "macos")]
