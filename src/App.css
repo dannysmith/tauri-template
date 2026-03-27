@@ -5,6 +5,15 @@
 @custom-variant dark (&:is(.dark *));
 
 @layer base {
+  :root {
+    --app-corner-radius: 12px;
+  }
+
+  /* Square corners - used on Windows/Linux when fullscreen */
+  .square-corners {
+    --app-corner-radius: 0px;
+  }
+
   * {
     @apply border-border outline-ring/50;
     box-sizing: border-box;
