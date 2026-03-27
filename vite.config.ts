@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import react, { reactCompilerPreset } from '@vitejs/plugin-react'
+import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import path, { resolve } from 'path'
 import packageJson from './package.json'
@@ -12,10 +13,9 @@ export default defineConfig(async () => ({
     __APP_VERSION__: JSON.stringify(packageJson.version),
   },
   plugins: [
-    react({
-      babel: {
-        plugins: ['babel-plugin-react-compiler'],
-      },
+    react(),
+    babel({
+      presets: [reactCompilerPreset()],
     }),
     tailwindcss(),
   ],
@@ -26,7 +26,7 @@ export default defineConfig(async () => ({
   },
   build: {
     chunkSizeWarningLimit: 600, // Prevent warnings for template's bundled components
-    rollupOptions: {
+    rolldownOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
         'quick-pane': resolve(__dirname, 'quick-pane.html'),
