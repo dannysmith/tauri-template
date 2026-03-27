@@ -1,19 +1,9 @@
 ---
-allowed-tools: [Read, Bash, Glob, TodoWrite, Edit]
-description: 'Check work for adherance with architecture and run checks'
+name: check
+description: Check work for adherence with architecture, run quality checks, and suggest a commit message. Use after completing work on a feature or bug fix.
+user-invocable: true
+allowed-tools: [Read, Bash, Glob, Edit]
 ---
-
-# /check - Check Work
-
-## Purpose
-
-Check work for adherence with architecture, run checks, and suggest a commit message.
-
-## Usage
-
-```
-/check
-```
 
 ## Execution
 

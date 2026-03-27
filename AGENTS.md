@@ -124,25 +124,20 @@ Key documents:
 - `tauri-commands.md` - Adding new Rust commands
 - `static-analysis.md` - All linting tools and quality gates
 
-## Claude Code Commands & Agents
+## Claude Code Skills & Agents
 
 These are specific to Claude Code but documented here for context.
 
-### Commands
-
-- `/check` - Check work against architecture, run `npm run check:all`, suggest commit message
-- `/cleanup` - Run static analysis (knip, jscpd, check:all), get structured recommendations
-- `/init` - One-time template initialization (includes package manager selection)
-
 ### Skills
 
+- `/init` - One-time template initialization (includes package manager selection)
+- `/check` - Check work against architecture, run `npm run check:all`, suggest commit message
+- `/cleanup` - Run static analysis (knip, jscpd, check:all), get structured recommendations
 - `/change-package-manager <bun|pnpm|npm>` - Switch package manager across all config, scripts, docs, CI, and AI instructions
 
 ### Agents
 
 Task-focused agents that leverage separate context for focused work:
 
-- `plan-checker` - Validate implementation plans against documented architecture
-- `docs-reviewer` - Review developer docs for accuracy and codebase consistency
-- `userguide-reviewer` - Review user guide against actual system features
 - `cleanup-analyzer` - Analyze static analysis output (used by `/cleanup`)
+- `userguide-reviewer` - Review user guide against actual system features

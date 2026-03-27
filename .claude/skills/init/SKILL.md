@@ -1,3 +1,10 @@
+---
+name: init
+description: One-time template initialization. Collects app name, description, and package manager preference, then updates all project files. Run once when starting a new project from this template.
+user-invocable: true
+allowed-tools: [Read, Edit, Write, Bash, Glob, Grep]
+---
+
 You are helping a user initialize this template for their specific application. This command is typically run once when starting a new project.
 
 ## Step 1: Collect Information
