@@ -139,50 +139,80 @@ pub fn run() {
         .invoke_handler(builder.invoke_handler())
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
-        .run(|app_handle, event| {
-            if let RunEvent::WindowEvent {
+        .run(|app_handle, event| match &event {
+            // macOS: Hide the main window instead of quitting so the dock icon can reopen it
+            // and the quick-pane shortcut works independently of the main window.
+            // On other platforms, the close proceeds normally and the app exits.
+            RunEvent::WindowEvent {
                 label,
-                event: WindowEvent::CloseRequested { .. },
+                event: WindowEvent::CloseRequested { api, .. },
                 ..
-            } = &event
-            {
-                if label == "main" {
-                    log::info!("Main window close requested - performing cleanup");
+            } if label == "main" => {
+                #[cfg(target_os = "macos")]
+                {
+                    api.prevent_close();
 
-                    // Save window state before closing
-                    #[cfg(desktop)]
-                    {
-                        use tauri_plugin_window_state::{AppHandleExt, StateFlags};
-                        if let Err(e) = app_handle.save_window_state(StateFlags::all()) {
-                            log::warn!("Failed to save window state: {e}");
-                        } else {
-                            log::info!("Window state saved successfully");
-                        }
+                    // Save window state before hiding
+                    use tauri_plugin_window_state::{AppHandleExt, StateFlags};
+                    if let Err(e) = app_handle.save_window_state(StateFlags::all()) {
+                        log::warn!("Failed to save window state: {e}");
                     }
 
-                    // Hide the quick-pane panel before main window closes
-                    #[cfg(target_os = "macos")]
-                    {
-                        use tauri_nspanel::ManagerExt;
-                        if let Ok(panel) = app_handle.get_webview_panel("quick-pane") {
-                            log::debug!("Hiding quick-pane panel before close");
-                            panel.hide();
-                        }
+                    // Hide the window, not the app. app_handle.hide() calls NSApplication.hide()
+                    // which sets system-level hidden state — showing an NSPanel while hidden
+                    // causes macOS to unhide the entire app, including the main window.
+                    if let Some(window) = app_handle.get_webview_window("main") {
+                        let _ = window.hide();
+                        log::info!("Main window hidden");
                     }
-
-                    // Unregister global shortcuts
-                    #[cfg(desktop)]
-                    {
-                        use tauri_plugin_global_shortcut::GlobalShortcutExt;
-                        if let Err(e) = app_handle.global_shortcut().unregister_all() {
-                            log::warn!("Failed to unregister global shortcuts: {e}");
-                        } else {
-                            log::debug!("Global shortcuts unregistered");
-                        }
-                    }
-
-                    log::info!("Cleanup complete, allowing close to proceed");
                 }
             }
+
+            // macOS: Dock icon clicked — reopen the main window if it was hidden
+            #[cfg(target_os = "macos")]
+            RunEvent::Reopen { .. } => {
+                if let Some(window) = app_handle.get_webview_window("main") {
+                    if !window.is_visible().unwrap_or(true) {
+                        let _ = window.show();
+
+                        // The window-state plugin only auto-restores on app startup, not after
+                        // a hide/show cycle. Without this the window can appear at stale coords.
+                        use tauri_plugin_window_state::{StateFlags, WindowExt};
+                        let _ = window.restore_state(StateFlags::all());
+
+                        let _ = window.set_focus();
+                        log::info!("Main window reopened from dock");
+                    }
+                }
+            }
+
+            // Cleanup on actual exit (Cmd+Q, menu Quit, or window close on non-macOS).
+            // RunEvent::Exit fires reliably before the process exits, unlike ExitRequested
+            // which doesn't fire for Cmd+Q on macOS (tauri-apps/tauri#9198).
+            RunEvent::Exit => {
+                log::info!("Application exiting — performing cleanup");
+
+                // Hide the quick-pane panel to prevent crashes during teardown
+                #[cfg(target_os = "macos")]
+                {
+                    use tauri_nspanel::ManagerExt;
+                    if let Ok(panel) = app_handle.get_webview_panel("quick-pane") {
+                        panel.hide();
+                    }
+                }
+
+                // Unregister global shortcuts
+                #[cfg(desktop)]
+                {
+                    use tauri_plugin_global_shortcut::GlobalShortcutExt;
+                    if let Err(e) = app_handle.global_shortcut().unregister_all() {
+                        log::warn!("Failed to unregister global shortcuts: {e}");
+                    }
+                }
+
+                log::info!("Cleanup complete");
+            }
+
+            _ => {}
         });
 }
