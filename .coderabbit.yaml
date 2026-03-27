@@ -1,0 +1,17 @@
+# CodeRabbit Configuration
+# https://docs.coderabbit.ai/reference/configuration
+
+reviews:
+  collapse_walkthrough: true
+  sequence_diagrams: false
+  path_filters:
+    - "!**/*.md"
+    - "!package-lock.json"
+    - "!src-tauri/Cargo.lock"
+    - "!src/lib/tauri-bindings.ts"
+    - "!src/lib/bindings.ts"
+    - "!locales/*.json"
+
+issue_enrichment:
+  auto_enrich:
+    enabled: false
