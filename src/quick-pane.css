@@ -3,6 +3,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+:root {
+  --app-corner-radius: 12px;
+}
+
 /* Quick pane needs transparent background for rounded corners to show */
 html,
 body,

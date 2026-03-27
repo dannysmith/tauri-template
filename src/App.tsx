@@ -11,8 +11,11 @@ import './App.css'
 import { MainWindow } from './components/layout/MainWindow'
 import { ThemeProvider } from './components/ThemeProvider'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { useSquareCornersEffect } from './hooks/useSquareCornersEffect'
 
 function App() {
+  useSquareCornersEffect()
+
   // Initialize command system and cleanup on app startup
   useEffect(() => {
     logger.info('🚀 Frontend application starting up')

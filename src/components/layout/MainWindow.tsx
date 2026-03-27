@@ -39,7 +39,7 @@ export function MainWindow() {
   useMainWindowEventListeners()
 
   return (
-    <div className="flex h-screen w-full flex-col overflow-hidden rounded-xl bg-background">
+    <div className="flex h-screen w-full flex-col overflow-hidden rounded-[var(--app-corner-radius)] bg-background">
       <TitleBar />
 
       <div className="flex flex-1 overflow-hidden">

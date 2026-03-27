@@ -17,6 +17,7 @@ interface UIState {
   togglePreferences: () => void
   setPreferencesOpen: (open: boolean) => void
   setLastQuickPaneEntry: (text: string) => void
+  setSquareCorners: (enabled: boolean) => void
 }
 
 export const useUIStore = create<UIState>()(
@@ -78,6 +79,10 @@ export const useUIStore = create<UIState>()(
 
       setLastQuickPaneEntry: text =>
         set({ lastQuickPaneEntry: text }, undefined, 'setLastQuickPaneEntry'),
+
+      setSquareCorners: (enabled: boolean) => {
+        document.documentElement.classList.toggle('square-corners', enabled)
+      },
     }),
     {
       name: 'ui-store',
