@@ -29,7 +29,6 @@ export function ThemeProvider({
   useLayoutEffect(() => {
     if (preferences?.theme && !hasSyncedPreferences.current) {
       hasSyncedPreferences.current = true
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing with external async preferences on initial load
       setTheme(preferences.theme as Theme)
     }
   }, [preferences?.theme])

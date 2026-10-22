@@ -1,4 +1,9 @@
-import { Menu, MenuItem, PredefinedMenuItem } from '@tauri-apps/api/menu'
+import {
+  Menu,
+  MenuItem,
+  PredefinedMenuItem,
+  type PredefinedMenuItemOptions,
+} from '@tauri-apps/api/menu'
 
 /**
  * Context menu utilities for native right-click menus.
@@ -73,16 +78,7 @@ export async function showContextMenu(
  * Uses native predefined menu items that work with the system clipboard.
  */
 export async function showEditContextMenu(): Promise<void> {
-  const menu = await Menu.new({
-    items: [
-      await PredefinedMenuItem.new({ item: 'Cut' }),
-      await PredefinedMenuItem.new({ item: 'Copy' }),
-      await PredefinedMenuItem.new({ item: 'Paste' }),
-      await PredefinedMenuItem.new({ item: 'Separator' }),
-      await PredefinedMenuItem.new({ item: 'SelectAll' }),
-    ],
-  })
-  await menu.popup()
+  await showPredefinedMenu(['Cut', 'Copy', 'Paste', 'Separator', 'SelectAll'])
 }
 
 /**
@@ -90,17 +86,26 @@ export async function showEditContextMenu(): Promise<void> {
  * Includes Undo/Redo in addition to standard edit operations.
  */
 export async function showTextInputContextMenu(): Promise<void> {
+  await showPredefinedMenu([
+    'Undo',
+    'Redo',
+    'Separator',
+    'Cut',
+    'Copy',
+    'Paste',
+    'Separator',
+    'SelectAll',
+  ])
+}
+
+/** Pop up a native menu built from predefined (system-handled) items, in order. */
+async function showPredefinedMenu(
+  items: PredefinedMenuItemOptions['item'][]
+): Promise<void> {
   const menu = await Menu.new({
-    items: [
-      await PredefinedMenuItem.new({ item: 'Undo' }),
-      await PredefinedMenuItem.new({ item: 'Redo' }),
-      await PredefinedMenuItem.new({ item: 'Separator' }),
-      await PredefinedMenuItem.new({ item: 'Cut' }),
-      await PredefinedMenuItem.new({ item: 'Copy' }),
-      await PredefinedMenuItem.new({ item: 'Paste' }),
-      await PredefinedMenuItem.new({ item: 'Separator' }),
-      await PredefinedMenuItem.new({ item: 'SelectAll' }),
-    ],
+    items: await Promise.all(
+      items.map(item => PredefinedMenuItem.new({ item }))
+    ),
   })
   await menu.popup()
 }

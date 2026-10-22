@@ -14,18 +14,18 @@ If `$ARGUMENTS` is not exactly `bun`, `pnpm`, or `npm`, ask the user which packa
 
 Detect the current package manager from `AGENTS.md` or `package.json` scripts. Use this table for all replacements:
 
-| Context | npm | bun | pnpm |
-|---------|-----|-----|------|
-| Install deps | `npm install` | `bun install` | `pnpm install` |
-| Run script | `npm run X` | `bun run X` | `pnpm run X` |
-| CI frozen install | `npm ci` | `bun install --frozen-lockfile` | `pnpm install --frozen-lockfile` |
-| Add dep | `npm install pkg` | `bun add pkg` | `pnpm add pkg` |
-| Add dev dep | `npm install -D pkg` | `bun add -D pkg` | `pnpm add -D pkg` |
-| Remove dep | `npm uninstall pkg` | `bun remove pkg` | `pnpm remove pkg` |
-| Audit | `npm audit` | `bun audit` | `pnpm audit` |
-| Global install | `npm install -g pkg` | `bun install -g pkg` | `pnpm add -g pkg` |
-| Execute binary | `npx` | `bunx` | `pnpm dlx` |
-| Lock file | `package-lock.json` | `bun.lock` | `pnpm-lock.yaml` |
+| Context           | npm                  | bun                             | pnpm                             |
+| ----------------- | -------------------- | ------------------------------- | -------------------------------- |
+| Install deps      | `npm install`        | `bun install`                   | `pnpm install`                   |
+| Run script        | `npm run X`          | `bun run X`                     | `pnpm run X`                     |
+| CI frozen install | `npm ci`             | `bun install --frozen-lockfile` | `pnpm install --frozen-lockfile` |
+| Add dep           | `npm install pkg`    | `bun add pkg`                   | `pnpm add pkg`                   |
+| Add dev dep       | `npm install -D pkg` | `bun add -D pkg`                | `pnpm add -D pkg`                |
+| Remove dep        | `npm uninstall pkg`  | `bun remove pkg`                | `pnpm remove pkg`                |
+| Audit             | `npm audit`          | `bun audit`                     | `pnpm audit`                     |
+| Global install    | `npm install -g pkg` | `bun install -g pkg`            | `pnpm add -g pkg`                |
+| Execute binary    | `npx`                | `bunx`                          | `pnpm dlx`                       |
+| Lock file         | `package-lock.json`  | `bun.lock`                      | `pnpm-lock.yaml`                 |
 
 ## Step 1: Functional Config
 
@@ -42,6 +42,7 @@ Read `src-tauri/tauri.conf.json`. Update `beforeDevCommand` and `beforeBuildComm
 Read `.github/workflows/release.yml` and apply the appropriate pattern:
 
 **Target: bun**
+
 - Replace the `Setup Node.js` step with:
   ```yaml
   - name: Setup Bun
@@ -50,6 +51,7 @@ Read `.github/workflows/release.yml` and apply the appropriate pattern:
 - Replace `npm ci` with `bun install --frozen-lockfile`
 
 **Target: pnpm**
+
 - Add a step before `Setup Node.js`:
   ```yaml
   - name: Setup pnpm
@@ -59,6 +61,7 @@ Read `.github/workflows/release.yml` and apply the appropriate pattern:
 - Replace `npm ci` with `pnpm install --frozen-lockfile`
 
 **Target: npm**
+
 - Ensure standard `actions/setup-node@v4` with `cache: 'npm'`
 - Ensure `npm ci` for install step
 - Remove any pnpm/bun setup steps
@@ -83,6 +86,7 @@ Update these files, replacing PM commands contextually:
 Use Grep to find all remaining references to the old PM across the codebase. Update every documentation file, making sentences read naturally — don't do blind find-replace on prose.
 
 Key files to check:
+
 - `README.md`
 - `docs/USING_THIS_TEMPLATE.md`
 - `docs/CONTRIBUTING.md`
