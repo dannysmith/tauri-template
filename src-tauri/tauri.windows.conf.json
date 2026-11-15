@@ -14,7 +14,7 @@
         "center": true,
         "decorations": false,
         "alwaysOnTop": false,
-        "transparent": false,
+        "transparent": true,
         "shadow": true,
         "dragDropEnabled": true
       }
